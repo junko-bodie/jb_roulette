@@ -94,9 +94,9 @@ export default function GamePage() {
       className="flex flex-col h-screen overflow-hidden select-none"
       style={{
         background: `
-          radial-gradient(ellipse at top left, #2dc8c140 0%, transparent 40%),
-          radial-gradient(ellipse at top right, #ef5cae33 0%, transparent 42%),
-          linear-gradient(180deg, #11656d 0%, #083b40 45%, #08272d 100%)
+          radial-gradient(ellipse at top left, #8d1c3540 0%, transparent 40%),
+          radial-gradient(ellipse at top right, #ca8eb933 0%, transparent 42%),
+          linear-gradient(180deg, #6d1125 0%, #4a0b18 45%, #2a030b 100%)
         `,
       }}
     >
@@ -104,7 +104,7 @@ export default function GamePage() {
       <header
         className="flex items-center justify-between px-4 lg:px-6 py-3 z-10 gap-3"
         style={{
-          background: 'linear-gradient(to bottom, rgba(8, 42, 47, 0.95), rgba(8, 42, 47, 0.75))',
+          background: 'linear-gradient(to bottom, rgba(74, 11, 24, 0.95), rgba(42, 3, 11, 0.75))',
           borderBottom: '1px solid rgba(255,255,255,0.15)',
         }}
       >
@@ -137,16 +137,24 @@ export default function GamePage() {
         <div className="flex items-center gap-2 md:gap-4">
           <SpinHistory history={game.history} />
           <div
-            className="px-3 py-2 rounded-md border"
+            className="flex flex-col px-4 py-2 rounded border-2"
             style={{
-              background: 'linear-gradient(135deg, rgba(15, 60, 65, 0.9), rgba(5, 30, 35, 0.9))',
-              borderColor: 'rgba(201, 168, 76, 0.4)',
+              background: '#ca8eb9',
+              borderColor: 'rgba(255, 255, 255, 0.7)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
             }}
           >
-            <p className="text-sm font-semibold" style={{ color: '#a0babc', fontFamily: 'var(--font-inter)' }}>
-              {playerTag}
-            </p>
-            <p className="text-base font-bold text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-white">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </div>
+              <p className="text-[13px] md:text-sm font-semibold" style={{ color: '#fff', fontFamily: 'var(--font-inter)' }}>
+                {playerTag}
+              </p>
+            </div>
+            <p className="text-sm md:text-base font-bold text-white pl-8" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.balance.toLocaleString()}
             </p>
           </div>
@@ -247,7 +255,7 @@ export default function GamePage() {
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
               className="mobile-landscape-right w-full md:w-[420px] lg:w-[470px] md:flex-shrink-0"
             >
-              <div className="w-full rounded-md border p-1.5 overflow-hidden" style={{ background: 'rgba(8, 45, 49, 0.55)', borderColor: 'rgba(255,255,255,0.18)' }}>
+              <div className="w-full rounded-md border p-1.5 overflow-hidden" style={{ background: '#2b8673', borderColor: '#5ea896', borderWidth: '2px' }}>
                 <div
                   style={{
                     transform: 'scale(0.82)',
@@ -314,14 +322,16 @@ export default function GamePage() {
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
-                className="w-full rounded-lg border p-3 h-fit mt-2"
+                className="w-full rounded border h-fit mt-2 overflow-hidden"
                 style={{
-                  background: 'linear-gradient(180deg, rgba(112,15,54,0.7) 0%, rgba(62,6,31,0.78) 100%)',
-                  borderColor: 'rgba(255,255,255,0.2)',
+                  background: '#3a0715',
+                  borderColor: '#85ab92',
+                  borderWidth: '1px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.5)'
                 }}
               >
-                <p className="text-center text-sm mb-2 uppercase tracking-widest text-[#b8e8d0]">Your Session Stats</p>
-                <div className="space-y-1.5 text-[#f0f6ff] text-sm">
+                <div className="text-center text-xs md:text-sm font-bold uppercase tracking-widest text-[#1a2b3c] py-2" style={{ background: '#85ab92' }}>Your Session Stats</div>
+                <div className="space-y-1.5 text-[#f0f6ff] text-xs md:text-sm p-3">
                   <div className="flex justify-between"><span>Last Win</span><span>{game.sessionStats.lastWin}</span></div>
                   <div className="flex justify-between"><span>Last Bets</span><span>{game.sessionStats.lastBets}</span></div>
                   <div className="flex justify-between"><span>Net Last Win</span><span>{game.sessionStats.netLastWin}</span></div>

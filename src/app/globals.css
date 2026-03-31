@@ -11,14 +11,14 @@
   --color-gold-light: #d4b85c;
   --color-gold-dark: #b8973e;
   --color-deep-green: #1a3a2a;
-  --color-felt-green: #1e4d2b;
-  --color-felt-green-light: #256b3a;
-  --color-felt-green-dark: #163d22;
+  --color-felt-green: #2b8673;
+  --color-felt-green-light: #369c87;
+  --color-felt-green-dark: #1f6a5a;
 
   /* Roulette Colors */
-  --color-roulette-red: #c0392b;
-  --color-roulette-black: #1a1a1a;
-  --color-roulette-green: #27ae60;
+  --color-roulette-red: #c73c4d;
+  --color-roulette-black: #333940;
+  --color-roulette-green: #2b5a26;
 
   /* UI Colors */
   --color-surface: #111111;

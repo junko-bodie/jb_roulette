@@ -120,7 +120,7 @@ function NumberCell({
       className="relative flex items-center justify-center cursor-pointer select-none text-[9px] sm:text-[11px] md:text-sm min-h-[28px] sm:min-h-[40px] md:min-h-[48px]"
       style={{
         background: getCellBg(num),
-        border: '1px solid rgba(255,255,255,0.12)',
+        border: '1px solid #5ea896',
         fontFamily: 'var(--font-inter)',
         fontWeight: 600,
         color: '#fff',
@@ -264,7 +264,7 @@ function OutsideBetCell({
       className={`relative flex items-center justify-center cursor-pointer select-none text-[7px] sm:text-[9px] md:text-xs min-h-[24px] sm:min-h-[32px] md:min-h-[36px] ${className}`}
       style={{
         background: isRed === true ? COLORS.rouletteRed : isRed === false ? '#1e1e1e' : 'transparent',
-        border: '1px solid rgba(255,255,255,0.12)',
+        border: '1px solid #5ea896',
         fontFamily: 'var(--font-inter)',
         fontWeight: 600,
         color: '#fff',
@@ -334,8 +334,8 @@ export default function BettingLayout({
       <div
         className="w-full rounded-lg overflow-hidden"
         style={{
-          background: 'rgba(0,0,0,0.3)',
-          border: `1px solid ${COLORS.gold}30`,
+          background: 'transparent',
+          border: `1px solid #5ea896`,
           boxShadow: `0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(30, 77, 43, 0.1)`,
         }}
       >

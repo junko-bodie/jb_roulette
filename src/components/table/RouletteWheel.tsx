@@ -147,9 +147,9 @@ export default function RouletteWheel({
       ctx!.fill();
 
       const blueRimGrad = ctx!.createLinearGradient(cx - outerR, cy - outerR, cx + outerR, cy + outerR);
-      blueRimGrad.addColorStop(0, '#0e1c3f');
-      blueRimGrad.addColorStop(0.4, '#2b4b92');
-      blueRimGrad.addColorStop(1, '#101d3e');
+      blueRimGrad.addColorStop(0, '#1a5448');
+      blueRimGrad.addColorStop(0.4, '#2b8673');
+      blueRimGrad.addColorStop(1, '#154136');
       ctx!.beginPath();
       ctx!.arc(cx, cy, outerR, 0, TWO_PI);
       ctx!.arc(cx, cy, wallR, 0, TWO_PI, true);
@@ -398,7 +398,7 @@ export default function RouletteWheel({
       // - starts riding the OUTER wooden/metal track
       // - then drops inward into the pocket ring
       //
-      // Also apply perspective squash (ellipse) so the orbit reads 3D.
+      // The CSS rotates the entire canvas, so we no longer apply perspective squash here.
       // Start on the OUTER wooden band groove; drop into the inner pocket ring.
       // pocketMid is aligned with where pocket labels are drawn so the ball
       // visually "locks" onto one value (not between two).
@@ -410,7 +410,7 @@ export default function RouletteWheel({
       ); // 0 (dropped) … 1 (outer track)
       const orbitR = pocketMid + t * (trackMid - pocketMid);
 
-      const yScale = 0.78; // perspective squash
+      const yScale = 1; // perspective squash handled by CSS rotateX
       const bx = cx + Math.cos(ballAngle) * orbitR;
       const by = cy + Math.sin(ballAngle) * orbitR * yScale - Math.abs(ballZ) * 0.55;
       const br = R * 0.032;

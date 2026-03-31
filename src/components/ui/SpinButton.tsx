@@ -28,8 +28,8 @@ export default function SpinButton({ onClick, disabled, isSpinning }: SpinButton
       style={{
         background: disabled
           ? 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)'
-          : `linear-gradient(180deg, ${COLORS.goldLight} 0%, ${COLORS.gold} 40%, ${COLORS.goldDark} 100%)`,
-        color: disabled ? '#555' : '#0a0a0a',
+          : `linear-gradient(180deg, #f26f70 0%, #ea5556 40%, #d84546 100%)`,
+        color: disabled ? '#555' : '#ffffff',
         fontFamily: 'var(--font-playfair)',
         fontWeight: 700,
         fontSize: '0.85rem',

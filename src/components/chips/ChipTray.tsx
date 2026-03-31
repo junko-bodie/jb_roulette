@@ -82,7 +82,7 @@ export default function ChipTray({
               textColor={chip.textColor}
               label={chip.label}
               isSelected={selectedChip === chip.value}
-              size={56}
+              size={46}
               onClick={() => {
                 if (canAfford && !disabled) onSelectChip(chip.value);
               }}
