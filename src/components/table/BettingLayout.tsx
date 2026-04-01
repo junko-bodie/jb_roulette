@@ -14,9 +14,9 @@ import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { COLORS } from '@/styles/theme';
 import { getNumberColor, getDisplayNumber } from '@/lib/rng';
-import { type PlacedBet } from '@/lib/bets';
 import { type SpinResult } from '@/lib/rng';
 import { type PayoutResult } from '@/lib/payouts';
+import { soundEngine } from '@/lib/audioEngine';
 
 interface BettingLayoutProps {
   bets: Map<string, PlacedBet>;
@@ -52,17 +52,17 @@ function getCellBg(num: number): string {
   return '#1e1e1e';
 }
 
-/** Small chip stack indicator on a bet zone */
 function ChipIndicator({ bet, phase }: { bet: PlacedBet; phase: string }) {
   const isResetting = phase === 'RESET';
   return (
-    <motion.div 
-      className="absolute -top-1 -right-1 z-10 flex flex-col-reverse items-center"
-      initial={{ opacity: 1, y: 0 }}
-      animate={isResetting ? { opacity: 0, scale: 0.8, y: 10 } : { opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeInOut' }}
+    <div 
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col-reverse items-center justify-center pointer-events-none"
     >
-      {bet.chips.slice(-3).map((chipVal, i) => {
+      {!isResetting && bet.chips.slice(-4).map((chipVal, indexInSlice) => {
+        // Use the absolute index of the chip in the array as the key
+        // This ensures Framer Motion animates exactly the newly placed chips!
+        const startIdx = Math.max(0, bet.chips.length - 4);
+        const originalIndex = startIdx + indexInSlice;
         const chipColor =
           chipVal === 1 ? COLORS.chipWhite :
           chipVal === 5 ? COLORS.chipRed :
@@ -71,26 +71,29 @@ function ChipIndicator({ bet, phase }: { bet: PlacedBet; phase: string }) {
           COLORS.chipPurple;
 
         return (
-          <div
-            key={i}
+          <motion.div
+            key={`chip-${originalIndex}`}
+            initial={{ scale: 2, opacity: 0, y: -20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center"
             style={{
               background: chipColor,
-              marginTop: i > 0 ? '-6px' : 0,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.5)',
-              zIndex: i,
+              marginTop: indexInSlice > 0 ? '-6px' : 0,
+              boxShadow: '0 1px 3px rgba(0,0,0,0.5), inset 0 0 4px rgba(255,255,255,0.4)',
+              zIndex: originalIndex,
             }}
           >
             <span className="text-[6px] font-bold" style={{ color: chipVal === 1 ? '#000' : '#fff' }}>
               {chipVal}
             </span>
-          </div>
+          </motion.div>
         );
       })}
-      {bet.chips.length > 3 && (
-        <span className="text-[8px] text-white/60 mt-0.5">+{bet.chips.length - 3}</span>
+      {bet.chips.length > 4 && (
+        <span className="text-[8px] font-bold text-white shadow-sm bg-black/50 px-1 rounded-full mt-0.5">+{bet.chips.length - 4}</span>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -122,9 +125,16 @@ function NumberCell({
     [disabled, bet, onRemove]
   );
 
+  const handlePlace = () => {
+    if (!disabled) {
+      soundEngine?.playChipSound();
+      onPlace();
+    }
+  };
+
   return (
     <motion.button
-      onClick={() => !disabled && onPlace()}
+      onClick={handlePlace}
       onContextMenu={handleContextMenu}
       className="relative flex items-center justify-center cursor-pointer select-none text-[9px] sm:text-[11px] md:text-sm min-h-[28px] sm:min-h-[40px] md:min-h-[48px]"
       style={{
@@ -216,7 +226,12 @@ function DropZone({
         style={{
           background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(200,160,50,0.2) 60%, transparent 100%)',
         }}
-        onClick={() => !disabled && onPlace(betId)}
+        onClick={() => {
+          if (!disabled) {
+            soundEngine?.playChipSound();
+            onPlace(betId);
+          }
+        }}
         onContextMenu={handleContextMenu}
         whileHover={disabled ? {} : { scale: 1.2 }}
       />
@@ -270,9 +285,16 @@ function OutsideBetCell({
     [disabled, bet, onRemove]
   );
 
+  const handlePlace = () => {
+    if (!disabled) {
+      soundEngine?.playChipSound();
+      onPlace();
+    }
+  };
+
   return (
     <motion.button
-      onClick={() => !disabled && onPlace()}
+      onClick={handlePlace}
       onContextMenu={handleContextMenu}
       className={`relative flex items-center justify-center cursor-pointer select-none text-[7px] sm:text-[9px] md:text-xs min-h-[24px] sm:min-h-[32px] md:min-h-[36px] ${className}`}
       style={{

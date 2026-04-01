@@ -20,7 +20,7 @@ interface ChipTrayProps {
 }
 
 const trayVariants: Variants = {
-  hidden: { y: 60, opacity: 0 },
+  hidden: { y: 100, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
@@ -56,8 +56,8 @@ export default function ChipTray({
     <motion.div
       variants={trayVariants}
       initial="hidden"
-      animate="visible"
-      className="flex items-center justify-center gap-4 px-6 py-4"
+      animate={disabled ? "hidden" : "visible"}
+      className={`flex items-center justify-center gap-2 md:gap-4 px-2 md:px-6 py-3 md:py-4 w-full overflow-x-auto ${disabled ? 'pointer-events-none' : ''}`}
       style={{
         background: 'linear-gradient(to top, rgba(5, 25, 30, 0.95), rgba(8, 42, 47, 0.85))',
         backdropFilter: 'blur(12px)',

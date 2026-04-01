@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { type SpinResult } from '@/lib/rng';
 import { type PayoutResult } from '@/lib/payouts';
 import { COLORS } from '@/styles/theme';
+import { soundEngine } from '@/lib/audioEngine';
 
 interface ResultDisplayProps {
   result: SpinResult | null;
@@ -66,11 +67,14 @@ export default function ResultDisplay({
   onDismiss,
 }: ResultDisplayProps) {
   useEffect(() => {
-    if (visible) {
+    if (visible && result) {
+      if (payout && payout.netResult > 0) {
+        soundEngine?.playWinSound();
+      }
       const timer = setTimeout(onDismiss, 5000);
       return () => clearTimeout(timer);
     }
-  }, [visible, onDismiss]);
+  }, [visible, result, payout, onDismiss]);
 
   return (
     <AnimatePresence>

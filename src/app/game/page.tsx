@@ -100,7 +100,7 @@ export default function GamePage() {
 
   return (
     <div
-      className="flex flex-col h-screen overflow-hidden select-none"
+      className="flex flex-col h-[100dvh] w-full overflow-hidden select-none"
       style={{
         background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)`,
       }}
@@ -342,7 +342,14 @@ export default function GamePage() {
                 </div>
 
                 {game.phase === 'BETTING' && (
-                  <BettingTimer timeRemaining={cycle.timeRemaining} />
+                  <div className="flex items-center gap-3">
+                    <BettingTimer timeRemaining={cycle.timeRemaining} />
+                    <SpinButton
+                      onClick={handleSpin}
+                      disabled={false}
+                      isSpinning={false}
+                    />
+                  </div>
                 )}
 
                 {game.phase === 'LOCKED' && (

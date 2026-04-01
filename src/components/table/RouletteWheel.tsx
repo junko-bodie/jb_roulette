@@ -9,6 +9,7 @@ import {
   AMERICAN_WHEEL_ORDER,
   EUROPEAN_WHEEL_ORDER,
 } from '@/lib/rng';
+import { soundEngine } from '@/lib/audioEngine';
 
 interface RouletteWheelProps {
   wheelType: WheelType;
@@ -60,6 +61,9 @@ export default function RouletteWheel({
     targetBallAngle: 0,
     // wobble
     wobble: 0,
+    // audio
+    lastPocketIndex: -1,
+    lastTickTime: 0,
     // animation
     rafId: 0,
   });
@@ -103,6 +107,8 @@ export default function RouletteWheel({
     s.ballZ = 0;
     s.ballBounceVel = 0;
     s.wobble = 0;
+    s.lastPocketIndex = -1;
+    s.lastTickTime = 0;
   }, []);
 
   useEffect(() => {
@@ -543,11 +549,26 @@ export default function RouletteWheel({
         const elapsed = now - s.spinStartTime;
         const t = Math.min(elapsed / SPIN_DURATION, 1);
 
+        const prevRelative = ((s.ballAngle - s.wheelAngle) % TWO_PI + TWO_PI) % TWO_PI;
+        const prevIdx = Math.floor(prevRelative / SECTOR_ANGLE);
+
         // Wheel decelerates
         s.wheelAngle = s.startWheelAngle + (s.targetAngle - s.startWheelAngle) * easeOutQuad(t);
 
         // Ball counter-spins, decelerates exact match
         s.ballAngle = s.startBallAngle + (s.targetBallAngle - s.startBallAngle) * easeOutQuad(t);
+
+        // Play tick sound when passing pocket dividers (frets)
+        const newRelative = ((s.ballAngle - s.wheelAngle) % TWO_PI + TWO_PI) % TWO_PI;
+        const newIdx = Math.floor(newRelative / SECTOR_ANGLE);
+
+        // Only play tick if it changed pocket and t > 0.05 so it doesn't instantly spam
+        if (prevIdx !== newIdx && t > 0.02 && t < 0.98) {
+          if (now - s.lastTickTime > 40) { // Throttle to max ~25 ticks per second
+            soundEngine?.playWheelTick();
+            s.lastTickTime = now;
+          }
+        }
 
         // Ball spirals inward after BALL_SETTLE_AT
         if (t > BALL_SETTLE_AT) {
