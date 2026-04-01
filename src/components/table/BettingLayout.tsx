@@ -26,6 +26,7 @@ interface BettingLayoutProps {
   winningResult: SpinResult | null;
   payoutResult: PayoutResult | null;
   showWinHighlight: boolean;
+  phase: string;
 }
 
 /**
@@ -52,9 +53,15 @@ function getCellBg(num: number): string {
 }
 
 /** Small chip stack indicator on a bet zone */
-function ChipIndicator({ bet }: { bet: PlacedBet }) {
+function ChipIndicator({ bet, phase }: { bet: PlacedBet; phase: string }) {
+  const isResetting = phase === 'RESET';
   return (
-    <div className="absolute -top-1 -right-1 z-10 flex flex-col-reverse items-center">
+    <motion.div 
+      className="absolute -top-1 -right-1 z-10 flex flex-col-reverse items-center"
+      initial={{ opacity: 1, y: 0 }}
+      animate={isResetting ? { opacity: 0, scale: 0.8, y: 10 } : { opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeInOut' }}
+    >
       {bet.chips.slice(-3).map((chipVal, i) => {
         const chipColor =
           chipVal === 1 ? COLORS.chipWhite :
@@ -83,7 +90,7 @@ function ChipIndicator({ bet }: { bet: PlacedBet }) {
       {bet.chips.length > 3 && (
         <span className="text-[8px] text-white/60 mt-0.5">+{bet.chips.length - 3}</span>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -96,6 +103,7 @@ function NumberCell({
   onRemove,
   disabled,
   isWinner,
+  phase,
 }: {
   num: number;
   betId: string;
@@ -104,6 +112,7 @@ function NumberCell({
   onRemove: () => void;
   disabled: boolean;
   isWinner: boolean;
+  phase: string;
 }) {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -149,7 +158,7 @@ function NumberCell({
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
       {getDisplayNumber(num)}
-      {bet && <ChipIndicator bet={bet} />}
+      {bet && <ChipIndicator bet={bet} phase={phase} />}
     </motion.button>
   );
 }
@@ -166,6 +175,7 @@ function DropZone({
   onRemove,
   disabled,
   isWinner,
+  phase,
 }: {
   betId: string;
   x: string;
@@ -177,6 +187,7 @@ function DropZone({
   onRemove: (betId: string) => void;
   disabled: boolean;
   isWinner: boolean;
+  phase: string;
 }) {
   const bet = bets.get(betId);
 
@@ -211,7 +222,7 @@ function DropZone({
       />
       {bet && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-          <ChipIndicator bet={bet} />
+          <ChipIndicator bet={bet} phase={phase} />
         </div>
       )}
       {isWinner && (
@@ -237,6 +248,7 @@ function OutsideBetCell({
   style,
   className = '',
   isRed,
+  phase,
 }: {
   betId: string;
   label: string;
@@ -248,6 +260,7 @@ function OutsideBetCell({
   style?: React.CSSProperties;
   className?: string;
   isRed?: boolean;
+  phase: string;
 }) {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -296,7 +309,7 @@ function OutsideBetCell({
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
       {label}
-      {bet && <ChipIndicator bet={bet} />}
+      {bet && <ChipIndicator bet={bet} phase={phase} />}
     </motion.button>
   );
 }
@@ -309,6 +322,7 @@ export default function BettingLayout({
   winningResult,
   payoutResult,
   showWinHighlight,
+  phase,
 }: BettingLayoutProps) {
   // Check if a specific bet zone won
   const isBetWinner = useCallback(
@@ -351,6 +365,7 @@ export default function BettingLayout({
               onRemove={() => onRemoveBet('straight-0')}
               disabled={disabled}
               isWinner={isWinningNumber(0) || isBetWinner('straight-0')}
+              phase={phase}
             />
             <NumberCell
               num={37}
@@ -360,6 +375,7 @@ export default function BettingLayout({
               onRemove={() => onRemoveBet('straight-00')}
               disabled={disabled}
               isWinner={isWinningNumber(37) || isBetWinner('straight-00')}
+              phase={phase}
             />
             
             {/* Split 0-00 target */}
@@ -374,6 +390,7 @@ export default function BettingLayout({
               onRemove={onRemoveBet}
               disabled={disabled}
               isWinner={isBetWinner('split-0-00')}
+              phase={phase}
             />
           </div>
 
@@ -393,6 +410,7 @@ export default function BettingLayout({
                       onRemove={() => onRemoveBet(betId)}
                       disabled={disabled}
                       isWinner={isWinningNumber(num) || isBetWinner(betId)}
+                      phase={phase}
                     />
                   );
                 })}
@@ -419,6 +437,7 @@ export default function BettingLayout({
                       onRemove={onRemoveBet}
                       disabled={disabled}
                       isWinner={isBetWinner(betId)}
+                      phase={phase}
                     />
                   );
                 })
@@ -442,6 +461,7 @@ export default function BettingLayout({
                       onRemove={onRemoveBet}
                       disabled={disabled}
                       isWinner={isBetWinner(betId)}
+                      phase={phase}
                     />
                   );
                 })
@@ -465,6 +485,7 @@ export default function BettingLayout({
                       onRemove={onRemoveBet}
                       disabled={disabled}
                       isWinner={isBetWinner(betId)}
+                      phase={phase}
                     />
                   );
                 })
@@ -487,6 +508,7 @@ export default function BettingLayout({
                     onRemove={onRemoveBet}
                     disabled={disabled}
                     isWinner={isBetWinner(betId)}
+                    phase={phase}
                   />
                 );
               })}
@@ -508,6 +530,7 @@ export default function BettingLayout({
                     onRemove={onRemoveBet}
                     disabled={disabled}
                     isWinner={isBetWinner(betId)}
+                    phase={phase}
                   />
                 );
               })}
@@ -524,6 +547,7 @@ export default function BettingLayout({
                 onRemove={onRemoveBet}
                 disabled={disabled}
                 isWinner={isBetWinner('basket-0-00-1-2-3')}
+                phase={phase}
               />
               <DropZone
                 betId="basket-0-1-2-3"
@@ -536,6 +560,7 @@ export default function BettingLayout({
                 onRemove={onRemoveBet}
                 disabled={disabled}
                 isWinner={isBetWinner('basket-0-1-2-3')}
+                phase={phase}
               />
               <DropZone
                 betId="trio-0-1-2"
@@ -548,6 +573,7 @@ export default function BettingLayout({
                 onRemove={onRemoveBet}
                 disabled={disabled}
                 isWinner={isBetWinner('trio-0-1-2')}
+                phase={phase}
               />
               <DropZone
                 betId="trio-00-2-3"
@@ -560,6 +586,7 @@ export default function BettingLayout({
                 onRemove={onRemoveBet}
                 disabled={disabled}
                 isWinner={isBetWinner('trio-00-2-3')}
+                phase={phase}
               />
               <DropZone
                 betId="trio-0-2-3"
@@ -572,6 +599,7 @@ export default function BettingLayout({
                 onRemove={onRemoveBet}
                 disabled={disabled}
                 isWinner={isBetWinner('trio-0-2-3')}
+                phase={phase}
               />
             </div>
           </div>
@@ -590,6 +618,7 @@ export default function BettingLayout({
               onRemove={() => onRemoveBet(betId)}
               disabled={disabled}
               isWinner={isBetWinner(betId)}
+              phase={phase}
             />
           ))}
         </div>
@@ -605,6 +634,7 @@ export default function BettingLayout({
             onRemove={() => onRemoveBet('low')}
             disabled={disabled}
             isWinner={isBetWinner('low')}
+            phase={phase}
           />
           <OutsideBetCell
             betId="even"
@@ -614,6 +644,7 @@ export default function BettingLayout({
             onRemove={() => onRemoveBet('even')}
             disabled={disabled}
             isWinner={isBetWinner('even')}
+            phase={phase}
           />
           <OutsideBetCell
             betId="red"
@@ -624,6 +655,7 @@ export default function BettingLayout({
             onRemove={() => onRemoveBet('red')}
             disabled={disabled}
             isWinner={isBetWinner('red')}
+            phase={phase}
           />
           <OutsideBetCell
             betId="black"
@@ -634,6 +666,7 @@ export default function BettingLayout({
             onRemove={() => onRemoveBet('black')}
             disabled={disabled}
             isWinner={isBetWinner('black')}
+            phase={phase}
           />
           <OutsideBetCell
             betId="odd"
@@ -643,6 +676,7 @@ export default function BettingLayout({
             onRemove={() => onRemoveBet('odd')}
             disabled={disabled}
             isWinner={isBetWinner('odd')}
+            phase={phase}
           />
           <OutsideBetCell
             betId="high"
@@ -652,6 +686,7 @@ export default function BettingLayout({
             onRemove={() => onRemoveBet('high')}
             disabled={disabled}
             isWinner={isBetWinner('high')}
+            phase={phase}
           />
         </div>
 
@@ -669,6 +704,7 @@ export default function BettingLayout({
                 onRemove={() => onRemoveBet(betId)}
                 disabled={disabled}
                 isWinner={isBetWinner(betId)}
+                phase={phase}
               />
             ))}
           </div>

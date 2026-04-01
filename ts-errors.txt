@@ -1,0 +1,1 @@
+src/app/game/page.tsx(351,33): error TS2367: This comparison appears to be unintentional because the types '"BETTING" | "LOCKED"' and '"SPINNING"' have no overlap.

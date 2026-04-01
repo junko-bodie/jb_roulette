@@ -13,13 +13,15 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import RouletteWheel from '@/components/table/RouletteWheel';
 import BettingLayout from '@/components/table/BettingLayout';
 import ChipTray from '@/components/chips/ChipTray';
 import SpinButton from '@/components/ui/SpinButton';
 import ResultDisplay from '@/components/ui/ResultDisplay';
 import SpinHistory from '@/components/ui/SpinHistory';
+import BettingTimer from '@/components/ui/BettingTimer';
+import { useGameCycle } from '@/hooks/useGameCycle';
 import { useGameState } from '@/hooks/useGameState';
 import { COLORS } from '@/styles/theme';
 
@@ -65,7 +67,14 @@ export default function GamePage() {
     game.startNewRound();
   }, [game]);
 
-  const isBettingDisabled = game.phase !== 'betting';
+  const cycle = useGameCycle({
+    phase: game.phase,
+    setPhase: game.setPhase,
+    executeSpin: handleSpin,
+    startNewRound: game.startNewRound,
+  });
+
+  const isBettingDisabled = game.phase !== 'BETTING';
   const playerTag = 'Player_672634';
 
   useEffect(() => {
@@ -93,19 +102,16 @@ export default function GamePage() {
     <div
       className="flex flex-col h-screen overflow-hidden select-none"
       style={{
-        background: `
-          radial-gradient(ellipse at top left, #8d1c3540 0%, transparent 40%),
-          radial-gradient(ellipse at top right, #ca8eb933 0%, transparent 42%),
-          linear-gradient(180deg, #6d1125 0%, #4a0b18 45%, #2a030b 100%)
-        `,
+        background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)`,
       }}
     >
       {/* Top Bar / Player card */}
       <header
         className="flex items-center justify-between px-4 lg:px-6 py-3 z-10 gap-3"
         style={{
-          background: 'linear-gradient(to bottom, rgba(74, 11, 24, 0.95), rgba(42, 3, 11, 0.75))',
-          borderBottom: '1px solid rgba(255,255,255,0.15)',
+          background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
+          borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
         }}
       >
         <div className="flex items-center gap-3">
@@ -139,8 +145,8 @@ export default function GamePage() {
           <div
             className="flex flex-col px-4 py-2 rounded border-2"
             style={{
-              background: '#ca8eb9',
-              borderColor: 'rgba(255, 255, 255, 0.7)',
+              background: 'linear-gradient(135deg, #2a2a2a, #111)',
+              borderColor: '#c9a44c',
               boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
             }}
           >
@@ -154,7 +160,7 @@ export default function GamePage() {
                 {playerTag}
               </p>
             </div>
-            <p className="text-sm md:text-base font-bold text-white pl-8" style={{ fontFamily: 'var(--font-playfair)' }}>
+            <p className="text-sm md:text-base font-bold pl-8" style={{ fontFamily: 'var(--font-playfair)', color: '#c9a44c' }}>
               ${game.balance.toLocaleString()}
             </p>
           </div>
@@ -174,32 +180,33 @@ export default function GamePage() {
           initial={{ opacity: 0, x: -24 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-[230px] md:max-w-[250px] rounded-lg border p-2 h-fit md:absolute md:left-1 md:top-2 z-20"
+          className="w-full max-w-[230px] md:max-w-[250px] rounded-lg border p-2 h-fit md:absolute md:left-2 md:top-4 z-20 backdrop-blur-md"
           style={{
-            background: 'linear-gradient(180deg, rgba(250,235,218,0.95) 0%, rgba(235,216,194,0.92) 100%)',
-            borderColor: 'rgba(80, 60, 40, 0.18)',
+            background: 'linear-gradient(180deg, rgba(20, 30, 25, 0.85) 0%, rgba(10, 15, 10, 0.95) 100%)',
+            borderColor: 'rgba(201, 164, 76, 0.3)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
           }}
         >
-          <h2 className="text-sm font-semibold mb-2 text-[#53423b]">How Lucky Are Last Five Numbers?</h2>
+          <h2 className="text-sm font-semibold mb-2 text-[#c9a44c] uppercase tracking-wider text-center" style={{ fontFamily: 'var(--font-playfair)' }}>Hot Numbers</h2>
           <div className="space-y-2">
             {luckyNumbers.length === 0 ? (
-              <p className="text-xs text-[#6f5a52]">Spin a few rounds to populate lucky stats.</p>
+              <p className="text-xs text-white/50 text-center italic">Spin to populate stats</p>
             ) : (
               luckyNumbers.map((entry) => (
                 <div key={entry.display} className="grid grid-cols-[30px_1fr_48px] items-center gap-2">
-                  <span className="text-sm font-bold text-[#352a27]">{entry.display}</span>
-                  <div className="h-3 rounded-full bg-black/15 overflow-hidden">
-                    <div className="h-full rounded-full bg-[#e95d85]" style={{ width: `${entry.hitRate}%` }} />
+                  <span className="text-sm font-bold text-white text-center">{entry.display}</span>
+                  <div className="h-2 rounded-full bg-black/40 overflow-hidden border border-white/10">
+                    <div className="h-full rounded-full bg-gradient-to-r from-[#c9a44c] to-[#e4c97b]" style={{ width: `${entry.hitRate}%` }} />
                   </div>
-                  <span className="text-[11px] text-right text-[#5e4b45]">{entry.hitRate.toFixed(1)}%</span>
+                  <span className="text-[11px] text-right text-white/80 font-mono">{entry.hitRate.toFixed(1)}%</span>
                 </div>
               ))
             )}
           </div>
         </motion.aside>
 
-        <div className="mobile-landscape-shell mx-auto w-full max-w-[1360px] pt-2 md:pt-8 lg:pt-10">
-          <div className="mobile-landscape-row flex flex-col md:flex-row items-start gap-2 md:gap-2 lg:gap-3">
+        <div className="mobile-landscape-shell mx-auto w-full max-w-[1400px] pt-4 md:pt-6 lg:pt-8 bg-black/10 rounded-xl shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] border border-white/5 my-2">
+          <div className="mobile-landscape-row flex flex-col md:flex-row items-start gap-4 md:gap-4 lg:gap-6 px-4 pb-4">
             {/* Wheel — responsive container */}
             <motion.div
               ref={wheelRef}
@@ -212,7 +219,7 @@ export default function GamePage() {
                 <RouletteWheel
                   wheelType={game.wheelType}
                   spinResult={game.currentResult}
-                  isSpinning={game.phase === 'spinning'}
+                  isSpinning={game.phase === 'SPINNING'}
                   onSpinComplete={handleSpinComplete}
                   size={wheelSize}
                 />
@@ -255,7 +262,27 @@ export default function GamePage() {
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
               className="mobile-landscape-right w-full md:w-[420px] lg:w-[470px] md:flex-shrink-0"
             >
-              <div className="w-full rounded-md border p-1.5 overflow-hidden" style={{ background: '#2b8673', borderColor: '#5ea896', borderWidth: '2px' }}>
+              <div className="w-full rounded-md border p-1.5 overflow-hidden relative" style={{ background: '#2b8673', borderColor: '#5ea896', borderWidth: '2px' }}>
+                <AnimatePresence>
+                  {game.phase === 'LOCKED' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.1 }}
+                      className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[2px] bg-black/40"
+                    >
+                      <div className="px-6 py-3 rounded-lg border-2" style={{
+                        background: 'linear-gradient(135deg, rgba(201, 168, 76, 0.95), rgba(139, 107, 34, 0.95))',
+                        borderColor: '#fcefa3',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+                      }}>
+                        <h2 className="text-xl md:text-3xl font-black text-white tracking-widest drop-shadow-md" style={{ fontFamily: 'var(--font-playfair)' }}>
+                          BETS CLOSED
+                        </h2>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <div
                   style={{
                     transform: 'scale(0.82)',
@@ -270,74 +297,83 @@ export default function GamePage() {
                     disabled={isBettingDisabled}
                     winningResult={game.currentResult}
                     payoutResult={game.lastPayout}
-                    showWinHighlight={game.phase === 'result'}
+                    showWinHighlight={game.phase === 'RESULT'}
+                    phase={game.phase}
                   />
                 </div>
               </div>
 
-              {/* Action row */}
-              <div className="flex items-center gap-2 mt-3 flex-wrap">
-                <button
-                  onClick={game.rebetLastRound}
-                  disabled={isBettingDisabled}
-                  className="text-xs px-3 py-1 rounded cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{
-                    color: '#f4f8fa',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    background: 'rgba(255,255,255,0.08)',
-                    fontFamily: 'var(--font-inter)',
-                  }}
-                >
-                  Rebet
-                </button>
-
-                {game.totalBet > 0 && game.phase === 'betting' && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-2"
+              {/* Action row with Timer and Spin */}
+              <div className="flex items-center justify-between gap-2 mt-3 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={game.rebetLastRound}
+                    disabled={isBettingDisabled}
+                    className="text-xs px-3 py-1 rounded cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{
+                      color: '#f4f8fa',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      background: 'rgba(255,255,255,0.08)',
+                      fontFamily: 'var(--font-inter)',
+                    }}
                   >
-                    <button
-                      onClick={game.clearBets}
-                      className="text-xs px-3 py-1 rounded cursor-pointer transition-colors"
-                      style={{
-                        color: '#fff',
-                        border: '1px solid rgba(255,255,255,0.28)',
-                        fontFamily: 'var(--font-inter)',
-                      }}
+                    Rebet
+                  </button>
+
+                  {game.totalBet > 0 && game.phase === 'BETTING' && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex items-center gap-2"
                     >
-                      Clear
-                    </button>
-                  </motion.div>
+                      <button
+                        onClick={game.clearBets}
+                        className="text-xs px-3 py-1 rounded cursor-pointer transition-colors"
+                        style={{
+                          color: '#fff',
+                          border: '1px solid rgba(255,255,255,0.28)',
+                          fontFamily: 'var(--font-inter)',
+                        }}
+                      >
+                        Clear
+                      </button>
+                    </motion.div>
+                  )}
+                </div>
+                
+                {game.phase === 'BETTING' && (
+                  <BettingTimer timeRemaining={cycle.timeRemaining} />
                 )}
 
-                <SpinButton
-                  onClick={handleSpin}
-                  disabled={game.totalBet === 0 || isBettingDisabled}
-                  isSpinning={game.phase === 'spinning'}
-                />
+                {game.phase === 'LOCKED' && (
+                  <SpinButton
+                    onClick={handleSpin}
+                    disabled={false}
+                    isSpinning={false}
+                  />
+                )}
               </div>
 
               <motion.aside
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
-                className="w-full rounded border h-fit mt-2 overflow-hidden"
+                className="w-full rounded border overflow-hidden mt-4"
                 style={{
-                  background: '#3a0715',
-                  borderColor: '#85ab92',
+                  background: 'linear-gradient(180deg, #2a0b15 0%, #150208 100%)',
+                  borderColor: '#c9a44c',
                   borderWidth: '1px',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.5)'
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.6)'
                 }}
               >
-                <div className="text-center text-xs md:text-sm font-bold uppercase tracking-widest text-[#1a2b3c] py-2" style={{ background: '#85ab92' }}>Your Session Stats</div>
-                <div className="space-y-1.5 text-[#f0f6ff] text-xs md:text-sm p-3">
-                  <div className="flex justify-between"><span>Last Win</span><span>{game.sessionStats.lastWin}</span></div>
-                  <div className="flex justify-between"><span>Last Bets</span><span>{game.sessionStats.lastBets}</span></div>
-                  <div className="flex justify-between"><span>Net Last Win</span><span>{game.sessionStats.netLastWin}</span></div>
-                  <div className="flex justify-between"><span>Session Win</span><span>{game.sessionStats.sessionWin}</span></div>
-                  <div className="flex justify-between"><span>Hit Percent</span><span>{game.sessionStats.hitPercent.toFixed(1)}%</span></div>
-                  <div className="flex justify-between"><span>Miss Percent</span><span>{game.sessionStats.missPercent.toFixed(1)}%</span></div>
+                <div className="text-center text-xs md:text-sm font-bold uppercase tracking-widest py-2.5 shadow-md" style={{ background: 'linear-gradient(to right, #1d4033, #2a5a48, #1d4033)', color: '#f0f6ff', borderBottom: '1px solid rgba(201, 164, 76, 0.4)', fontFamily: 'var(--font-playfair)' }}>Your Session Stats</div>
+                <div className="space-y-2 text-white/90 text-xs md:text-sm p-4" style={{ fontFamily: 'var(--font-inter)' }}>
+                  <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-white/60">Last Win</span><span className="font-mono text-[#c9a44c]">${game.sessionStats.lastWin}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-white/60">Last Bets</span><span className="font-mono">${game.sessionStats.lastBets}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-white/60">Net Last Win</span><span className="font-mono" style={{ color: game.sessionStats.netLastWin >= 0 ? '#4ade80' : '#f87171' }}>{game.sessionStats.netLastWin >= 0 ? '+' : ''}${game.sessionStats.netLastWin}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-white/60">Session Win</span><span className="font-mono" style={{ color: game.sessionStats.sessionWin >= 0 ? '#4ade80' : '#f87171' }}>{game.sessionStats.sessionWin >= 0 ? '+' : ''}${game.sessionStats.sessionWin}</span></div>
+                  <div className="flex justify-between border-b border-white/5 pb-1"><span className="text-white/60">Hit Percent</span><span className="font-mono">{game.sessionStats.hitPercent.toFixed(1)}%</span></div>
+                  <div className="flex justify-between"><span className="text-white/60">Miss Percent</span><span className="font-mono text-white/50">{game.sessionStats.missPercent.toFixed(1)}%</span></div>
                 </div>
               </motion.aside>
             </motion.div>

@@ -12,13 +12,9 @@ import { type SpinResult, spinWheel, type WheelType } from '@/lib/rng';
 import { type PlacedBet, BET_MAP } from '@/lib/bets';
 import { calculatePayouts, type PayoutResult } from '@/lib/payouts';
 
-export type GamePhase =
-  | 'betting'     // Player placing bets
-  | 'spinning'    // Wheel spinning
-  | 'result'      // Result showing
-  | 'payout';     // Payout animation
+import { type GamePhase } from '@/lib/gamePhases';
 
-const STARTING_BALANCE = 10000;
+const STARTING_BALANCE = 1000;
 
 export interface GameState {
   balance: number;
@@ -59,7 +55,7 @@ export function useGameState() {
   const [bets, setBets] = useState<Map<string, PlacedBet>>(new Map());
   const [selectedChip, setSelectedChip] = useState(5);
   const [wheelType, setWheelType] = useState<WheelType>('american');
-  const [phase, setPhase] = useState<GamePhase>('betting');
+  const [phase, setPhase] = useState<GamePhase>('BETTING');
   const [currentResult, setCurrentResult] = useState<SpinResult | null>(null);
   const [lastPayout, setLastPayout] = useState<PayoutResult | null>(null);
   const [history, setHistory] = useState<SpinResult[]>([]);
@@ -84,7 +80,7 @@ export function useGameState() {
    */
   const placeBet = useCallback(
     (betId: string) => {
-      if (phase !== 'betting') return;
+      if (phase !== 'BETTING') return;
 
       const definition = BET_MAP.get(betId);
       if (!definition) return;
@@ -118,7 +114,7 @@ export function useGameState() {
    */
   const removeBet = useCallback(
     (betId: string) => {
-      if (phase !== 'betting') return;
+      if (phase !== 'BETTING') return;
 
       setBets((prev) => {
         const next = new Map(prev);
@@ -144,7 +140,7 @@ export function useGameState() {
    * Clear all bets.
    */
   const clearBets = useCallback(() => {
-    if (phase !== 'betting') return;
+    if (phase !== 'BETTING') return;
     setBets(new Map());
   }, [phase]);
 
@@ -152,7 +148,7 @@ export function useGameState() {
    * Execute a spin. Returns the result for animation purposes.
    */
   const executeSpin = useCallback((): SpinResult | null => {
-    if (phase !== 'betting') return null;
+    if (phase !== 'BETTING' && phase !== 'LOCKED') return null;
     if (bets.size === 0) return null;
 
     // Snapshot current round bets for rebet before resetting.
@@ -160,7 +156,7 @@ export function useGameState() {
 
     // Deduct total bet from balance
     setBalance((prev) => prev - totalBet);
-    setPhase('spinning');
+    setPhase('SPINNING');
 
     const result = spinWheel(wheelType);
     setCurrentResult(result);
@@ -174,7 +170,7 @@ export function useGameState() {
   const resolveResult = useCallback(() => {
     if (!currentResult) return;
 
-    setPhase('result');
+    setPhase('RESULT');
 
     const betArray = Array.from(bets.values());
     const payout = calculatePayouts(betArray, currentResult);
@@ -212,14 +208,14 @@ export function useGameState() {
    * Move back to betting phase after result display.
    */
   const startNewRound = useCallback(() => {
-    setPhase('betting');
+    setPhase('BETTING');
     setBets(new Map());
     setCurrentResult(null);
     setLastPayout(null);
   }, []);
 
   const rebetLastRound = useCallback(() => {
-    if (phase !== 'betting' || lastRoundBets.size === 0) return;
+    if (phase !== 'BETTING' || lastRoundBets.size === 0) return;
     setBets(cloneBetsMap(lastRoundBets));
   }, [phase, lastRoundBets]);
 

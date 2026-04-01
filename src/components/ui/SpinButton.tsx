@@ -28,7 +28,7 @@ export default function SpinButton({ onClick, disabled, isSpinning }: SpinButton
       style={{
         background: disabled
           ? 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)'
-          : `linear-gradient(180deg, #f26f70 0%, #ea5556 40%, #d84546 100%)`,
+          : `linear-gradient(180deg, #d4af37 0%, #aa8715 40%, #8a6705 100%)`,
         color: disabled ? '#555' : '#ffffff',
         fontFamily: 'var(--font-playfair)',
         fontWeight: 700,
@@ -79,7 +79,7 @@ export default function SpinButton({ onClick, disabled, isSpinning }: SpinButton
       )}
 
       <span className="relative z-10">
-        {isSpinning ? 'Spinning' : 'Spin'}
+        {isSpinning ? 'SPINNING' : 'SPIN'}
       </span>
     </motion.button>
   );
