@@ -149,7 +149,6 @@ export function useGameState() {
    */
   const executeSpin = useCallback((): SpinResult | null => {
     if (phase !== 'BETTING' && phase !== 'LOCKED') return null;
-    if (bets.size === 0) return null;
 
     // Snapshot current round bets for rebet before resetting.
     setLastRoundBets(cloneBetsMap(bets));

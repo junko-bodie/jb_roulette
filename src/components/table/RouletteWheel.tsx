@@ -134,43 +134,52 @@ export default function RouletteWheel({
     function drawOuterBowl() {
       const outerR = R * 1.02;
       const wallR = R * 0.94;
-      const wallInnerR = R * 0.87;
+      const wallInnerR = R * 0.86;
 
-      const bowlGrad = ctx!.createRadialGradient(cx - outerR * 0.2, cy - outerR * 0.25, outerR * 0.08, cx, cy, outerR);
-      bowlGrad.addColorStop(0, '#9b4f35');
-      bowlGrad.addColorStop(0.3, '#7b3625');
-      bowlGrad.addColorStop(0.7, '#582114');
-      bowlGrad.addColorStop(1, '#2f130c');
+      // Dark solid base under the wheel
+      const baseGrad = ctx!.createRadialGradient(cx, cy, outerR * 0.7, cx, cy, outerR + 10);
+      baseGrad.addColorStop(0, '#000000');
+      baseGrad.addColorStop(1, 'rgba(0,0,0,0.8)');
       ctx!.beginPath();
-      ctx!.arc(cx, cy, outerR, 0, TWO_PI);
-      ctx!.fillStyle = bowlGrad;
+      ctx!.arc(cx, cy, outerR + 2, 0, TWO_PI);
+      ctx!.fillStyle = baseGrad;
       ctx!.fill();
 
-      const blueRimGrad = ctx!.createLinearGradient(cx - outerR, cy - outerR, cx + outerR, cy + outerR);
-      blueRimGrad.addColorStop(0, '#1a5448');
-      blueRimGrad.addColorStop(0.4, '#2b8673');
-      blueRimGrad.addColorStop(1, '#154136');
+      // Outer Thick Mahogany Rim
+      const rimGrad = ctx!.createRadialGradient(cx - outerR * 0.2, cy - outerR * 0.2, outerR * 0.1, cx, cy, outerR);
+      rimGrad.addColorStop(0, '#662615');
+      rimGrad.addColorStop(0.4, '#48170b');
+      rimGrad.addColorStop(0.8, '#2a0a03');
+      rimGrad.addColorStop(1, '#150300');
       ctx!.beginPath();
       ctx!.arc(cx, cy, outerR, 0, TWO_PI);
       ctx!.arc(cx, cy, wallR, 0, TWO_PI, true);
-      ctx!.fillStyle = blueRimGrad;
+      ctx!.fillStyle = rimGrad;
       ctx!.fill();
 
-      // Outer wooden band (replaces the previous yellow track ring)
-      const woodOuter = ctx!.createRadialGradient(cx - wallR * 0.18, cy - wallR * 0.2, wallInnerR * 0.02, cx, cy, wallR);
-      woodOuter.addColorStop(0, '#7a3b24');
-      woodOuter.addColorStop(0.45, '#5b2a1a');
-      woodOuter.addColorStop(1, '#2b100a');
+      // Gleaming Wood Track (where the ball actually spins)
+      const trackGrad = ctx!.createRadialGradient(cx, cy, wallInnerR, cx, cy, wallR);
+      trackGrad.addColorStop(0, '#1c0c08'); // deep shadow at the bottom
+      trackGrad.addColorStop(0.4, '#4a2215'); // mid wood
+      trackGrad.addColorStop(0.8, '#6b3320'); // hit by light at the top
+      trackGrad.addColorStop(1, '#2f150d'); // outer shadow
       ctx!.beginPath();
       ctx!.arc(cx, cy, wallR, 0, TWO_PI);
       ctx!.arc(cx, cy, wallInnerR, 0, TWO_PI, true);
-      ctx!.fillStyle = woodOuter;
+      ctx!.fillStyle = trackGrad;
       ctx!.fill();
+
+      // Inner metallic lip of the static track
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, wallInnerR, 0, TWO_PI);
+      ctx!.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+      ctx!.lineWidth = 2;
+      ctx!.stroke();
     }
 
     function drawSectors(wheelAngle: number, currentPockets: number[], currentSectorAngle: number) {
-      const innerR = R * 0.66;
-      const outerR = R * 0.86;
+      const innerR = R * 0.65;
+      const outerR = R * 0.85;
 
       ctx!.save();
       ctx!.translate(cx, cy);
@@ -180,194 +189,269 @@ export default function RouletteWheel({
         const startA = i * currentSectorAngle - Math.PI / 2;
         const endA = startA + currentSectorAngle;
 
-        let colorHex = '#1a1a1a';
+        let colorHex = '#1a1a1a'; // deep black
         const colorName = getNumberColor(num);
-        if (colorName === 'red') colorHex = '#c13a47';
-        if (colorName === 'green') colorHex = '#2e9950';
+        if (colorName === 'red') colorHex = '#bd222e'; // rich ruby red
+        if (colorName === 'green') colorHex = '#197a3d'; // metallic emerald
 
-        return { num, startA, endA, colorHex };
+        // Add radial dropoff to pockets so they look concave
+        const pocketGrad = ctx!.createRadialGradient(0, 0, innerR, 0, 0, outerR);
+        pocketGrad.addColorStop(0, colorHex);
+
+        // Darken the outer edge to simulate depth
+        let outerDark = '#090909';
+        if (colorName === 'red') outerDark = '#6e1017';
+        if (colorName === 'green') outerDark = '#0e4a23';
+        pocketGrad.addColorStop(1, outerDark);
+
+        return { num, startA, endA, grad: pocketGrad };
       });
 
-      sectors.forEach(({ num, startA, endA, colorHex }) => {
+      sectors.forEach(({ num, startA, endA, grad }) => {
+        // Draw Sector Background
         ctx!.beginPath();
         ctx!.arc(0, 0, outerR, startA, endA);
         ctx!.arc(0, 0, innerR, endA, startA, true);
         ctx!.closePath();
-        ctx!.fillStyle = colorHex;
+        ctx!.fillStyle = grad;
         ctx!.fill();
 
+        // Draw metallic dividers (Frets)
         ctx!.beginPath();
         ctx!.arc(0, 0, outerR, startA, endA);
         ctx!.arc(0, 0, innerR, endA, startA, true);
         ctx!.closePath();
-        ctx!.strokeStyle = 'rgba(26,26,26,0.65)';
-        ctx!.lineWidth = 1.1;
+        ctx!.strokeStyle = '#d4af37'; // Gold frets
+        ctx!.lineWidth = 1.8;
         ctx!.stroke();
 
+        // Overlap shadow for 3D depth on the fret
+        ctx!.beginPath();
+        ctx!.arc(0, 0, outerR, startA, endA);
+        ctx!.arc(0, 0, innerR, endA, startA, true);
+        ctx!.closePath();
+        ctx!.strokeStyle = 'rgba(0,0,0,0.5)';
+        ctx!.lineWidth = 0.5;
+        ctx!.stroke();
+
+        // Draw numbers
         const midA = (startA + endA) / 2;
-        const labelR = outerR * 0.955;
+        const labelR = outerR * 0.94;
         const lx = Math.cos(midA) * labelR;
         const ly = Math.sin(midA) * labelR;
 
         ctx!.save();
         ctx!.translate(lx, ly);
         ctx!.rotate(midA + Math.PI / 2);
-        ctx!.fillStyle = '#f6f7fa';
-        ctx!.font = `bold ${R * 0.072}px 'Georgia', serif`;
+        ctx!.fillStyle = '#ffffff';
+        ctx!.font = `bold ${R * 0.08}px 'Georgia', serif`;
         ctx!.textAlign = 'center';
         ctx!.textBaseline = 'middle';
-        ctx!.shadowColor = 'rgba(0,0,0,0.8)';
-        ctx!.shadowBlur = 3;
+        ctx!.shadowColor = 'rgba(0,0,0,0.9)';
+        ctx!.shadowBlur = 4;
         ctx!.fillText(getDisplayNumber(num), 0, 0);
-        ctx!.shadowBlur = 0;
         ctx!.restore();
       });
 
-      // Note: removed the outer yellow divider lines/diamonds to match
-      // the more wooden outer rim in your reference wheel.
+      // Gold Inner and Outer Rings around the pockets
+      ctx!.beginPath();
+      ctx!.arc(0, 0, outerR, 0, TWO_PI);
+      ctx!.strokeStyle = '#b8942b';
+      ctx!.lineWidth = 3;
+      ctx!.stroke();
+
+      ctx!.beginPath();
+      ctx!.arc(0, 0, innerR, 0, TWO_PI);
+      ctx!.strokeStyle = '#b8942b';
+      ctx!.lineWidth = 3;
+      ctx!.stroke();
 
       ctx!.restore();
     }
 
     function drawWoodRotor(wheelAngle: number) {
-      const rotorOuter = R * 0.63;
-      const rotorInner = R * 0.34;
+      const rotorOuter = R * 0.64;
+      const rotorInner = R * 0.38; // Increased inner size to match the huge gold dome in reference
 
       ctx!.save();
       ctx!.translate(cx, cy);
       ctx!.rotate(wheelAngle);
 
-      const wood = ctx!.createRadialGradient(-rotorOuter * 0.25, -rotorOuter * 0.22, rotorOuter * 0.08, 0, 0, rotorOuter);
-      wood.addColorStop(0, '#7e3f2b');
-      wood.addColorStop(0.45, '#5e2a1d');
-      wood.addColorStop(1, '#3d180f');
+      // Deep rich cherry wood for the cone
+      const wood = ctx!.createRadialGradient(-rotorOuter * 0.2, -rotorOuter * 0.2, rotorOuter * 0.1, 0, 0, rotorOuter);
+      wood.addColorStop(0, '#5b2416');
+      wood.addColorStop(0.5, '#3b140b');
+      wood.addColorStop(1, '#1c0703');
+
       ctx!.beginPath();
       ctx!.arc(0, 0, rotorOuter, 0, TWO_PI);
       ctx!.fillStyle = wood;
       ctx!.fill();
 
-      for (let i = 0; i < 12; i += 1) {
-        const a = (i / 12) * TWO_PI;
-        const b = ((i + 1) / 12) * TWO_PI;
+      // Shiny pie-slice highlights to make the cone look faceted/3D and polished
+      for (let i = 0; i < 16; i += 1) {
+        const a = (i / 16) * TWO_PI;
+        const b = ((i + 1) / 16) * TWO_PI;
         ctx!.beginPath();
-        ctx!.arc(0, 0, rotorOuter * 0.985, a + 0.02, b - 0.02);
-        ctx!.arc(0, 0, rotorInner, b - 0.03, a + 0.03, true);
+        ctx!.arc(0, 0, rotorOuter, a, b);
+        ctx!.arc(0, 0, rotorInner, b, a, true);
         ctx!.closePath();
-        ctx!.fillStyle = i % 2 === 0 ? 'rgba(122,61,40,0.22)' : 'rgba(56,23,15,0.28)';
+
+        ctx!.fillStyle = i % 2 === 0 ? 'rgba(255,150,100,0.03)' : 'rgba(0,0,0,0.15)';
         ctx!.fill();
       }
 
-      const ivory = ctx!.createRadialGradient(-rotorInner * 0.16, -rotorInner * 0.18, rotorInner * 0.08, 0, 0, rotorInner);
-      ivory.addColorStop(0, '#faf2d7');
-      ivory.addColorStop(0.55, '#e8ddb8');
-      ivory.addColorStop(1, '#b8ab84');
-      ctx!.beginPath();
-      ctx!.arc(0, 0, rotorInner, 0, TWO_PI);
-      ctx!.fillStyle = ivory;
-      ctx!.fill();
+      // Large Gold/Brass ring circling the center dome
+      const brass = ctx!.createRadialGradient(-rotorInner * 0.2, -rotorInner * 0.2, rotorInner * 0.1, 0, 0, rotorInner);
+      brass.addColorStop(0, '#f9df9f');
+      brass.addColorStop(0.3, '#d4af37');
+      brass.addColorStop(0.7, '#8b6b22');
+      brass.addColorStop(1, '#4a360c');
 
       ctx!.beginPath();
-      ctx!.arc(0, 0, rotorInner * 0.88, 0, TWO_PI);
-      ctx!.strokeStyle = 'rgba(90, 72, 32, 0.38)';
-      ctx!.lineWidth = 2;
+      ctx!.arc(0, 0, rotorInner, 0, TWO_PI);
+      ctx!.fillStyle = brass;
+      ctx!.fill();
+
+      // Inner shadow to give the brass ring depth
+      ctx!.beginPath();
+      ctx!.arc(0, 0, rotorInner, 0, TWO_PI);
+      ctx!.strokeStyle = 'rgba(0,0,0,0.6)';
+      ctx!.lineWidth = 4;
       ctx!.stroke();
+
       ctx!.restore();
     }
 
     function drawDeflectors() {
-      const deflectorR = R * 0.92;
+      const deflectorR = R * 0.895; // Positioned right in the track
       for (let i = 0; i < 8; i += 1) {
         const a = (i / 8) * TWO_PI;
         const x = cx + Math.cos(a) * deflectorR;
         const y = cy + Math.sin(a) * deflectorR;
+
         ctx!.save();
         ctx!.translate(x, y);
         ctx!.rotate(a + Math.PI / 2);
-        ctx!.beginPath();
-        ctx!.moveTo(0, -6);
-        ctx!.lineTo(5, 0);
-        ctx!.lineTo(0, 6);
-        ctx!.lineTo(-5, 0);
-        ctx!.closePath();
-        ctx!.fillStyle = '#352200ff';
+
+        // Metallic silver deflectors highly polished
+        const defGrad = ctx!.createLinearGradient(-4, -6, 4, 6);
+        defGrad.addColorStop(0, '#ffffff');
+      ctx!.fillStyle = defGrad;
         ctx!.fill();
         ctx!.restore();
       }
     }
 
     function drawCentreBoss(wheelAngle: number) {
-      const hubR = R * 0.082;
-
-      // Dark metallic socket
-      const socket = ctx!.createRadialGradient(cx - hubR * 0.2, cy - hubR * 0.2, hubR * 0.08, cx, cy, hubR * 1.28);
-      socket.addColorStop(0, '#8c9298');
-      socket.addColorStop(0.45, '#4f565f');
-      socket.addColorStop(1, '#20242b');
-      ctx!.beginPath();
-      ctx!.arc(cx, cy, hubR * 1.28, 0, TWO_PI);
-      ctx!.fillStyle = socket;
-      ctx!.fill();
-
-      // Gold ring around socket
-      const ring = ctx!.createRadialGradient(cx, cy, hubR * 1.38, cx, cy, hubR * 1.62);
-      ring.addColorStop(0, '#8b6b22');
-      ring.addColorStop(0.45, '#d0ad4a');
-      ring.addColorStop(1, '#6d5016');
-      ctx!.beginPath();
-      ctx!.arc(cx, cy, hubR * 1.62, 0, TWO_PI);
-      ctx!.arc(cx, cy, hubR * 1.36, 0, TWO_PI, true);
-      ctx!.fillStyle = ring;
-      ctx!.fill();
+      // Dark Base Socket
+      const hubR = R * 0.18;
+      const socket = ctx!.createRadialGradient(-hubR * 0.2, -hubR * 0.2, hubR * 0.1, 0, 0, hubR);
+      socket.addColorStop(0, '#4a5568'); // light greyish blue hit
+      socket.addColorStop(0.5, '#2d3748');
+      socket.addColorStop(1, '#1a202c'); // very dark rim
 
       ctx!.save();
       ctx!.translate(cx, cy);
       ctx!.rotate(wheelAngle);
-      for (let i = 0; i < 4; i += 1) {
-        const a = i * (Math.PI / 2);
+
+      ctx!.beginPath();
+      ctx!.arc(0, 0, hubR, 0, TWO_PI);
+      ctx!.fillStyle = socket;
+      ctx!.fill();
+      
+      // Drop inner shadow for socket
+      ctx!.beginPath();
+      ctx!.arc(0, 0, hubR, 0, TWO_PI);
+      ctx!.strokeStyle = 'rgba(0,0,0,0.8)';
+      ctx!.lineWidth = 3;
+      ctx!.stroke();
+
+      // The 4 Golden Handles (Bowling Pin Shaped)
+      const armStart = R * 0.10; // Start inside the socket, past the center cap
+      const armEnd = R * 0.36;   // End exactly on the gold outer disc
+      const tipRadius = R * 0.045; // Golden sphere tip size
+
+      for (let i = 0; i < 4; i++) {
         ctx!.save();
-        ctx!.rotate(a);
+        ctx!.rotate(i * (Math.PI / 2));
 
-        const armGrad = ctx!.createLinearGradient(0, -7, 0, 7);
-        armGrad.addColorStop(0, '#8e621d');
-        armGrad.addColorStop(0.42, '#5e4010');
-        armGrad.addColorStop(1, '#2a1a04');
+        // Horizontal gradient from top to bottom of the bat to look spherical
+        const handleGrad = ctx!.createLinearGradient(0, -R*0.06, 0, R*0.06);
+        handleGrad.addColorStop(0, '#75541c');
+        handleGrad.addColorStop(0.2, '#d4af37'); // bright top hit
+        handleGrad.addColorStop(0.5, '#fef1a6'); // reflection stripe down the middle
+        handleGrad.addColorStop(0.8, '#d4af37'); // darker underside
+        handleGrad.addColorStop(1, '#3b2605'); // deep shadow edge
 
-        const armTip = R * 0.32;
-
-        // Ornate long arm
+        // Draw the handle with bezier curves for that iconic 'taper to flare' bowling-pin look
         ctx!.beginPath();
-        ctx!.moveTo(hubR * 0.92, -6);
-        ctx!.quadraticCurveTo(R * 0.16, -11, armTip, -7);
-        ctx!.lineTo(armTip + 1, 0);
-        ctx!.lineTo(armTip, 7);
-        ctx!.quadraticCurveTo(R * 0.16, 11, hubR * 0.92, 6);
+        // Thin base
+        ctx!.moveTo(armStart, -R * 0.02);
+        
+        // Smooth curve flaring gradually outwards
+        ctx!.bezierCurveTo(
+          armStart + (armEnd - armStart) * 0.3, -R * 0.02, 
+          armStart + (armEnd - armStart) * 0.6, -R * 0.05, 
+          armEnd, -R * 0.04
+        );
+        
+        // Flat outer edge
+        ctx!.lineTo(armEnd, R * 0.04);
+
+        // Smooth curve tapering back inwards
+        ctx!.bezierCurveTo(
+          armStart + (armEnd - armStart) * 0.6, R * 0.05, 
+          armStart + (armEnd - armStart) * 0.3, R * 0.02, 
+          armStart, R * 0.02
+        );
         ctx!.closePath();
-        ctx!.fillStyle = armGrad;
-        ctx!.fill();
 
-        // Arm finial (small bulb)
-        const finialX = R * 0.35;
-        const finial = ctx!.createRadialGradient(finialX - 2, -2, 1, finialX, 0, 8);
-        finial.addColorStop(0, '#a37122');
-        finial.addColorStop(0.5, '#6e4911');
-        finial.addColorStop(1, '#3b2505');
+        // Very dark heavy shadow underneath
+        ctx!.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx!.shadowBlur = 8;
+        ctx!.shadowOffsetX = 3;
+        ctx!.shadowOffsetY = 5;
+
+        ctx!.fillStyle = handleGrad;
+        ctx!.fill();
+        ctx!.shadowColor = 'transparent'; // Reset
+
+        // Golden Sphere Tip resting exactly at the end
+        const tipX = armEnd + R * 0.02; // Overlaps the flared end slightly
+        const tipGrad = ctx!.createRadialGradient(tipX - tipRadius * 0.3, -tipRadius * 0.3, tipRadius * 0.1, tipX, 0, tipRadius);
+        tipGrad.addColorStop(0, '#ffffff'); // pure glare
+        tipGrad.addColorStop(0.3, '#fef1a6');
+        tipGrad.addColorStop(0.7, '#ccaa42');
+        tipGrad.addColorStop(1, '#4a330a');
+
         ctx!.beginPath();
-        ctx!.arc(finialX, 0, 7, 0, TWO_PI);
-        ctx!.fillStyle = finial;
+        ctx!.arc(tipX, 0, tipRadius, 0, TWO_PI);
+        ctx!.fillStyle = tipGrad;
         ctx!.fill();
 
         ctx!.restore();
       }
 
-      // Center cap
-      const cap = ctx!.createRadialGradient(-3, -3, 1, 0, 0, hubR * 0.86);
-      cap.addColorStop(0, '#f8ebbf');
-      cap.addColorStop(0.48, '#bf9b40');
-      cap.addColorStop(1, '#6c5018');
+      // Center Dark Cap
+      const capR = R * 0.09;
+      const capGrad = ctx!.createRadialGradient(-capR * 0.2, -capR * 0.2, capR * 0.1, 0, 0, capR);
+      capGrad.addColorStop(0, '#3f4552');
+      capGrad.addColorStop(0.5, '#2d333e');
+      capGrad.addColorStop(1, '#171a21');
+
       ctx!.beginPath();
-      ctx!.arc(0, 0, hubR * 0.86, 0, TWO_PI);
-      ctx!.fillStyle = cap;
+      ctx!.arc(0, 0, capR, 0, TWO_PI);
+      ctx!.fillStyle = capGrad;
       ctx!.fill();
+
+      // Sharp shadow rim around center cap
+      ctx!.beginPath();
+      ctx!.arc(0, 0, capR, 0, TWO_PI);
+      ctx!.strokeStyle = 'rgba(0,0,0,0.8)';
+      ctx!.lineWidth = 2;
+      ctx!.stroke();
+
       ctx!.restore();
     }
 

@@ -54,10 +54,8 @@ export function useGameCycle({ phase, setPhase, executeSpin, startNewRound }: Us
         break;
 
       case 'LOCKED':
-        // Bets closed overlay shows, wait 1.5s then auto-spin
-        timerRef.current = setTimeout(() => {
-          executeSpinRef.current(); // this should set phase to 'SPINNING' internally
-        }, LOCKED_DURATION_MS);
+        // Bets closed overlay shows. We now wait indefinitely for the user
+        // to manually click the SpinButton.
         break;
 
       case 'SPINNING':

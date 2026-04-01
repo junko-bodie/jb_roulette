@@ -48,7 +48,7 @@ export default function GamePage() {
   const handleSpin = useCallback(() => {
     const result = game.executeSpin();
     if (!result) return;
-    
+
     // Use setTimeout so React state updates don't interrupt the scroll computation
     setTimeout(() => {
       if (wheelRef.current) {
@@ -340,7 +340,7 @@ export default function GamePage() {
                     </motion.div>
                   )}
                 </div>
-                
+
                 {game.phase === 'BETTING' && (
                   <BettingTimer timeRemaining={cycle.timeRemaining} />
                 )}
