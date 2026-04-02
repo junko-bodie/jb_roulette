@@ -13,10 +13,12 @@
 import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { COLORS } from '@/styles/theme';
+import ChipStack from '@/components/chips/ChipStack';
 import { getNumberColor, getDisplayNumber } from '@/lib/rng';
 import { type SpinResult } from '@/lib/rng';
 import { type PayoutResult } from '@/lib/payouts';
 import { soundEngine } from '@/lib/audioEngine';
+import { type PlacedBet } from '@/lib/bets';
 
 interface BettingLayoutProps {
   bets: Map<string, PlacedBet>;
@@ -53,54 +55,12 @@ function getCellBg(num: number): string {
 }
 
 function ChipIndicator({ bet, phase }: { bet: PlacedBet; phase: string }) {
-  const isResetting = phase === 'RESET';
-  return (
-    <div 
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col-reverse items-center justify-center pointer-events-none"
-    >
-      {!isResetting && bet.chips.slice(-4).map((chipVal, indexInSlice) => {
-        // Use the absolute index of the chip in the array as the key
-        // This ensures Framer Motion animates exactly the newly placed chips!
-        const startIdx = Math.max(0, bet.chips.length - 4);
-        const originalIndex = startIdx + indexInSlice;
-        const chipColor =
-          chipVal === 1 ? COLORS.chipWhite :
-          chipVal === 5 ? COLORS.chipRed :
-          chipVal === 25 ? COLORS.chipGreen :
-          chipVal === 100 ? COLORS.chipBlack :
-          COLORS.chipPurple;
-
-        return (
-          <motion.div
-            key={`chip-${originalIndex}`}
-            initial={{ scale: 2, opacity: 0, y: -20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            className="w-5 h-5 rounded-full border border-white/30 flex items-center justify-center"
-            style={{
-              background: chipColor,
-              marginTop: indexInSlice > 0 ? '-6px' : 0,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.5), inset 0 0 4px rgba(255,255,255,0.4)',
-              zIndex: originalIndex,
-            }}
-          >
-            <span className="text-[6px] font-bold" style={{ color: chipVal === 1 ? '#000' : '#fff' }}>
-              {chipVal}
-            </span>
-          </motion.div>
-        );
-      })}
-      {bet.chips.length > 4 && (
-        <span className="text-[8px] font-bold text-white shadow-sm bg-black/50 px-1 rounded-full mt-0.5">+{bet.chips.length - 4}</span>
-      )}
-    </div>
-  );
+  return <ChipStack chips={bet.chips} phase={phase} />;
 }
 
 /** Single number cell */
 function NumberCell({
   num,
-  betId,
   bet,
   onPlace,
   onRemove,
@@ -109,7 +69,6 @@ function NumberCell({
   phase,
 }: {
   num: number;
-  betId: string;
   bet: PlacedBet | undefined;
   onPlace: () => void;
   onRemove: () => void;
@@ -253,7 +212,6 @@ function DropZone({
 
 /** Outside bet cell */
 function OutsideBetCell({
-  betId,
   label,
   bet,
   onPlace,
@@ -265,7 +223,6 @@ function OutsideBetCell({
   isRed,
   phase,
 }: {
-  betId: string;
   label: string;
   bet: PlacedBet | undefined;
   onPlace: () => void;
@@ -381,7 +338,6 @@ export default function BettingLayout({
           <div className="grid grid-rows-2 gap-0 relative">
             <NumberCell
               num={0}
-              betId="straight-0"
               bet={bets.get('straight-0')}
               onPlace={() => onPlaceBet('straight-0')}
               onRemove={() => onRemoveBet('straight-0')}
@@ -391,7 +347,6 @@ export default function BettingLayout({
             />
             <NumberCell
               num={37}
-              betId="straight-00"
               bet={bets.get('straight-00')}
               onPlace={() => onPlaceBet('straight-00')}
               onRemove={() => onRemoveBet('straight-00')}
@@ -400,7 +355,7 @@ export default function BettingLayout({
               phase={phase}
             />
             
-            {/* Split 0-00 target */}
+            {/* Split 0-00 target — Restored for Week 1 sign-off */}
             <DropZone
               betId="split-0-00"
               x="50%"
@@ -426,7 +381,6 @@ export default function BettingLayout({
                     <NumberCell
                       key={num}
                       num={num}
-                      betId={betId}
                       bet={bets.get(betId)}
                       onPlace={() => onPlaceBet(betId)}
                       onRemove={() => onRemoveBet(betId)}
@@ -439,90 +393,48 @@ export default function BettingLayout({
               </div>
             ))}
 
-            {/* COMBINATION BETS OVERLAY (Splits, Corners, Streets) */}
+            {/* COMBINATION BETS OVERLAY (Splits, Corners, Streets) — Restored for Week 1 sign-off */}
             <div className="absolute inset-0 pointer-events-none">
-              {/* Vertical Splits (left/right on screen) e.g., 1|4 */}
-              {Array.from({ length: 11 }).map((_, c) =>
-                [0, 1, 2].map((r) => {
-                  const num = 2 - r + 1 + c * 3;
-                  const betId = `split-${num}-${num + 3}`;
-                  return (
-                    <DropZone
-                      key={betId}
-                      betId={betId}
-                      x={`${(c + 1) * (100 / 12)}%`}
-                      y={`${(r + 0.5) * (100 / 3)}%`}
-                      width="12px"
-                      height="20px"
-                      bets={bets}
-                      onPlace={onPlaceBet}
-                      onRemove={onRemoveBet}
-                      disabled={disabled}
-                      isWinner={isBetWinner(betId)}
-                      phase={phase}
-                    />
-                  );
-                })
-              )}
-
-              {/* Horizontal Splits (top/bottom on screen) e.g., 1|2 */}
-              {Array.from({ length: 12 }).map((_, c) =>
-                [0, 1].map((r) => {
-                  const lowerNum = 2 - (r + 1) + 1 + c * 3;
-                  const betId = `split-${lowerNum}-${lowerNum + 1}`;
-                  return (
-                    <DropZone
-                      key={betId}
-                      betId={betId}
-                      x={`${(c + 0.5) * (100 / 12)}%`}
-                      y={`${(r + 1) * (100 / 3)}%`}
-                      width="20px"
-                      height="12px"
-                      bets={bets}
-                      onPlace={onPlaceBet}
-                      onRemove={onRemoveBet}
-                      disabled={disabled}
-                      isWinner={isBetWinner(betId)}
-                      phase={phase}
-                    />
-                  );
-                })
-              )}
-
-              {/* Corners e.g., 1|2|4|5 */}
-              {Array.from({ length: 11 }).map((_, c) =>
-                [0, 1].map((r) => {
-                  const lowerNum = 2 - (r + 1) + 1 + c * 3;
-                  const betId = `corner-${lowerNum}-${lowerNum + 1}-${lowerNum + 3}-${lowerNum + 4}`;
-                  return (
-                    <DropZone
-                      key={betId}
-                      betId={betId}
-                      x={`${(c + 1) * (100 / 12)}%`}
-                      y={`${(r + 1) * (100 / 3)}%`}
-                      width="16px"
-                      height="16px"
-                      bets={bets}
-                      onPlace={onPlaceBet}
-                      onRemove={onRemoveBet}
-                      disabled={disabled}
-                      isWinner={isBetWinner(betId)}
-                      phase={phase}
-                    />
-                  );
-                })
-              )}
-
-              {/* Streets e.g., 1|2|3 */}
-              {Array.from({ length: 12 }).map((_, c) => {
-                const base = c * 3 + 1;
-                const betId = `street-${base}-${base + 1}-${base + 2}`;
+              {/* Horizontal Splits (adjacent columns) */}
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33].map(n => {
+                const betId = `split-${n}-${n + 3}`;
+                const col = Math.floor((n - 1) / 3);
+                const row = 2 - ((n - 1) % 3);
+                const left = `${(col + 1.5) * (100/13)}%`;
+                const top = `${(row + 0.5) * (100/3)}%`;
+                
                 return (
                   <DropZone
                     key={betId}
                     betId={betId}
-                    x={`${(c + 0.5) * (100 / 12)}%`}
-                    y="100%"
+                    x={left}
+                    y={top}
+                    width="12px"
+                    height="20px"
+                    bets={bets}
+                    onPlace={onPlaceBet}
+                    onRemove={onRemoveBet}
+                    disabled={disabled}
+                    isWinner={isBetWinner(betId)}
+                    phase={phase}
+                  />
+                );
+              })}
+
+              {/* Vertical Splits (adjacent rows) */}
+              {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32, 34, 35].map(n => {
+                const betId = `split-${n}-${n + 1}`;
+                const col = Math.floor((n - 1) / 3);
+                const row = 2 - ((n - 1) % 3);
+                const left = `${(col + 1) * (100/13)}%`;
+                const top = `${(row) * (100/3)}%`;
+                
+                return (
+                  <DropZone
+                    key={betId}
+                    betId={betId}
+                    x={left}
+                    y={top}
                     width="24px"
                     height="12px"
                     bets={bets}
@@ -535,18 +447,22 @@ export default function BettingLayout({
                 );
               })}
 
-              {/* Sixlines e.g., 1-6 */}
-              {Array.from({ length: 11 }).map((_, c) => {
-                const base = c * 3 + 1;
-                const betId = `sixline-${base}-${base + 5}`;
+              {/* Corner Bets (4 numbers) */}
+              {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32].map(n => {
+                const betId = `corner-${n}-${n+1}-${n+3}-${n+4}`;
+                const col = Math.floor((n - 1) / 3);
+                const row = 2 - ((n - 1) % 3);
+                const left = `${(col + 1.5) * (100/13)}%`;
+                const top = `${(row) * (100/3)}%`;
+                
                 return (
                   <DropZone
                     key={betId}
                     betId={betId}
-                    x={`${(c + 1) * (100 / 12)}%`}
-                    y="100%"
-                    width="16px"
-                    height="16px"
+                    x={left}
+                    y={top}
+                    width="14px"
+                    height="14px"
                     bets={bets}
                     onPlace={onPlaceBet}
                     onRemove={onRemoveBet}
@@ -557,39 +473,61 @@ export default function BettingLayout({
                 );
               })}
 
-              {/* Trio and Basket (placed on the left border of the 1..36 grid, adjoining 0/00) */}
-              <DropZone
-                betId="basket-0-00-1-2-3"
-                x="0%"
-                y="100%"
-                width="16px"
-                height="16px"
-                bets={bets}
-                onPlace={onPlaceBet}
-                onRemove={onRemoveBet}
-                disabled={disabled}
-                isWinner={isBetWinner('basket-0-00-1-2-3')}
-                phase={phase}
-              />
-              <DropZone
-                betId="basket-0-1-2-3"
-                x="0%"
-                y="100%"
-                width="16px"
-                height="16px" // Only 1 basket bet usually active depending on wheel logic, overlay is fine
-                bets={bets}
-                onPlace={onPlaceBet}
-                onRemove={onRemoveBet}
-                disabled={disabled}
-                isWinner={isBetWinner('basket-0-1-2-3')}
-                phase={phase}
-              />
+              {/* Street Bets (Row of 3) */}
+              {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34].map(n => {
+                const betId = `street-${n}-${n+1}-${n+2}`;
+                const col = Math.floor((n - 1) / 3);
+                const left = `${(col + 1) * (100/13)}%`;
+                const top = `100%`; // Target bottom of the column
+                
+                return (
+                  <DropZone
+                    key={betId}
+                    betId={betId}
+                    x={left}
+                    y={top}
+                    width="24px"
+                    height="12px"
+                    bets={bets}
+                    onPlace={onPlaceBet}
+                    onRemove={onRemoveBet}
+                    disabled={disabled}
+                    isWinner={isBetWinner(betId)}
+                    phase={phase}
+                  />
+                );
+              })}
+
+              {/* Sixline Bets (2 adjacent columns) */}
+              {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31].map(n => {
+                const betId = `sixline-${n}-${n+5}`;
+                const col = Math.floor((n - 1) / 3);
+                const left = `${(col + 1.5) * (100/13)}%`;
+                const top = `100%`;
+                
+                return (
+                  <DropZone
+                    key={betId}
+                    betId={betId}
+                    x={left}
+                    y={top}
+                    width="14px"
+                    height="14px"
+                    bets={bets}
+                    onPlace={onPlaceBet}
+                    onRemove={onRemoveBet}
+                    disabled={disabled}
+                    isWinner={isBetWinner(betId)}
+                    phase={phase}
+                  />
+                );
+              })}
+
+              {/* Trio Bets (0-1-2, 0-2-3, 00-2-3) */}
               <DropZone
                 betId="trio-0-1-2"
-                x="0%"
-                y={`${2 * (100 / 3)}%`}
-                width="16px"
-                height="16px"
+                x="calc(100% / 13)"
+                y="66.6%"
                 bets={bets}
                 onPlace={onPlaceBet}
                 onRemove={onRemoveBet}
@@ -598,11 +536,20 @@ export default function BettingLayout({
                 phase={phase}
               />
               <DropZone
+                betId="trio-0-2-3"
+                x="calc(100% / 13)"
+                y="33.3%"
+                bets={bets}
+                onPlace={onPlaceBet}
+                onRemove={onRemoveBet}
+                disabled={disabled}
+                isWinner={isBetWinner('trio-0-2-3')}
+                phase={phase}
+              />
+              <DropZone
                 betId="trio-00-2-3"
-                x="0%"
-                y={`${1 * (100 / 3)}%`}
-                width="16px"
-                height="16px"
+                x="calc(100% / 13)"
+                y="33.3%"
                 bets={bets}
                 onPlace={onPlaceBet}
                 onRemove={onRemoveBet}
@@ -610,17 +557,19 @@ export default function BettingLayout({
                 isWinner={isBetWinner('trio-00-2-3')}
                 phase={phase}
               />
+
+              {/* Basket / Top Line (0-00-1-2-3) */}
               <DropZone
-                betId="trio-0-2-3"
-                x="0%"
-                y={`${1 * (100 / 3)}%`}
-                width="16px"
-                height="16px"
+                betId="basket-0-00-1-2-3"
+                x="calc(100% / 13)"
+                y="50%"
+                width="14px"
+                height="44px"
                 bets={bets}
                 onPlace={onPlaceBet}
                 onRemove={onRemoveBet}
                 disabled={disabled}
-                isWinner={isBetWinner('trio-0-2-3')}
+                isWinner={isBetWinner('basket-0-00-1-2-3')}
                 phase={phase}
               />
             </div>
@@ -633,7 +582,6 @@ export default function BettingLayout({
           {['dozen-1st', 'dozen-2nd', 'dozen-3rd'].map((betId, i) => (
             <OutsideBetCell
               key={betId}
-              betId={betId}
               label={`${i + 1}st 12`}
               bet={bets.get(betId)}
               onPlace={() => onPlaceBet(betId)}
@@ -649,7 +597,6 @@ export default function BettingLayout({
         <div className="grid grid-cols-[32px_1fr_1fr_1fr_1fr_1fr_1fr] sm:grid-cols-[48px_1fr_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr] gap-0">
           <div />
           <OutsideBetCell
-            betId="low"
             label="1-18"
             bet={bets.get('low')}
             onPlace={() => onPlaceBet('low')}
@@ -659,7 +606,6 @@ export default function BettingLayout({
             phase={phase}
           />
           <OutsideBetCell
-            betId="even"
             label="Even"
             bet={bets.get('even')}
             onPlace={() => onPlaceBet('even')}
@@ -669,7 +615,6 @@ export default function BettingLayout({
             phase={phase}
           />
           <OutsideBetCell
-            betId="red"
             label="Red"
             isRed={true}
             bet={bets.get('red')}
@@ -680,7 +625,6 @@ export default function BettingLayout({
             phase={phase}
           />
           <OutsideBetCell
-            betId="black"
             label="Black"
             isRed={false}
             bet={bets.get('black')}
@@ -691,7 +635,6 @@ export default function BettingLayout({
             phase={phase}
           />
           <OutsideBetCell
-            betId="odd"
             label="Odd"
             bet={bets.get('odd')}
             onPlace={() => onPlaceBet('odd')}
@@ -701,7 +644,6 @@ export default function BettingLayout({
             phase={phase}
           />
           <OutsideBetCell
-            betId="high"
             label="19-36"
             bet={bets.get('high')}
             onPlace={() => onPlaceBet('high')}
@@ -719,7 +661,6 @@ export default function BettingLayout({
             {['column-3rd', 'column-2nd', 'column-1st'].map((betId) => (
               <OutsideBetCell
                 key={betId}
-                betId={betId}
                 label="2:1"
                 bet={bets.get(betId)}
                 onPlace={() => onPlaceBet(betId)}

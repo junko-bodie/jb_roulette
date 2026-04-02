@@ -1,10 +1,9 @@
 /**
  * Junko Bodie Roulette Tournament — RNG System
  *
- * Client-side cryptographic RNG using Web Crypto API.
- * Structured identically to the Supabase Edge Function output
- * so it can be swapped seamlessly when deployed.
+ * Integrated with Supabase Edge Functions for server-side RNG.
  */
+import { supabase } from './supabase';
 
 export type WheelType = 'american' | 'european';
 
@@ -100,20 +99,33 @@ function getParity(num: number): 'odd' | 'even' | 'none' {
 }
 
 /**
- * Generate a cryptographically random spin result.
- *
- * Uses Web Crypto API (available in all modern browsers and Edge Functions).
- * This function is a drop-in replacement for the Supabase Edge Function call.
+ * Generate a spin result.
+ * 
+ * First attempts to call the Supabase Edge Function 'spin-roulette' (Server-side RNG).
+ * Falls back to client-side cryptographic RNG if the function is not deployed or fails.
  */
-export function spinWheel(wheelType: WheelType = 'american'): SpinResult {
+export async function spinWheel(wheelType: WheelType = 'american'): Promise<SpinResult> {
+  try {
+    const { data, error } = await supabase.functions.invoke('spin-roulette', {
+      body: { wheelType }
+    });
+
+    if (!error && data) {
+      return data as SpinResult;
+    }
+    
+    console.warn('Supabase Edge Function failed or not found, falling back to client-side RNG:', error);
+  } catch (err) {
+    console.error('Error calling Edge Function:', err);
+  }
+
+  // Fallback to client-side logic
   const pockets = wheelType === 'american' ? AMERICAN_WHEEL_ORDER : EUROPEAN_WHEEL_ORDER;
   const totalPockets = pockets.length;
 
-  // Cryptographically secure random index
   const randomBytes = new Uint32Array(1);
   crypto.getRandomValues(randomBytes);
   const index = randomBytes[0] % totalPockets;
-
   const number = pockets[index];
 
   return {
@@ -125,6 +137,38 @@ export function spinWheel(wheelType: WheelType = 'american'): SpinResult {
     column: getColumn(number),
     half: getHalf(number),
   };
+}
+
+/**
+ * Log a spin result to the Supabase 'spin_results' table.
+ */
+export async function recordSpinResult(result: SpinResult, wheelType: WheelType) {
+  /* Commented out as requested - functionality to be added in the future.
+  try {
+    const { error } = await supabase
+      .from('spin_results')
+      .insert([
+        {
+          number: result.number,
+          display_number: result.displayNumber,
+          color: result.color,
+          wheel_type: wheelType
+        }
+      ]);
+
+    if (error) {
+      console.error('Supabase Insert Error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
+      throw error;
+    }
+  } catch (err: any) {
+    console.error('Failed to log spin result to Supabase:', err.message || err);
+  }
+  */
 }
 
 

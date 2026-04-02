@@ -8,8 +8,25 @@
 'use client';
 
 import { motion, type Variants } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import Chip from './Chip';
 import { CHIP_DENOMINATIONS, COLORS } from '@/styles/theme';
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    const listener = () => setMatches(media.matches);
+    media.addEventListener('change', listener);
+    return () => media.removeEventListener('change', listener);
+  }, [matches, query]);
+
+  return matches;
+}
 
 interface ChipTrayProps {
   selectedChip: number;
@@ -50,6 +67,10 @@ export default function ChipTray({
   totalBet,
   disabled = false,
 }: ChipTrayProps) {
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isSmallMobile = useMediaQuery('(max-width: 480px)');
+  
+  const chipSize = isSmallMobile ? 32 : isMobile ? 38 : 46;
   const availableFunds = balance - totalBet;
 
   return (
@@ -57,7 +78,7 @@ export default function ChipTray({
       variants={trayVariants}
       initial="hidden"
       animate={disabled ? "hidden" : "visible"}
-      className={`flex items-center justify-center gap-2 md:gap-4 px-2 md:px-6 py-3 md:py-4 w-full overflow-x-auto ${disabled ? 'pointer-events-none' : ''}`}
+      className={`flex items-center justify-center gap-1.5 sm:gap-2 md:gap-4 px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 w-full overflow-x-auto ${disabled ? 'pointer-events-none' : ''}`}
       style={{
         background: 'linear-gradient(to top, rgba(5, 25, 30, 0.95), rgba(8, 42, 47, 0.85))',
         backdropFilter: 'blur(12px)',
@@ -82,7 +103,7 @@ export default function ChipTray({
               textColor={chip.textColor}
               label={chip.label}
               isSelected={selectedChip === chip.value}
-              size={46}
+              size={chipSize}
               onClick={() => {
                 if (canAfford && !disabled) onSelectChip(chip.value);
               }}

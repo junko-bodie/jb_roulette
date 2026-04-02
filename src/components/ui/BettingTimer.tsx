@@ -12,6 +12,7 @@ interface BettingTimerProps {
 }
 
 export default function BettingTimer({ timeRemaining }: BettingTimerProps) {
+  /*
   let color = '#c9a44c'; // Gold (45-16s)
   if (timeRemaining <= 15 && timeRemaining > 5) color = '#f97316'; // Orange (15-6s)
   if (timeRemaining <= 5) color = '#ef4444'; // Red (5-0s)
@@ -44,4 +45,6 @@ export default function BettingTimer({ timeRemaining }: BettingTimerProps) {
       </motion.div>
     </div>
   );
+  */
+  return null;
 }

@@ -12,3 +12,4 @@ export type GamePhase =
   | 'SPINNING'  // Wheel is in motion, no interaction allowed
   | 'RESULT'    // Result is displayed, win/loss calculated
   | 'RESET';    // Table clears, next round begins
+

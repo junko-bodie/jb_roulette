@@ -8,13 +8,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { type SpinResult, spinWheel, type WheelType } from '@/lib/rng';
+import { type SpinResult, spinWheel, recordSpinResult, type WheelType } from '@/lib/rng';
+import { type GamePhase } from '@/lib/gamePhases';
 import { type PlacedBet, BET_MAP } from '@/lib/bets';
 import { calculatePayouts, type PayoutResult } from '@/lib/payouts';
-
-import { type GamePhase } from '@/lib/gamePhases';
-
-const STARTING_BALANCE = 1000;
 
 export interface GameState {
   balance: number;
@@ -51,7 +48,7 @@ function cloneBetsMap(source: Map<string, PlacedBet>): Map<string, PlacedBet> {
 }
 
 export function useGameState() {
-  const [balance, setBalance] = useState(STARTING_BALANCE);
+  const [balance, setBalance] = useState(1000 /* STARTING_BALANCE */);
   const [bets, setBets] = useState<Map<string, PlacedBet>>(new Map());
   const [selectedChip, setSelectedChip] = useState(5);
   const [wheelType, setWheelType] = useState<WheelType>('american');
@@ -60,6 +57,7 @@ export function useGameState() {
   const [lastPayout, setLastPayout] = useState<PayoutResult | null>(null);
   const [history, setHistory] = useState<SpinResult[]>([]);
   const [lastRoundBets, setLastRoundBets] = useState<Map<string, PlacedBet>>(new Map());
+  /*
   const [sessionStats, setSessionStats] = useState<SessionStats>({
     spins: 0,
     wins: 0,
@@ -71,6 +69,7 @@ export function useGameState() {
     hitPercent: 0,
     missPercent: 0,
   });
+  */
 
   // Calculate total bet
   const totalBet = Array.from(bets.values()).reduce((sum, b) => sum + b.amount, 0);
@@ -147,21 +146,19 @@ export function useGameState() {
   /**
    * Execute a spin. Returns the result for animation purposes.
    */
-  const executeSpin = useCallback((): SpinResult | null => {
-    if (phase !== 'BETTING' && phase !== 'LOCKED') return null;
-
-    // Snapshot current round bets for rebet before resetting.
-    setLastRoundBets(cloneBetsMap(bets));
-
+  const executeSpin = useCallback(async (): Promise<SpinResult | null> => {
     // Deduct total bet from balance
     setBalance((prev) => prev - totalBet);
     setPhase('SPINNING');
 
-    const result = spinWheel(wheelType);
+    const result = await spinWheel(wheelType);
     setCurrentResult(result);
 
+    // Record result to Supabase (Temporarily disabled)
+    // recordSpinResult(result, wheelType);
+
     return result;
-  }, [phase, bets, totalBet, wheelType]);
+  }, [totalBet, wheelType]);
 
   /**
    * Called when spin animation completes. Resolves payouts.
@@ -182,6 +179,7 @@ export function useGameState() {
     setHistory((prev) => [currentResult, ...prev].slice(0, 10));
 
     // Update session performance metrics.
+    /*
     setSessionStats((prev) => {
       const spins = prev.spins + 1;
       const wins = prev.wins + (payout.netResult > 0 ? 1 : 0);
@@ -201,6 +199,7 @@ export function useGameState() {
         missPercent,
       };
     });
+    */
   }, [currentResult, bets]);
 
   /**
@@ -213,10 +212,12 @@ export function useGameState() {
     setLastPayout(null);
   }, []);
 
+  /*
   const rebetLastRound = useCallback(() => {
     if (phase !== 'BETTING' || lastRoundBets.size === 0) return;
     setBets(cloneBetsMap(lastRoundBets));
   }, [phase, lastRoundBets]);
+  */
 
   return {
     // State
@@ -229,7 +230,7 @@ export function useGameState() {
     lastPayout,
     history,
     totalBet,
-    sessionStats,
+    // sessionStats,
 
     // Actions
     placeBet,
@@ -240,7 +241,7 @@ export function useGameState() {
     executeSpin,
     resolveResult,
     startNewRound,
-    rebetLastRound,
+    // rebetLastRound,
     setPhase,
   };
 }

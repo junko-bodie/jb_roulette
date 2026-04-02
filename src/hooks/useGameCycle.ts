@@ -22,6 +22,7 @@ interface UseGameCycleArgs {
 }
 
 export function useGameCycle({ phase, setPhase, executeSpin, startNewRound }: UseGameCycleArgs) {
+  /*
   const [timeRemaining, setTimeRemaining] = useState(BETTING_DURATION);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -101,5 +102,12 @@ export function useGameCycle({ phase, setPhase, executeSpin, startNewRound }: Us
     timeRemaining,
     startCycle,
     resetCycle,
+  };
+  */
+  return {
+    currentPhase: phase,
+    timeRemaining: 0,
+    startCycle: () => {},
+    resetCycle: () => {},
   };
 }
