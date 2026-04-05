@@ -180,7 +180,7 @@ export default function GamePage() {
             onSelectChip={game.setSelectedChip}
             balance={game.balance}
             totalBet={game.totalBet}
-            disabled={isSpinningWheel || game.phase !== 'BETTING'}
+            disabled={isSpinningWheel}
           />
         </div>
 

@@ -49,7 +49,7 @@ function cloneBetsMap(source: Map<string, PlacedBet>): Map<string, PlacedBet> {
 }
 
 export function useGameState() {
-  const [balance, setBalance] = useState(1000 /* STARTING_BALANCE */);
+  const [balance, setBalance] = useState(5000 /* STARTING_BALANCE */);
   const [bets, setBets] = useState<Map<string, PlacedBet>>(new Map());
   const [selectedChip, setSelectedChip] = useState(5);
   const [wheelType, setWheelType] = useState<WheelType>('american');

@@ -87,13 +87,15 @@ export default function ChipTray({
     >
       {CHIP_DENOMINATIONS.map((chip) => {
         const canAfford = availableFunds >= chip.value;
+        const isSelected = selectedChip === chip.value;
+        
         return (
           <motion.div
             key={chip.value}
             variants={chipVariants}
             className="relative"
             style={{
-              opacity: canAfford && !disabled ? 1 : 0.3,
+              opacity: disabled ? 0.4 : (canAfford ? 1 : 0.6),
               transition: 'opacity 0.3s ease',
             }}
           >
@@ -102,10 +104,12 @@ export default function ChipTray({
               color={chip.color}
               textColor={chip.textColor}
               label={chip.label}
-              isSelected={selectedChip === chip.value}
+              isSelected={isSelected}
               size={chipSize}
               onClick={() => {
-                if (canAfford && !disabled) onSelectChip(chip.value);
+                // Allow selection at any time when Not Spinning, 
+                // even if balance is low (placement is blocked elsewhere)
+                if (!disabled) onSelectChip(chip.value);
               }}
             />
           </motion.div>

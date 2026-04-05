@@ -11,7 +11,9 @@ interface SessionStatsProps {
 
 export default function SessionStats({ lastBet, lastWin, sessionWin }: SessionStatsProps) {
   const StatItem = ({ label, value, color = '#f4fbfb' }: { label: string; value: number, color?: string }) => (
-    <div className="flex flex-col items-center px-4 py-0.5 border-r border-white/5 last:border-0">
+    <div 
+      className="flex flex-col items-center px-4 py-0.5 rounded-lg bg-black/40 border border-white/10 shadow-inner min-w-[80px]"
+    >
       <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold mb-0">
         {label}
       </span>
@@ -31,9 +33,7 @@ export default function SessionStats({ lastBet, lastWin, sessionWin }: SessionSt
   );
 
   return (
-    <div 
-      className="flex items-center px-2 py-0.5 rounded-lg bg-black/30 border border-white/5 shadow-inner"
-    >
+    <div className="flex items-center gap-1.5">
       <StatItem label="Last Bet" value={lastBet} />
       <StatItem 
         label="Last Win" 

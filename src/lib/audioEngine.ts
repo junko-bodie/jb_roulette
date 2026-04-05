@@ -19,10 +19,10 @@ class AudioEngine {
         }),
         tick: new Howl({
           src: ['https://assets.mixkit.co/active_storage/sfx/500/500-preview.mp3'], // Clean click
-          volume: 0.05 // Much softer to avoid "rain" effect
+          volume: 0.05
         }),
         win: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'], // Upbeat win
+          src: ['https://raw.githubusercontent.com/IgorAntun/Roulette/master/sounds/win.wav'], // Clean winner chime
           volume: 0.5
         }),
         loss: new Howl({
@@ -30,8 +30,8 @@ class AudioEngine {
           volume: 0.3
         }),
         spin: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3'], // Authentic roulette spin
-          volume: 0.2,
+          src: ['https://raw.githubusercontent.com/IgorAntun/Roulette/master/sounds/spin.wav'], // Clean mechanical spin
+          volume: 0.3,
           loop: true
         })
       };
@@ -61,7 +61,7 @@ class AudioEngine {
   startSpinSound() {
     if (this.enabled && this.sounds.spin) {
       console.log('AudioEngine: Starting spin sound');
-      this.sounds.spin.stop(); 
+      this.sounds.spin.stop();
       this.sounds.spin.volume(0.2);
       this.sounds.spin.play();
     }
@@ -81,8 +81,13 @@ class AudioEngine {
     }
   }
 
+  stopAll() {
+    Object.values(this.sounds).forEach(s => s.stop());
+  }
+
   toggleSound() {
     this.enabled = !this.enabled;
+    if (!this.enabled) this.stopAll();
     return this.enabled;
   }
 }

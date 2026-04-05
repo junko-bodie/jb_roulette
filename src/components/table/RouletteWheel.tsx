@@ -557,10 +557,11 @@ export default function RouletteWheel({
         const t = Math.min(elapsed / SPIN_DURATION, 1);
 
         // Update sound effects based on progress/speed
-        // Volume: 0.2 down to 0.05
-        // Rate: 1.2 down to 0.6
-        const soundVol = 0.2 - (t * 0.15);
-        const soundRate = 1.2 - (t * 0.6);
+        // Volume: 0.2 down to 0; Fade out more sharply at the very end
+        const baseVol = 0.25 - (t * 0.2);
+        const endFade = t > 0.96 ? (1 - t) / 0.04 : 1;
+        const soundVol = Math.max(0, baseVol * endFade);
+        const soundRate = 1.0 - (t * 0.5);
         soundEngine?.setSpinEffect(soundVol, soundRate);
 
         const prevRelative = ((s.ballAngle - s.wheelAngle) % TWO_PI + TWO_PI) % TWO_PI;
@@ -642,9 +643,8 @@ export default function RouletteWheel({
           s.ballRadius = BALL_ORBIT_END;
           s.ballZ = 0;
 
-          // Stop whirring
-          soundEngine?.stopSpinSound();
-
+          // Stop ALL background sounds immediately
+          soundEngine?.stopAll();
           if (onSpinComplete) onSpinComplete();
         }
 
