@@ -60,11 +60,11 @@ export default function GamePage() {
         window.innerHeight <= 540 &&
         window.innerWidth <= 950;
       if (isLandscapeMobile) {
-        setWheelSize(200); 
+        setWheelSize(200);
       } else if (window.innerHeight < 750) {
-        setWheelSize(300); 
+        setWheelSize(300);
       } else if (window.innerWidth < 1100 || window.innerHeight < 850) {
-        setWheelSize(360); 
+        setWheelSize(360);
       } else {
         setWheelSize(440); // Enlarged from 320
       }
@@ -117,7 +117,7 @@ export default function GamePage() {
         <div className="flex items-center gap-8">
           <SessionStats {...game.sessionStats} />
           <SpinHistory history={game.history} />
-          
+
           <div className="flex items-center gap-6">
             {/* Bet Display - Prominent */}
             <div className="flex flex-col items-center px-6 py-1 rounded-xl bg-black/40 border border-[#c9a44c]/40 shadow-[0_0_15px_rgba(201,164,76,0.2)]">
@@ -165,7 +165,7 @@ export default function GamePage() {
       </main>
 
       {/* NEW BOTTOM BAR (CHANGE 11) */}
-      <footer 
+      <footer
         className="flex-shrink-0 h-24 w-full px-6 flex items-center justify-between z-10"
         style={{
           background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
@@ -248,9 +248,9 @@ export default function GamePage() {
         onDismiss={handleDismissResult}
       />
 
-      <WinCelebration 
-        show={showWinCelebration} 
-        onComplete={() => setShowWinCelebration(false)} 
+      <WinCelebration
+        show={showWinCelebration}
+        onComplete={() => setShowWinCelebration(false)}
       />
     </div>
   );

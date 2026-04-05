@@ -96,7 +96,7 @@ function buildStraightBets(): BetDefinition[] {
 function buildSplitBets(): BetDefinition[] {
   const bets: BetDefinition[] = [];
 
-  // Vertical splits (same column, consecutive rows)
+  // Horizontal splits (adjacent columns, same row)
   for (let i = 1; i <= 33; i++) {
     bets.push({
       id: `split-${i}-${i + 3}`,
@@ -107,7 +107,7 @@ function buildSplitBets(): BetDefinition[] {
     });
   }
 
-  // Horizontal splits (same row, adjacent columns)
+  // Vertical splits (adjacent rows, same column)
   for (let row = 0; row < 12; row++) {
     const base = row * 3 + 1;
     // Col 1 & 2

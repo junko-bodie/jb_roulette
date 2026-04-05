@@ -422,7 +422,7 @@ export default function BettingLayout({
                 const betId = `split-${n}-${n + 3}`;
                 const col = Math.floor((n - 1) / 3);
                 const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 1.5) * (100/13)}%`;
+                const left = `${(col + 1) * (100/12)}%`;
                 const top = `${(row + 0.5) * (100/3)}%`;
                 
                 return (
@@ -448,7 +448,7 @@ export default function BettingLayout({
                 const betId = `split-${n}-${n + 1}`;
                 const col = Math.floor((n - 1) / 3);
                 const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 1) * (100/13)}%`;
+                const left = `${(col + 0.5) * (100/12)}%`;
                 const top = `${(row) * (100/3)}%`;
                 
                 return (
@@ -474,7 +474,7 @@ export default function BettingLayout({
                 const betId = `corner-${n}-${n+1}-${n+3}-${n+4}`;
                 const col = Math.floor((n - 1) / 3);
                 const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 1.5) * (100/13)}%`;
+                const left = `${(col + 1) * (100/12)}%`;
                 const top = `${(row) * (100/3)}%`;
                 
                 return (
@@ -499,7 +499,7 @@ export default function BettingLayout({
               {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34].map(n => {
                 const betId = `street-${n}-${n+1}-${n+2}`;
                 const col = Math.floor((n - 1) / 3);
-                const left = `${(col + 1) * (100/13)}%`;
+                const left = `${(col + 0.5) * (100/12)}%`;
                 const top = `100%`; // Target bottom of the column
                 
                 return (
@@ -524,7 +524,7 @@ export default function BettingLayout({
               {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31].map(n => {
                 const betId = `sixline-${n}-${n+5}`;
                 const col = Math.floor((n - 1) / 3);
-                const left = `${(col + 1.5) * (100/13)}%`;
+                const left = `${(col + 1) * (100/12)}%`;
                 const top = `100%`;
                 
                 return (
@@ -548,7 +548,7 @@ export default function BettingLayout({
               {/* Trio Bets (0-1-2, 0-2-3, 00-2-3) */}
               <DropZone
                 betId="trio-0-1-2"
-                x="calc(100% / 13)"
+                x="0%"
                 y="66.6%"
                 bets={bets}
                 onPlace={onPlaceBet}
@@ -559,7 +559,7 @@ export default function BettingLayout({
               />
               <DropZone
                 betId="trio-0-2-3"
-                x="calc(100% / 13)"
+                x="0%"
                 y="33.3%"
                 bets={bets}
                 onPlace={onPlaceBet}
@@ -570,7 +570,7 @@ export default function BettingLayout({
               />
               <DropZone
                 betId="trio-00-2-3"
-                x="calc(100% / 13)"
+                x="0%"
                 y="33.3%"
                 bets={bets}
                 onPlace={onPlaceBet}
@@ -583,7 +583,7 @@ export default function BettingLayout({
               {/* Basket / Top Line (0-00-1-2-3) */}
               <DropZone
                 betId="basket-0-00-1-2-3"
-                x="calc(100% / 13)"
+                x="0%"
                 y="50%"
                 width="14px"
                 height="44px"
