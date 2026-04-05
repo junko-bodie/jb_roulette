@@ -12,6 +12,7 @@ import { type SpinResult, spinWheel, recordSpinResult, type WheelType } from '@/
 import { type GamePhase } from '@/lib/gamePhases';
 import { type PlacedBet, BET_MAP } from '@/lib/bets';
 import { calculatePayouts, type PayoutResult } from '@/lib/payouts';
+import { soundEngine } from '@/lib/audioEngine';
 
 export interface GameState {
   balance: number;
@@ -56,20 +57,13 @@ export function useGameState() {
   const [currentResult, setCurrentResult] = useState<SpinResult | null>(null);
   const [lastPayout, setLastPayout] = useState<PayoutResult | null>(null);
   const [history, setHistory] = useState<SpinResult[]>([]);
-  const [lastRoundBets, setLastRoundBets] = useState<Map<string, PlacedBet>>(new Map());
-  /*
-  const [sessionStats, setSessionStats] = useState<SessionStats>({
-    spins: 0,
-    wins: 0,
-    losses: 0,
+  const [lastSpinBets, setLastSpinBets] = useState<Map<string, PlacedBet>>(new Map());
+  const [betPlacementHistory, setBetPlacementHistory] = useState<{ betId: string; amount: number }[]>([]);
+  const [sessionStats, setSessionStats] = useState({
+    lastBet: 0,
     lastWin: 0,
-    lastBets: 0,
-    netLastWin: 0,
-    sessionWin: 0,
-    hitPercent: 0,
-    missPercent: 0,
+    sessionWin: 0
   });
-  */
 
   // Calculate total bet
   const totalBet = Array.from(bets.values()).reduce((sum, b) => sum + b.amount, 0);
@@ -104,12 +98,15 @@ export function useGameState() {
         }
         return next;
       });
+
+      // Track history for "Clear Last Bet"
+      setBetPlacementHistory((prev) => [...prev, { betId, amount: selectedChip }]);
     },
     [phase, balance, totalBet, selectedChip]
   );
 
   /**
-   * Remove last chip from a bet zone.
+   * Remove last chip from a bet zone (manual right-click).
    */
   const removeBet = useCallback(
     (betId: string) => {
@@ -131,9 +128,47 @@ export function useGameState() {
         }
         return next;
       });
+
+      // Simple removal doesn't update betPlacementHistory easily as it might not be the last placed
     },
     [phase]
   );
+
+  /**
+   * Clear only the most recently placed chip (Backtrack).
+   */
+  const clearLastBet = useCallback(() => {
+    if (phase !== 'BETTING' || betPlacementHistory.length === 0) return;
+
+    setBetPlacementHistory((prev) => {
+      const nextHistory = [...prev];
+      const lastAction = nextHistory.pop();
+      if (!lastAction) return prev;
+
+      setBets((currentBets) => {
+        const nextBets = new Map(currentBets);
+        const existing = nextBets.get(lastAction.betId);
+        if (!existing) return currentBets;
+
+        const chips = [...existing.chips];
+        // Find and remove the matching chip (usually at the end)
+        const lastChipIndex = chips.lastIndexOf(lastAction.amount);
+        if (lastChipIndex === -1) return currentBets;
+
+        chips.splice(lastChipIndex, 1);
+        const newAmount = existing.amount - lastAction.amount;
+
+        if (chips.length === 0) {
+          nextBets.delete(lastAction.betId);
+        } else {
+          nextBets.set(lastAction.betId, { ...existing, amount: newAmount, chips });
+        }
+        return nextBets;
+      });
+
+      return nextHistory;
+    });
+  }, [phase, betPlacementHistory]);
 
   /**
    * Clear all bets.
@@ -141,12 +176,36 @@ export function useGameState() {
   const clearBets = useCallback(() => {
     if (phase !== 'BETTING') return;
     setBets(new Map());
+    setBetPlacementHistory([]);
   }, [phase]);
+
+  /**
+   * Re-apply the bets from the previous spin.
+   */
+  const rebet = useCallback(() => {
+    if (phase !== 'BETTING' || lastSpinBets.size === 0) return;
+
+    // Check if we have enough balance
+    const lastTotal = Array.from(lastSpinBets.values()).reduce((sum, b) => sum + b.amount, 0);
+    if (balance < lastTotal) return;
+
+    setBets(cloneBetsMap(lastSpinBets));
+    
+    // Reconstruct history roughly for clearLast
+    const history: { betId: string; amount: number }[] = [];
+    lastSpinBets.forEach((bet, id) => {
+      bet.chips.forEach(c => history.push({ betId: id, amount: c }));
+    });
+    setBetPlacementHistory(history);
+  }, [phase, lastSpinBets, balance]);
 
   /**
    * Execute a spin. Returns the result for animation purposes.
    */
   const executeSpin = useCallback(async (): Promise<SpinResult | null> => {
+    // Archive current bets for Rebet
+    setLastSpinBets(cloneBetsMap(bets));
+    
     // Deduct total bet from balance
     setBalance((prev) => prev - totalBet);
     setPhase('SPINNING');
@@ -154,11 +213,8 @@ export function useGameState() {
     const result = await spinWheel(wheelType);
     setCurrentResult(result);
 
-    // Record result to Supabase (Temporarily disabled)
-    // recordSpinResult(result, wheelType);
-
     return result;
-  }, [totalBet, wheelType]);
+  }, [totalBet, wheelType, bets]);
 
   /**
    * Called when spin animation completes. Resolves payouts.
@@ -175,31 +231,25 @@ export function useGameState() {
     // Add winnings to balance (returned stakes + profit)
     setBalance((prev) => prev + payout.totalReturned);
 
+    // Update session stats
+    const spinBetTotal = betArray.reduce((sum, b) => sum + b.amount, 0);
+    const winAmount = payout.totalReturned - spinBetTotal;
+    
+    // Play sounds
+    if (winAmount > 0) {
+      soundEngine?.playWinSound();
+    } else if (spinBetTotal > 0) {
+      soundEngine?.playLossSound();
+    }
+
+    setSessionStats(prev => ({
+      lastBet: spinBetTotal,
+      lastWin: winAmount,
+      sessionWin: prev.sessionWin + winAmount
+    }));
+
     // Add to history (keep last 10)
-    setHistory((prev) => [currentResult, ...prev].slice(0, 10));
-
-    // Update session performance metrics.
-    /*
-    setSessionStats((prev) => {
-      const spins = prev.spins + 1;
-      const wins = prev.wins + (payout.netResult > 0 ? 1 : 0);
-      const losses = prev.losses + (payout.netResult <= 0 ? 1 : 0);
-      const hitPercent = spins > 0 ? (wins / spins) * 100 : 0;
-      const missPercent = spins > 0 ? (losses / spins) * 100 : 0;
-
-      return {
-        spins,
-        wins,
-        losses,
-        lastWin: payout.totalReturned,
-        lastBets: payout.totalWagered,
-        netLastWin: payout.netResult,
-        sessionWin: prev.sessionWin + payout.netResult,
-        hitPercent,
-        missPercent,
-      };
-    });
-    */
+    setHistory((prev) => [...prev, currentResult].slice(-10));
   }, [currentResult, bets]);
 
   /**
@@ -208,16 +258,10 @@ export function useGameState() {
   const startNewRound = useCallback(() => {
     setPhase('BETTING');
     setBets(new Map());
+    setBetPlacementHistory([]);
     setCurrentResult(null);
     setLastPayout(null);
   }, []);
-
-  /*
-  const rebetLastRound = useCallback(() => {
-    if (phase !== 'BETTING' || lastRoundBets.size === 0) return;
-    setBets(cloneBetsMap(lastRoundBets));
-  }, [phase, lastRoundBets]);
-  */
 
   return {
     // State
@@ -230,18 +274,20 @@ export function useGameState() {
     lastPayout,
     history,
     totalBet,
-    // sessionStats,
+    sessionStats,
+    hasLastSpin: lastSpinBets.size > 0,
 
     // Actions
     placeBet,
     removeBet,
+    clearLastBet,
     clearBets,
+    rebet,
     setSelectedChip,
     setWheelType,
     executeSpin,
     resolveResult,
     startNewRound,
-    // rebetLastRound,
     setPhase,
   };
 }

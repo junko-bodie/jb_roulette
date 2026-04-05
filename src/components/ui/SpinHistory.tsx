@@ -35,43 +35,46 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
         History
       </span>
 
-      <div className="flex items-center gap-1.5 overflow-hidden">
+      <div className="flex flex-row-reverse items-center justify-end gap-1.5 overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
-          {history.map((result, index) => (
-            <motion.div
-              key={`${result.displayNumber}-${history.length}-${index}`}
-              layout
-              initial={{ scale: 0, opacity: 0, x: -30 }}
-              animate={{
-                scale: 1,
-                opacity: index === 0 ? 1 : 0.7 + (1 - index / 10) * 0.3,
-                x: 0,
-              }}
-              exit={{ scale: 0, opacity: 0, x: 20 }}
-              transition={{
-                layout: { type: 'spring', stiffness: 300, damping: 25 },
-                scale: { type: 'spring', stiffness: 400, damping: 22, delay: index * 0.02 },
-                opacity: { duration: 0.3 },
-              }}
-              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{
-                background: getCircleBg(result.color),
-                border: index === 0
-                  ? `2px solid ${COLORS.gold}`
-                  : '1px solid rgba(255,255,255,0.1)',
-                boxShadow: index === 0
-                  ? `0 0 12px ${getCircleBg(result.color)}50, 0 0 4px ${COLORS.gold}40`
-                  : '0 1px 3px rgba(0,0,0,0.3)',
-              }}
-            >
-              <span
-                className="text-white font-semibold"
-                style={{ fontFamily: 'var(--font-inter)', fontSize: '0.6rem' }}
+          {history.map((result, index) => {
+            const isNewest = index === history.length - 1;
+            return (
+              <motion.div
+                key={`${result.displayNumber}-${index}`}
+                layout
+                initial={{ scale: 0, opacity: 0, x: -30 }}
+                animate={{
+                  scale: 1,
+                  opacity: isNewest ? 1 : 0.7 + (index / 10) * 0.3,
+                  x: 0,
+                }}
+                exit={{ scale: 0, opacity: 0, x: 20 }}
+                transition={{
+                  layout: { type: 'spring', stiffness: 300, damping: 25 },
+                  scale: { type: 'spring', stiffness: 400, damping: 22 },
+                  opacity: { duration: 0.3 },
+                }}
+                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: getCircleBg(result.color),
+                  border: isNewest
+                    ? `2px solid ${COLORS.gold}`
+                    : '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: isNewest
+                    ? `0 0 12px ${getCircleBg(result.color)}50, 0 0 4px ${COLORS.gold}40`
+                    : '0 1px 3px rgba(0,0,0,0.3)',
+                }}
               >
-                {result.displayNumber}
-              </span>
-            </motion.div>
-          ))}
+                <span
+                  className="text-white font-semibold"
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: '0.6rem' }}
+                >
+                  {result.displayNumber}
+                </span>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
     </div>

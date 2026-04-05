@@ -78,7 +78,7 @@ export default function ChipTray({
       variants={trayVariants}
       initial="hidden"
       animate={disabled ? "hidden" : "visible"}
-      className={`flex items-center justify-center gap-1.5 sm:gap-2 md:gap-4 px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 w-full overflow-x-auto ${disabled ? 'pointer-events-none' : ''}`}
+      className={`flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 md:gap-4 px-2 sm:px-4 md:px-6 py-1 sm:py-2 w-full overflow-y-auto max-h-[120px] ${disabled ? 'pointer-events-none' : ''}`}
       style={{
         background: 'linear-gradient(to top, rgba(5, 25, 30, 0.95), rgba(8, 42, 47, 0.85))',
         backdropFilter: 'blur(12px)',

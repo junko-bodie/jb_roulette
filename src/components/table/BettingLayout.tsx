@@ -95,12 +95,12 @@ function NumberCell({
     <motion.button
       onClick={handlePlace}
       onContextMenu={handleContextMenu}
-      className="relative flex items-center justify-center cursor-pointer select-none text-[9px] sm:text-[11px] md:text-sm min-h-[28px] sm:min-h-[40px] md:min-h-[48px]"
+      className="relative flex items-center justify-center cursor-pointer select-none text-[11px] sm:text-[13px] md:text-sm min-h-[18px] sm:min-h-[26px] md:min-h-[34px] group"
       style={{
         background: getCellBg(num),
         border: '1px solid #5ea896',
-        fontFamily: 'var(--font-inter)',
-        fontWeight: 600,
+        fontFamily: "'Playfair Display', serif",
+        fontWeight: 700,
         color: '#fff',
         transition: 'all 0.15s ease',
       }}
@@ -127,7 +127,15 @@ function NumberCell({
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
       {getDisplayNumber(num)}
-      {bet && <ChipIndicator bet={bet} phase={phase} />}
+      {bet && (
+        <>
+          <ChipIndicator bet={bet} phase={phase} />
+          {/* Tooltip */}
+          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
+            ${bet.amount.toLocaleString()}
+          </div>
+        </>
+      )}
     </motion.button>
   );
 }
@@ -181,7 +189,7 @@ function DropZone({
       }}
     >
       <motion.button
-        className="w-full h-full rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+        className="w-full h-full rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity group"
         style={{
           background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(200,160,50,0.2) 60%, transparent 100%)',
         }}
@@ -195,8 +203,12 @@ function DropZone({
         whileHover={disabled ? {} : { scale: 1.2 }}
       />
       {bet && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none group">
           <ChipIndicator bet={bet} phase={phase} />
+          {/* Tooltip */}
+          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50">
+            ${bet.amount.toLocaleString()}
+          </div>
         </div>
       )}
       {isWinner && (
@@ -222,6 +234,7 @@ function OutsideBetCell({
   className = '',
   isRed,
   phase,
+  usePremiumFont,
 }: {
   label: string;
   bet: PlacedBet | undefined;
@@ -233,6 +246,7 @@ function OutsideBetCell({
   className?: string;
   isRed?: boolean;
   phase: string;
+  usePremiumFont?: boolean;
 }) {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -253,12 +267,12 @@ function OutsideBetCell({
     <motion.button
       onClick={handlePlace}
       onContextMenu={handleContextMenu}
-      className={`relative flex items-center justify-center cursor-pointer select-none text-[7px] sm:text-[9px] md:text-xs min-h-[24px] sm:min-h-[32px] md:min-h-[36px] ${className}`}
+      className={`relative flex items-center justify-center cursor-pointer select-none text-[7px] sm:text-[9px] md:text-xs min-h-[24px] sm:min-h-[32px] md:min-h-[36px] group ${className}`}
       style={{
         background: isRed === true ? COLORS.rouletteRed : isRed === false ? '#1e1e1e' : 'transparent',
         border: '1px solid #5ea896',
-        fontFamily: 'var(--font-inter)',
-        fontWeight: 600,
+        fontFamily: usePremiumFont ? "'Playfair Display', serif" : 'var(--font-inter)',
+        fontWeight: usePremiumFont ? 700 : 600,
         color: '#fff',
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
@@ -288,7 +302,15 @@ function OutsideBetCell({
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
       {label}
-      {bet && <ChipIndicator bet={bet} phase={phase} />}
+      {bet && (
+        <>
+          <ChipIndicator bet={bet} phase={phase} />
+          {/* Tooltip */}
+          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
+            ${bet.amount.toLocaleString()}
+          </div>
+        </>
+      )}
     </motion.button>
   );
 }
@@ -322,7 +344,7 @@ export default function BettingLayout({
   );
 
   return (
-    <div className="flex flex-col items-center w-full max-w-4xl mx-auto px-2">
+    <div className="flex flex-col items-center w-full mx-auto">
       {/* Main grid area */}
       <div
         className="w-full rounded-lg overflow-hidden"
@@ -579,16 +601,21 @@ export default function BettingLayout({
         {/* Dozens row */}
         <div className="grid grid-cols-[32px_1fr_1fr_1fr] sm:grid-cols-[48px_1fr_1fr_1fr] md:grid-cols-[60px_1fr_1fr_1fr] gap-0">
           <div />
-          {['dozen-1st', 'dozen-2nd', 'dozen-3rd'].map((betId, i) => (
+          {[
+            { id: 'dozen-1st', label: '1st 12' },
+            { id: 'dozen-2nd', label: '2nd 12' },
+            { id: 'dozen-3rd', label: '3rd 12' },
+          ].map((item) => (
             <OutsideBetCell
-              key={betId}
-              label={`${i + 1}st 12`}
-              bet={bets.get(betId)}
-              onPlace={() => onPlaceBet(betId)}
-              onRemove={() => onRemoveBet(betId)}
+              key={item.id}
+              label={item.label}
+              bet={bets.get(item.id)}
+              onPlace={() => onPlaceBet(item.id)}
+              onRemove={() => onRemoveBet(item.id)}
               disabled={disabled}
-              isWinner={isBetWinner(betId)}
+              isWinner={isBetWinner(item.id)}
               phase={phase}
+              usePremiumFont={true}
             />
           ))}
         </div>
@@ -654,24 +681,6 @@ export default function BettingLayout({
           />
         </div>
 
-        {/* Column bets (at the right edge of each row) */}
-        <div className="grid grid-cols-[32px_1fr] sm:grid-cols-[48px_1fr] md:grid-cols-[60px_1fr] gap-0">
-          <div />
-          <div className="grid grid-cols-3 gap-0">
-            {['column-3rd', 'column-2nd', 'column-1st'].map((betId) => (
-              <OutsideBetCell
-                key={betId}
-                label="2:1"
-                bet={bets.get(betId)}
-                onPlace={() => onPlaceBet(betId)}
-                onRemove={() => onRemoveBet(betId)}
-                disabled={disabled}
-                isWinner={isBetWinner(betId)}
-                phase={phase}
-              />
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

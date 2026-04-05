@@ -106,15 +106,19 @@ function getParity(num: number): 'odd' | 'even' | 'none' {
  */
 export async function spinWheel(wheelType: WheelType = 'american'): Promise<SpinResult> {
   try {
-    const { data, error } = await supabase.functions.invoke('spin-roulette', {
-      body: { wheelType }
-    });
+    if (supabase) {
+      const { data, error } = await supabase.functions.invoke('spin-roulette', {
+        body: { wheelType }
+      });
 
-    if (!error && data) {
-      return data as SpinResult;
+      if (!error && data) {
+        return data as SpinResult;
+      }
+      
+      console.warn('Supabase Edge Function failed or not found, falling back to client-side RNG:', error);
+    } else {
+      console.log('Supabase client not initialized, using client-side RNG.');
     }
-    
-    console.warn('Supabase Edge Function failed or not found, falling back to client-side RNG:', error);
   } catch (err) {
     console.error('Error calling Edge Function:', err);
   }

@@ -25,9 +25,12 @@ export default function ChipStack({ chips, phase, className = '' }: ChipStackPro
         const chipColor =
           chipVal === 1 ? COLORS.chipWhite :
           chipVal === 5 ? COLORS.chipRed :
+          chipVal === 10 ? COLORS.chipBlue :
           chipVal === 25 ? COLORS.chipGreen :
           chipVal === 100 ? COLORS.chipBlack :
-          COLORS.chipPurple;
+          chipVal === 500 ? COLORS.chipPurple :
+          chipVal === 1000 ? COLORS.chipYellow :
+          COLORS.gold;
 
         return (
           <motion.div
@@ -41,7 +44,10 @@ export default function ChipStack({ chips, phase, className = '' }: ChipStackPro
               zIndex: originalIndex,
             }}
           >
-            <span className="text-[7px] font-black select-none pointer-events-none" style={{ color: chipVal === 1 ? '#000' : '#fff' }}>
+            <span 
+              className="text-[7px] font-black select-none pointer-events-none" 
+              style={{ color: (chipVal === 1 || chipVal === 1000) ? '#000' : '#fff' }}
+            >
               {chipVal}
             </span>
             

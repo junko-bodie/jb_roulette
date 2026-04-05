@@ -36,7 +36,7 @@ export default function RouletteWheel({
   spinResult,
   isSpinning,
   onSpinComplete,
-  size = 460
+  size = 480
 }: RouletteWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -109,6 +109,9 @@ export default function RouletteWheel({
     s.wobble = 0;
     s.lastPocketIndex = -1;
     s.lastTickTime = 0;
+
+    // Start background whir
+    soundEngine?.startSpinSound();
   }, []);
 
   useEffect(() => {
@@ -343,7 +346,11 @@ export default function RouletteWheel({
         // Metallic silver deflectors highly polished
         const defGrad = ctx!.createLinearGradient(-4, -6, 4, 6);
         defGrad.addColorStop(0, '#ffffff');
-      ctx!.fillStyle = defGrad;
+        defGrad.addColorStop(0.4, '#a0a0a0');
+        defGrad.addColorStop(1, '#606060');
+        ctx!.beginPath();
+        ctx!.rect(-3, -5, 6, 10);
+        ctx!.fillStyle = defGrad;
         ctx!.fill();
         ctx!.restore();
       }
@@ -549,6 +556,13 @@ export default function RouletteWheel({
         const elapsed = now - s.spinStartTime;
         const t = Math.min(elapsed / SPIN_DURATION, 1);
 
+        // Update sound effects based on progress/speed
+        // Volume: 0.2 down to 0.05
+        // Rate: 1.2 down to 0.6
+        const soundVol = 0.2 - (t * 0.15);
+        const soundRate = 1.2 - (t * 0.6);
+        soundEngine?.setSpinEffect(soundVol, soundRate);
+
         const prevRelative = ((s.ballAngle - s.wheelAngle) % TWO_PI + TWO_PI) % TWO_PI;
         const prevIdx = Math.floor(prevRelative / SECTOR_ANGLE);
 
@@ -562,9 +576,12 @@ export default function RouletteWheel({
         const newRelative = ((s.ballAngle - s.wheelAngle) % TWO_PI + TWO_PI) % TWO_PI;
         const newIdx = Math.floor(newRelative / SECTOR_ANGLE);
 
+        // Ticks become slower/rarer as the wheel slows down
+        const tickThreshold = 40 + (t * 160); // 40ms to 200ms throttle
+
         // Only play tick if it changed pocket and t > 0.05 so it doesn't instantly spam
-        if (prevIdx !== newIdx && t > 0.02 && t < 0.98) {
-          if (now - s.lastTickTime > 40) { // Throttle to max ~25 ticks per second
+        if (prevIdx !== newIdx && t > 0.02 && t < 0.94) {
+          if (now - s.lastTickTime > tickThreshold) {
             soundEngine?.playWheelTick();
             s.lastTickTime = now;
           }
@@ -573,17 +590,45 @@ export default function RouletteWheel({
         // Ball spirals inward after BALL_SETTLE_AT
         if (t > BALL_SETTLE_AT) {
           const dropT = (t - BALL_SETTLE_AT) / (1 - BALL_SETTLE_AT);
+          
+          // Realistic spiral inward
           s.ballRadius = BALL_ORBIT_START - (BALL_ORBIT_START - BALL_ORBIT_END) * easeOutCubic(dropT);
 
-          if (dropT < 0.6) {
-            s.wobble = Math.sin(dropT * 40) * (1 - dropT) * 8;
-            s.ballZ = Math.abs(Math.sin(dropT * 25)) * (1 - dropT) * 12;
+          // ── REALISTIC BOUNCE LOGIC (CHANGE 6) ──
+          // Use a decaying sine wave for height (Z) with multiple impacts
+          if (dropT < 0.8) {
+            // Three main bounces
+            const bouncePhase = dropT * 22; // Frequency of bounces
+            const bounceHeight = Math.abs(Math.sin(bouncePhase)) * Math.pow(1 - dropT, 1.5) * 22;
+            s.ballZ = bounceHeight;
+
+            // Add slight "jitter" to angle when hitting or near the floor (impact)
+            if (bounceHeight < 3) {
+              s.wobble = (Math.random() - 0.5) * 0.015;
+              s.ballAngle += s.wobble;
+              
+              // Occasionally play a soft bounce sound if nearing impact
+              if (now - s.lastTickTime > 120 && Math.random() > 0.7) {
+                soundEngine?.playWheelTick(); // Using tick as a placeholder bounce sound
+                s.lastTickTime = now;
+              }
+            } else {
+              s.wobble *= 0.9;
+            }
           } else {
+            // Settle phase
+            s.ballZ *= 0.7; // Dampen remaining vertical velocity
+            if (s.ballZ < 0.1) s.ballZ = 0;
             s.wobble = 0;
-            s.ballZ = 0;
+            
+            // Lock ball angle to target pocket more aggressively as we approach t=1
+            const lockT = (dropT - 0.8) / 0.2;
+            s.ballAngle = s.ballAngle * (1 - lockT * 0.1) + s.targetBallAngle * (lockT * 0.1);
           }
         } else {
           s.ballRadius = BALL_ORBIT_START;
+          s.ballZ = 0;
+          s.wobble = 0;
         }
 
         // ── FIX 1: smoothly interpolate to final exact angle to avoid teleports ──
@@ -596,6 +641,10 @@ export default function RouletteWheel({
           s.ballAngle = s.targetBallAngle;
           s.ballRadius = BALL_ORBIT_END;
           s.ballZ = 0;
+
+          // Stop whirring
+          soundEngine?.stopSpinSound();
+
           if (onSpinComplete) onSpinComplete();
         }
 
@@ -644,6 +693,17 @@ export default function RouletteWheel({
           boxShadow: '0 28px 28px rgba(0,0,0,0.48)',
         }}
       />
+
+      {/* Decorative Brand Chips */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          transform: 'rotateX(14deg) translateZ(10px)',
+          transformStyle: 'preserve-3d'
+        }}
+      >
+        <DecorativeChips size={size} />
+      </div>
       <div
         className="w-full h-full"
         style={{
@@ -674,5 +734,81 @@ export default function RouletteWheel({
         }}
       />
     </div>
+  );
+}
+
+// ── Decorative Chips Component ───────────────────────────────────────────────
+function DecorativeChips({ size }: { size: number }) {
+  // Brand colors
+  const gold = 'linear-gradient(135deg, #fef1a6 0%, #d4af37 50%, #8b6b22 100%)';
+  const green = 'linear-gradient(135deg, #2ecc71 0%, #197a3d 50%, #0e4a23 100%)';
+  const black = 'linear-gradient(135deg, #444 0%, #1a1a1a 50%, #000 100%)';
+
+  // Positions around the lower front arc (angles in degrees)
+  // In our coordinates, 90 is directly "south" (front)
+  const stacks = [
+    { angle: 50, count: 5, color: black },
+    { angle: 65, count: 3, color: gold },
+    { angle: 80, count: 6, color: green },
+    { angle: 95, count: 4, color: black },
+    { angle: 110, count: 7, color: gold },
+    { angle: 125, count: 4, color: green },
+    { angle: 140, count: 5, color: black },
+  ];
+
+  const radius = size * 0.47; // slightly further out for visibility
+
+  return (
+    <>
+      {stacks.map((s, i) => {
+        const rad = (s.angle * Math.PI) / 180;
+        const x = 50 + (Math.cos(rad) * radius / size) * 100;
+        const y = 50 + (Math.sin(rad) * radius / size) * 100;
+
+        return (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: `${x}%`,
+              top: `${y}%`,
+              transform: 'translate(-50%, -50%)',
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            {Array.from({ length: s.count }).map((_, j) => (
+              <div
+                key={j}
+                style={{
+                  position: 'absolute',
+                  bottom: j * 2.5, // slightly taller stacks
+                  width: size * 0.055, // slightly larger chips
+                  height: size * 0.055,
+                  borderRadius: '50%',
+                  background: s.color,
+                  border: '1px solid rgba(0,0,0,0.5)',
+                  boxShadow: '0 1px 1px rgba(0,0,0,0.3)',
+                  // Counter-rotate slightly so the "face" is visible
+                  transform: 'rotateX(-12deg)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {/* Decorative inner ring */}
+                <div
+                  style={{
+                    width: '70%',
+                    height: '70%',
+                    borderRadius: '50%',
+                    border: '1px dashed rgba(255,255,255,0.25)',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </>
   );
 }

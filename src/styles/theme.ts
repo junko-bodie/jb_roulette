@@ -32,10 +32,12 @@ export const COLORS = {
 
   /** Chip denominations */
   chipWhite: '#f5f5f5',
+  chipBlue: '#2b52a2', // Royal Blue $10
   chipRed: '#c0392b',
   chipGreen: '#27ae60',
   chipBlack: '#1a1a1a',
   chipPurple: '#8e44ad',
+  chipYellow: '#f1c40f', // Yellow $1000
 
   /** UI colors */
   textPrimary: '#f5f5f5',
@@ -83,9 +85,11 @@ export const SHADOWS = {
 export const CHIP_DENOMINATIONS = [
   { value: 1, label: '$1', color: COLORS.chipWhite, textColor: COLORS.black },
   { value: 5, label: '$5', color: COLORS.chipRed, textColor: COLORS.textPrimary },
+  { value: 10, label: '$10', color: COLORS.chipBlue, textColor: COLORS.textPrimary },
   { value: 25, label: '$25', color: COLORS.chipGreen, textColor: COLORS.textPrimary },
   { value: 100, label: '$100', color: COLORS.chipBlack, textColor: COLORS.gold },
   { value: 500, label: '$500', color: COLORS.chipPurple, textColor: COLORS.textPrimary },
+  { value: 1000, label: '$1000', color: COLORS.chipYellow, textColor: COLORS.black },
 ] as const;
 
 /** Animation durations (ms) */

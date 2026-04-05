@@ -23,9 +23,6 @@ interface RouletteTableProps {
   lastPayout: PayoutResult | null;
   phase: string;
   setWheelType: (type: WheelType) => void;
-  clearBets: () => void;
-  totalBet: number;
-  handleSpin: () => void;
 }
 
 export default function RouletteTable({
@@ -42,20 +39,19 @@ export default function RouletteTable({
   lastPayout,
   phase,
   setWheelType,
-  clearBets,
-  totalBet,
-  handleSpin,
 }: RouletteTableProps) {
   return (
-    <div className="mobile-landscape-shell mx-auto w-full max-w-[1400px] pt-4 md:pt-6 lg:pt-8 bg-black/10 rounded-xl shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] border border-white/5 my-4">
-      <div className="mobile-landscape-row flex flex-col md:flex-row items-center gap-4 md:gap-4 lg:gap-8 px-4 pb-4">
+    <div className="mobile-landscape-shell mx-auto w-full max-w-[1400px] bg-black/10 rounded-xl shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] border border-white/5">
+      {/* Vertical stack: wheel then table, absolutely no gap */}
+      <div className="mobile-landscape-row flex flex-col items-center" style={{ gap: 0, margin: 0, padding: 0 }}>
 
-        {/* Wheel */}
+        {/* Wheel wrapper — relative so the toggle can overlay */}
         <motion.div
           ref={wheelRef}
-          className="mobile-landscape-wheel w-full md:w-[48%] flex flex-col justify-center items-center overflow-hidden"
+          className="mobile-landscape-wheel relative flex justify-center items-center overflow-visible"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          style={{ marginBottom: '-8px', paddingBottom: 0, zIndex: 2 }}
         >
           <RouletteWheel
             wheelType={wheelType}
@@ -65,17 +61,26 @@ export default function RouletteTable({
             size={wheelSize}
           />
 
-          {/* Wheel type toggle */}
+          {/* Wheel type toggle — overlaid at bottom-left of wheel */}
           <div
-            className="flex items-center gap-2 text-xs mt-4"
-            style={{ fontFamily: 'var(--font-inter)' }}
+            className="absolute flex items-center gap-1 text-[10px] z-30"
+            style={{
+              fontFamily: 'var(--font-inter)',
+              bottom: '8px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(0,0,0,0.5)',
+              borderRadius: '12px',
+              padding: '2px 6px',
+              backdropFilter: 'blur(4px)',
+            }}
           >
             <button
               onClick={() => setWheelType('american')}
-              className="px-3 py-1 rounded-full transition-all duration-300 cursor-pointer"
+              className="px-2 py-0.5 rounded-full transition-all duration-300 cursor-pointer"
               style={{
-                background: wheelType === 'american' ? '#c9a84c20' : 'transparent',
-                color: wheelType === 'american' ? '#c9a84c' : '#c2d7d5',
+                background: wheelType === 'american' ? '#c9a84c30' : 'transparent',
+                color: wheelType === 'american' ? '#c9a84c' : '#c2d7d580',
                 border: `1px solid ${wheelType === 'american' ? '#c9a84c40' : 'transparent'}`,
               }}
             >
@@ -83,10 +88,10 @@ export default function RouletteTable({
             </button>
             <button
               onClick={() => setWheelType('european')}
-              className="px-3 py-1 rounded-full transition-all duration-300 cursor-pointer"
+              className="px-2 py-0.5 rounded-full transition-all duration-300 cursor-pointer"
               style={{
-                background: wheelType === 'european' ? '#c9a84c20' : 'transparent',
-                color: wheelType === 'european' ? '#c9a84c' : '#c2d7d5',
+                background: wheelType === 'european' ? '#c9a84c30' : 'transparent',
+                color: wheelType === 'european' ? '#c9a84c' : '#c2d7d580',
                 border: `1px solid ${wheelType === 'european' ? '#c9a84c40' : 'transparent'}`,
               }}
             >
@@ -95,66 +100,62 @@ export default function RouletteTable({
           </div>
         </motion.div>
 
-        {/* Board */}
+        {/* Board — Buffered with THICK cushiony foam edge */}
         <motion.div
-          className="w-full md:w-[50%] lg:w-[52%] flex flex-col justify-end"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+          className="w-full h-fit flex flex-col items-center justify-center min-h-0 py-0"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
         >
+          {/* THE FOAM BUFFER — Full Width & Realistic 3D */}
           <div
-            className="w-full rounded-md border p-1.5 overflow-hidden relative"
-            style={{ background: '#2b8673', borderColor: '#5ea896', borderWidth: '2px' }}
+            className="relative p-6 sm:p-14 rounded-[40px] shadow-[0_40px_80px_rgba(0,0,0,0.9)] w-full max-w-none"
+            style={{
+              background: '#2d1a10', // Darker, richer leather brown
+              backgroundImage: `
+                linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(0,0,0,0.3) 100%),
+                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 80%)
+              `,
+              border: '4px solid #1a0f09',
+              boxShadow: `
+                inset 0 20px 30px rgba(255,255,255,0.06), 
+                inset 0 -20px 30px rgba(0,0,0,0.7),
+                0 30px 60px rgba(0,0,0,0.9)
+              `,
+              transformStyle: 'preserve-3d',
+            }}
           >
+            {/* Inner seam line - deeper for 3D effect */}
+            <div 
+              className="absolute inset-[18px] rounded-[24px] border-2 border-black/40 pointer-events-none"
+              style={{ 
+                zIndex: 1,
+                boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8)' 
+              }}
+            />
+
+            {/* The actual betting board inside */}
             <div
-              className="w-full flex justify-center"
-              style={{ transform: 'scale(0.82)', transformOrigin: 'top center' }}
+              className="rounded-lg border-4 overflow-hidden relative w-full"
+              style={{ 
+                background: '#2b8673', 
+                borderColor: '#11352e', 
+                padding: 0,
+                zIndex: 2,
+                boxShadow: '0 0 30px rgba(0,0,0,0.8)'
+              }}
             >
-              <BettingLayout
-                bets={bets}
-                onPlaceBet={onPlaceBet}
-                onRemoveBet={onRemoveBet}
-                disabled={isBettingDisabled}
-                winningResult={currentResult}
-                payoutResult={lastPayout}
-                showWinHighlight={!!currentResult && !isSpinning}
-                phase={phase}
-              />
-            </div>
-          </div>
-
-          {/* Action row */}
-          <div className="flex items-center justify-between gap-2 mt-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              {totalBet > 0 && !isSpinning && (
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-                  <button
-                    onClick={clearBets}
-                    className="text-xs px-3 py-1 rounded cursor-pointer transition-colors"
-                    style={{
-                      color: '#fff',
-                      border: '1px solid rgba(255,255,255,0.28)',
-                      fontFamily: 'var(--font-inter)',
-                    }}
-                  >
-                    Clear
-                  </button>
-                </motion.div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleSpin}
-                disabled={isSpinning}
-                className="px-8 py-2 rounded-full font-bold uppercase tracking-widest text-sm transition-all disabled:opacity-50"
-                style={{
-                  background: 'linear-gradient(135deg, #c9a84c, #8b6b22)',
-                  color: '#fff',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
-                }}
-              >
-                {isSpinning ? 'Spinning...' : 'Spin'}
-              </button>
+              <div className="w-full">
+                <BettingLayout
+                  bets={bets}
+                  onPlaceBet={onPlaceBet}
+                  onRemoveBet={onRemoveBet}
+                  disabled={isBettingDisabled}
+                  winningResult={currentResult}
+                  payoutResult={lastPayout}
+                  showWinHighlight={!!currentResult && !isSpinning}
+                  phase={phase}
+                />
+              </div>
             </div>
           </div>
         </motion.div>

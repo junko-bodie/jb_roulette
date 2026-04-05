@@ -1,99 +1,84 @@
 'use client';
 
+import { Howl } from 'howler';
+
+/**
+ * AudioEngine — Manages all game sound effects using Howler.js
+ * Uses royalty-free sound assets for a premium casino experience.
+ */
 class AudioEngine {
-  private ctx: AudioContext | null = null;
+  private sounds: Record<string, Howl> = {};
   private enabled: boolean = true;
 
-  init() {
-    if (!this.ctx && typeof window !== 'undefined') {
-      const AudioContextCtor = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioContextCtor) {
-        this.ctx = new AudioContextCtor();
-      }
-    }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+  constructor() {
+    if (typeof window !== 'undefined') {
+      this.sounds = {
+        chip: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'], // Casino chip
+          volume: 0.3
+        }),
+        tick: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/500/500-preview.mp3'], // Clean click
+          volume: 0.05 // Much softer to avoid "rain" effect
+        }),
+        win: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'], // Upbeat win
+          volume: 0.5
+        }),
+        loss: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'], // Soft loss
+          volume: 0.3
+        }),
+        spin: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2012/2012-preview.mp3'], // Authentic roulette spin
+          volume: 0.2,
+          loop: true
+        })
+      };
     }
   }
 
   playChipSound() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'sine';
-    // Frequency drop for a solid "thud/click"
-    osc.frequency.setValueAtTime(800, t);
-    osc.frequency.exponentialRampToValueAtTime(100, t + 0.05);
-
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.5, t + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    osc.start(t);
-    osc.stop(t + 0.06);
+    if (this.enabled && this.sounds.chip) this.sounds.chip.play();
   }
 
   playWheelTick() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(1200, t);
-    osc.frequency.exponentialRampToValueAtTime(400, t + 0.02);
-
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.15, t + 0.005);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.03);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    osc.start(t);
-    osc.stop(t + 0.04);
+    // Play with slight random pitch to sound more natural/physical
+    if (this.enabled && this.sounds.tick) {
+      const id = this.sounds.tick.play();
+      this.sounds.tick.rate(0.8 + Math.random() * 0.4, id);
+    }
   }
 
   playWinSound() {
-    if (!this.enabled) return;
-    this.init();
-    if (!this.ctx) return;
+    if (this.enabled && this.sounds.win) this.sounds.win.play();
+  }
 
-    const t = this.ctx.currentTime;
-    
-    // Play a nice arpeggio
-    const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-    
-    freqs.forEach((freq, index) => {
-      const osc = this.ctx!.createOscillator();
-      const gain = this.ctx!.createGain();
-      
-      const time = t + index * 0.1;
-      
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, time);
-      
-      gain.gain.setValueAtTime(0, time);
-      gain.gain.linearRampToValueAtTime(0.2, time + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
-      
-      osc.connect(gain);
-      gain.connect(this.ctx!.destination);
-      
-      osc.start(time);
-      osc.stop(time + 0.5);
-    });
+  playLossSound() {
+    if (this.enabled && this.sounds.loss) this.sounds.loss.play();
+  }
+
+  startSpinSound() {
+    if (this.enabled && this.sounds.spin) {
+      console.log('AudioEngine: Starting spin sound');
+      this.sounds.spin.stop(); 
+      this.sounds.spin.volume(0.2);
+      this.sounds.spin.play();
+    }
+  }
+
+  setSpinEffect(volume: number, rate: number) {
+    if (this.sounds.spin && this.sounds.spin.playing()) {
+      this.sounds.spin.volume(volume);
+      this.sounds.spin.rate(rate);
+    }
+  }
+
+  stopSpinSound() {
+    if (this.sounds.spin) {
+      console.log('AudioEngine: Stopping spin sound');
+      this.sounds.spin.stop();
+    }
   }
 
   toggleSound() {
