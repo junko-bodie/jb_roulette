@@ -60,13 +60,13 @@ export default function GamePage() {
         window.innerHeight <= 540 &&
         window.innerWidth <= 950;
       if (isLandscapeMobile) {
-        setWheelSize(200);
+        setWheelSize(320);
       } else if (window.innerHeight < 750) {
-        setWheelSize(300);
-      } else if (window.innerWidth < 1100 || window.innerHeight < 850) {
-        setWheelSize(360);
+        setWheelSize(500);
+      } else if (window.innerWidth < 1300 || window.innerHeight < 900) {
+        setWheelSize(600);
       } else {
-        setWheelSize(440); // Enlarged from 320
+        setWheelSize(700);
       }
     };
 
@@ -201,7 +201,8 @@ export default function GamePage() {
           <button
             onClick={game.rebet}
             disabled={isSpinningWheel || game.phase !== 'BETTING' || !game.hasLastSpin}
-            className="px-5 py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest transition-all border border-[#c9a44c]/30 bg-[#c9a44c]/10 text-[#c9a44c] hover:bg-[#c9a44c]/20 disabled:opacity-20 disabled:grayscale"
+            className="px-12 py-6 rounded-xl font-black text-base uppercase tracking-[0.2em] transition-all duration-300 border border-[#c9a44c]/40 bg-gradient-to-br from-[#c9a44c] to-[#8b6b22] text-white shadow-[0_4px_15px_rgba(0,0,0,0.3),0_0_15px_rgba(201,164,76,0.2)] hover:scale-105 active:scale-95 hover:shadow-[0_6px_20px_rgba(201,164,76,0.4)] disabled:opacity-20 disabled:grayscale disabled:scale-100"
+            style={{ fontFamily: 'var(--font-inter)' }}
           >
             Rebet
           </button>
@@ -210,16 +211,18 @@ export default function GamePage() {
           <button
             onClick={game.clearLastBet}
             disabled={isSpinningWheel || game.phase !== 'BETTING' || game.bets.size === 0}
-            className="px-5 py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest transition-all border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 disabled:opacity-20"
+            className="px-12 py-6 rounded-xl font-black text-base uppercase tracking-[0.2em] transition-all duration-300 border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white shadow-[0_4px_10px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95 disabled:opacity-20 disabled:scale-100"
+            style={{ fontFamily: 'var(--font-inter)' }}
           >
-            Clear Last Bet
+            Clear Last
           </button>
 
           {/* Clear All */}
           <button
             onClick={game.clearBets}
             disabled={isSpinningWheel || game.phase !== 'BETTING' || game.bets.size === 0}
-            className="px-5 py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest transition-all border border-red-500/20 bg-red-500/5 text-red-400/70 hover:bg-red-500/10 hover:text-red-400 disabled:opacity-20"
+            className="px-12 py-6 rounded-xl font-black text-base uppercase tracking-[0.2em] transition-all duration-300 border border-red-500/30 bg-red-500/5 text-red-400/80 hover:bg-red-500/15 hover:text-red-400 shadow-[0_4px_10px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95 disabled:opacity-20 disabled:scale-100"
+            style={{ fontFamily: 'var(--font-inter)' }}
           >
             Clear
           </button>
@@ -229,7 +232,7 @@ export default function GamePage() {
             onClick={handleSpin}
             disabled={isSpinningWheel || game.phase !== 'BETTING' || game.bets.size === 0}
             className={`
-              ml-2 px-12 py-4 rounded-xl font-black text-xl uppercase tracking-widest transition-all duration-300 shadow-xl
+              ml-4 px-16 py-7 rounded-xl font-black text-2xl uppercase tracking-widest transition-all duration-300 shadow-xl
               ${(game.bets.size > 0 && !(isSpinningWheel || game.phase !== 'BETTING'))
                 ? 'bg-gradient-to-b from-[#10b981] to-[#047857] text-white scale-105 hover:scale-110 active:scale-95 shadow-emerald-500/20'
                 : 'bg-gray-800 text-gray-600 cursor-not-allowed opacity-50'}

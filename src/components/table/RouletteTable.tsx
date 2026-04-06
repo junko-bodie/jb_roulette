@@ -41,125 +41,122 @@ export default function RouletteTable({
   setWheelType,
 }: RouletteTableProps) {
   return (
-    <div className="mobile-landscape-shell mx-auto w-full max-w-[1400px] bg-black/10 rounded-xl shadow-[inset_0_0_40px_rgba(0,0,0,0.4)] border border-white/5">
-      {/* Vertical stack: wheel then table, absolutely no gap */}
-      <div className="mobile-landscape-row flex flex-col items-center" style={{ gap: 0, margin: 0, padding: 0 }}>
+    <div className="mx-auto w-full max-w-[1500px]">
+      {/* THE FOAM BUFFER — Unified for both wheel and table */}
+      <div
+        className="relative p-8 sm:p-12 rounded-[50px] shadow-[0_40px_100px_rgba(0,0,0,0.9)] w-full overflow-hidden"
+        style={{
+          background: '#2d1a10', // Rich leather brown
+          backgroundImage: `
+            linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(0,0,0,0.3) 100%),
+            radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 80%)
+          `,
+          border: '6px solid #1a0f09',
+          boxShadow: `
+            inset 0 20px 40px rgba(255,255,255,0.08), 
+            inset 0 -20px 40px rgba(0,0,0,0.8),
+            0 30px 60px rgba(0,0,0,1)
+          `,
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        {/* Inner seam line */}
+        <div
+          className="absolute inset-[24px] rounded-[30px] border-2 border-black/40 pointer-events-none"
+          style={{
+            zIndex: 1,
+            boxShadow: 'inset 0 0 15px rgba(0,0,0,0.9)'
+          }}
+        />
 
-        {/* Wheel wrapper — relative so the toggle can overlay */}
-        <motion.div
-          ref={wheelRef}
-          className="mobile-landscape-wheel relative flex justify-center items-center overflow-visible"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          style={{ marginBottom: '-8px', paddingBottom: 0, zIndex: 2 }}
+        {/* The green felt area — Unified horizontal row */}
+        <div
+          className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-8"
+          style={{
+            background: '#2b8673', // Rich casino green
+            borderColor: '#11352e',
+            padding: '2rem 3rem 2rem 0.5rem',
+            zIndex: 2,
+            boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
+            minHeight: '560px'
+          }}
         >
-          <RouletteWheel
-            wheelType={wheelType}
-            spinResult={currentResult}
-            isSpinning={isSpinning}
-            onSpinComplete={onSpinComplete}
-            size={wheelSize}
-          />
-
-          {/* Wheel type toggle — overlaid at bottom-left of wheel */}
-          <div
-            className="absolute flex items-center gap-1 text-[10px] z-30"
-            style={{
-              fontFamily: 'var(--font-inter)',
-              bottom: '8px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(0,0,0,0.5)',
-              borderRadius: '12px',
-              padding: '2px 6px',
-              backdropFilter: 'blur(4px)',
-            }}
+          {/* Wheel Section (Left) */}
+          <motion.div
+            ref={wheelRef}
+            className="relative flex justify-center items-center flex-1"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
           >
-            <button
-              onClick={() => setWheelType('american')}
-              className="px-2 py-0.5 rounded-full transition-all duration-300 cursor-pointer"
-              style={{
-                background: wheelType === 'american' ? '#c9a84c30' : 'transparent',
-                color: wheelType === 'american' ? '#c9a84c' : '#c2d7d580',
-                border: `1px solid ${wheelType === 'american' ? '#c9a84c40' : 'transparent'}`,
-              }}
-            >
-              American
-            </button>
-            <button
-              onClick={() => setWheelType('european')}
-              className="px-2 py-0.5 rounded-full transition-all duration-300 cursor-pointer"
-              style={{
-                background: wheelType === 'european' ? '#c9a84c30' : 'transparent',
-                color: wheelType === 'european' ? '#c9a84c' : '#c2d7d580',
-                border: `1px solid ${wheelType === 'european' ? '#c9a84c40' : 'transparent'}`,
-              }}
-            >
-              European
-            </button>
-          </div>
-        </motion.div>
-
-        {/* Board — Buffered with THICK cushiony foam edge */}
-        <motion.div
-          className="w-full h-fit flex flex-col items-center justify-center min-h-0 py-0"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          {/* THE FOAM BUFFER — Full Width & Realistic 3D */}
-          <div
-            className="relative p-6 sm:p-14 rounded-[40px] shadow-[0_40px_80px_rgba(0,0,0,0.9)] w-full max-w-none"
-            style={{
-              background: '#2d1a10', // Darker, richer leather brown
-              backgroundImage: `
-                linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(0,0,0,0.3) 100%),
-                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 80%)
-              `,
-              border: '4px solid #1a0f09',
-              boxShadow: `
-                inset 0 20px 30px rgba(255,255,255,0.06), 
-                inset 0 -20px 30px rgba(0,0,0,0.7),
-                0 30px 60px rgba(0,0,0,0.9)
-              `,
-              transformStyle: 'preserve-3d',
-            }}
-          >
-            {/* Inner seam line - deeper for 3D effect */}
-            <div 
-              className="absolute inset-[18px] rounded-[24px] border-2 border-black/40 pointer-events-none"
-              style={{ 
-                zIndex: 1,
-                boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8)' 
-              }}
+            <RouletteWheel
+              wheelType={wheelType}
+              spinResult={currentResult}
+              isSpinning={isSpinning}
+              onSpinComplete={onSpinComplete}
+              size={wheelSize}
             />
 
-            {/* The actual betting board inside */}
+            {/* Wheel type toggle — overlaid at bottom center of wheel */}
             <div
-              className="rounded-lg border-4 overflow-hidden relative w-full"
-              style={{ 
-                background: '#2b8673', 
-                borderColor: '#11352e', 
-                padding: 0,
-                zIndex: 2,
-                boxShadow: '0 0 30px rgba(0,0,0,0.8)'
+              className="absolute flex items-center gap-1 text-[10px] z-30"
+              style={{
+                fontFamily: 'var(--font-inter)',
+                bottom: '-20px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.6)',
+                borderRadius: '12px',
+                padding: '3px 8px',
+                backdropFilter: 'blur(6px)',
+                border: '1px solid rgba(201, 164, 76, 0.3)'
               }}
             >
-              <div className="w-full">
-                <BettingLayout
-                  bets={bets}
-                  onPlaceBet={onPlaceBet}
-                  onRemoveBet={onRemoveBet}
-                  disabled={isBettingDisabled}
-                  winningResult={currentResult}
-                  payoutResult={lastPayout}
-                  showWinHighlight={!!currentResult && !isSpinning}
-                  phase={phase}
-                />
-              </div>
+              <button
+                onClick={() => setWheelType('american')}
+                className="px-3 py-1 rounded-full transition-all duration-300 cursor-pointer"
+                style={{
+                  background: wheelType === 'american' ? '#c9a84c40' : 'transparent',
+                  color: wheelType === 'american' ? '#f4fbfb' : '#c2d7d580',
+                  fontWeight: wheelType === 'american' ? 'bold' : 'normal',
+                }}
+              >
+                American
+              </button>
+              <button
+                onClick={() => setWheelType('european')}
+                className="px-3 py-1 rounded-full transition-all duration-300 cursor-pointer"
+                style={{
+                  background: wheelType === 'european' ? '#c9a84c40' : 'transparent',
+                  color: wheelType === 'european' ? '#f4fbfb' : '#c2d7d580',
+                  fontWeight: wheelType === 'european' ? 'bold' : 'normal',
+                }}
+              >
+                European
+              </button>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
+          {/* Table Section (Right) */}
+          <motion.div
+            className="flex-[2] flex flex-col items-center justify-center p-2"
+            initial={{ opacity: 0, x: 20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0.5, scale: 1.1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="w-full">
+              <BettingLayout
+                bets={bets}
+                onPlaceBet={onPlaceBet}
+                onRemoveBet={onRemoveBet}
+                disabled={isBettingDisabled}
+                winningResult={currentResult}
+                payoutResult={lastPayout}
+                showWinHighlight={!!currentResult && !isSpinning}
+                phase={phase}
+              />
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

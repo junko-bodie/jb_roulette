@@ -95,7 +95,7 @@ function NumberCell({
     <motion.button
       onClick={handlePlace}
       onContextMenu={handleContextMenu}
-      className="relative flex items-center justify-center cursor-pointer select-none text-[11px] sm:text-[13px] md:text-sm min-h-[18px] sm:min-h-[26px] md:min-h-[34px] group"
+      className="relative flex items-center justify-center cursor-pointer select-none text-[11px] sm:text-[13px] md:text-sm min-h-[22px] sm:min-h-[30px] md:min-h-[44px] group"
       style={{
         background: getCellBg(num),
         border: '1px solid #5ea896',
@@ -108,20 +108,20 @@ function NumberCell({
         disabled
           ? {}
           : {
-              borderColor: COLORS.gold,
-              boxShadow: `inset 0 0 12px rgba(201, 168, 76, 0.25)`,
-            }
+            borderColor: COLORS.gold,
+            boxShadow: `inset 0 0 12px rgba(201, 168, 76, 0.25)`,
+          }
       }
       animate={
         isWinner
           ? {
-              boxShadow: [
-                `inset 0 0 0px ${COLORS.gold}00`,
-                `inset 0 0 20px ${COLORS.gold}80`,
-                `inset 0 0 0px ${COLORS.gold}00`,
-              ],
-              borderColor: COLORS.gold,
-            }
+            boxShadow: [
+              `inset 0 0 0px ${COLORS.gold}00`,
+              `inset 0 0 20px ${COLORS.gold}80`,
+              `inset 0 0 0px ${COLORS.gold}00`,
+            ],
+            borderColor: COLORS.gold,
+          }
           : {}
       }
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
@@ -267,7 +267,7 @@ function OutsideBetCell({
     <motion.button
       onClick={handlePlace}
       onContextMenu={handleContextMenu}
-      className={`relative flex items-center justify-center cursor-pointer select-none text-[7px] sm:text-[9px] md:text-xs min-h-[24px] sm:min-h-[32px] md:min-h-[36px] group ${className}`}
+      className={`relative flex items-center justify-center cursor-pointer select-none text-[7px] sm:text-[9px] md:text-xs min-h-[28px] sm:min-h-[36px] md:min-h-[42px] group ${className}`}
       style={{
         background: isRed === true ? COLORS.rouletteRed : isRed === false ? '#1e1e1e' : 'transparent',
         border: '1px solid #5ea896',
@@ -283,20 +283,20 @@ function OutsideBetCell({
         disabled
           ? {}
           : {
-              borderColor: COLORS.gold,
-              boxShadow: `inset 0 0 12px rgba(201, 168, 76, 0.25)`,
-            }
+            borderColor: COLORS.gold,
+            boxShadow: `inset 0 0 12px rgba(201, 168, 76, 0.25)`,
+          }
       }
       animate={
         isWinner
           ? {
-              boxShadow: [
-                `inset 0 0 0px ${COLORS.gold}00`,
-                `inset 0 0 15px ${COLORS.gold}80`,
-                `inset 0 0 0px ${COLORS.gold}00`,
-              ],
-              borderColor: COLORS.gold,
-            }
+            boxShadow: [
+              `inset 0 0 0px ${COLORS.gold}00`,
+              `inset 0 0 15px ${COLORS.gold}80`,
+              `inset 0 0 0px ${COLORS.gold}00`,
+            ],
+            borderColor: COLORS.gold,
+          }
           : {}
       }
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
@@ -376,7 +376,7 @@ export default function BettingLayout({
               isWinner={isWinningNumber(37) || isBetWinner('straight-00')}
               phase={phase}
             />
-            
+
             {/* Split 0-00 target — Restored for Week 1 sign-off */}
             <DropZone
               betId="split-0-00"
@@ -422,9 +422,9 @@ export default function BettingLayout({
                 const betId = `split-${n}-${n + 3}`;
                 const col = Math.floor((n - 1) / 3);
                 const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 1) * (100/12)}%`;
-                const top = `${(row + 0.5) * (100/3)}%`;
-                
+                const left = `${(col + 1) * (100 / 12)}%`;
+                const top = `${(row + 0.5) * (100 / 3)}%`;
+
                 return (
                   <DropZone
                     key={betId}
@@ -448,9 +448,9 @@ export default function BettingLayout({
                 const betId = `split-${n}-${n + 1}`;
                 const col = Math.floor((n - 1) / 3);
                 const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 0.5) * (100/12)}%`;
-                const top = `${(row) * (100/3)}%`;
-                
+                const left = `${(col + 0.5) * (100 / 12)}%`;
+                const top = `${(row) * (100 / 3)}%`;
+
                 return (
                   <DropZone
                     key={betId}
@@ -471,12 +471,12 @@ export default function BettingLayout({
 
               {/* Corner Bets (4 numbers) */}
               {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32].map(n => {
-                const betId = `corner-${n}-${n+1}-${n+3}-${n+4}`;
+                const betId = `corner-${n}-${n + 1}-${n + 3}-${n + 4}`;
                 const col = Math.floor((n - 1) / 3);
                 const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 1) * (100/12)}%`;
-                const top = `${(row) * (100/3)}%`;
-                
+                const left = `${(col + 1) * (100 / 12)}%`;
+                const top = `${(row) * (100 / 3)}%`;
+
                 return (
                   <DropZone
                     key={betId}
@@ -497,11 +497,11 @@ export default function BettingLayout({
 
               {/* Street Bets (Row of 3) */}
               {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34].map(n => {
-                const betId = `street-${n}-${n+1}-${n+2}`;
+                const betId = `street-${n}-${n + 1}-${n + 2}`;
                 const col = Math.floor((n - 1) / 3);
-                const left = `${(col + 0.5) * (100/12)}%`;
+                const left = `${(col + 0.5) * (100 / 12)}%`;
                 const top = `100%`; // Target bottom of the column
-                
+
                 return (
                   <DropZone
                     key={betId}
@@ -522,11 +522,11 @@ export default function BettingLayout({
 
               {/* Sixline Bets (2 adjacent columns) */}
               {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31].map(n => {
-                const betId = `sixline-${n}-${n+5}`;
+                const betId = `sixline-${n}-${n + 5}`;
                 const col = Math.floor((n - 1) / 3);
-                const left = `${(col + 1) * (100/12)}%`;
+                const left = `${(col + 1) * (100 / 12)}%`;
                 const top = `100%`;
-                
+
                 return (
                   <DropZone
                     key={betId}
