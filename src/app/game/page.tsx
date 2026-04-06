@@ -55,11 +55,16 @@ export default function GamePage() {
 
   useEffect(() => {
     const updateWheelSize = () => {
+      const isMobilePortrait =
+        window.innerWidth <= 900 &&
+        window.matchMedia('(orientation: portrait)').matches;
       const isLandscapeMobile =
         window.matchMedia('(orientation: landscape)').matches &&
         window.innerHeight <= 540 &&
         window.innerWidth <= 950;
-      if (isLandscapeMobile) {
+      if (isMobilePortrait) {
+        setWheelSize(Math.min(window.innerWidth * 0.85, 360));
+      } else if (isLandscapeMobile) {
         setWheelSize(320);
       } else if (window.innerHeight < 750) {
         setWheelSize(500);
@@ -77,11 +82,11 @@ export default function GamePage() {
 
   return (
     <div
-      className="flex flex-col h-screen w-full overflow-hidden select-none"
+      className="flex flex-col h-screen w-full overflow-hidden select-none mobile-root-scroll"
       style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
     >
       <header
-        className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-0.5 z-10 gap-3"
+        className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-0.5 z-10 gap-3 mobile-header-compact"
         style={{
           background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
           borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
@@ -115,10 +120,12 @@ export default function GamePage() {
         </div>
 
         <div className="flex items-center gap-8">
-          <SessionStats {...game.sessionStats} />
-          <SpinHistory history={game.history} />
+          <div className="flex items-center gap-8 mobile-hide">
+            <SessionStats {...game.sessionStats} />
+            <SpinHistory history={game.history} />
+          </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 mobile-stats-row">
             {/* Bet Display - Prominent */}
             <div className="flex flex-col items-center px-6 py-1 rounded-xl bg-black/40 border border-[#c9a44c]/40 shadow-[0_0_15px_rgba(201,164,76,0.2)]">
               <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a44c] font-bold mb-0.5">Total Bet</span>
@@ -166,7 +173,7 @@ export default function GamePage() {
 
       {/* NEW BOTTOM BAR (CHANGE 11) */}
       <footer
-        className="flex-shrink-0 h-24 w-full px-6 flex items-center justify-between z-10"
+        className="flex-shrink-0 h-24 w-full px-6 flex items-center justify-between z-10 mobile-footer-compact"
         style={{
           background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
           borderTop: '1px solid rgba(201, 164, 76, 0.3)',
@@ -185,7 +192,7 @@ export default function GamePage() {
         </div>
 
         {/* Center: Player Info Placeholder */}
-        <div className="flex items-center gap-3 px-8 border-x border-white/5">
+        <div className="flex items-center gap-3 px-8 border-x border-white/5 mobile-player-info">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#c9a44c] to-[#8b6b22] border-2 border-white/10 flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">JB</span>
           </div>
@@ -196,7 +203,7 @@ export default function GamePage() {
         </div>
 
         {/* Right: Action Buttons Group */}
-        <div className="flex-1 flex items-center justify-end gap-3">
+        <div className="flex-1 flex items-center justify-end gap-3 mobile-actions-grid">
           {/* Rebet */}
           <button
             onClick={game.rebet}

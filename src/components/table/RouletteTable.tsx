@@ -44,7 +44,7 @@ export default function RouletteTable({
     <div className="mx-auto w-full max-w-[1500px]">
       {/* THE FOAM BUFFER — Unified for both wheel and table */}
       <div
-        className="relative p-8 sm:p-12 rounded-[50px] shadow-[0_40px_100px_rgba(0,0,0,0.9)] w-full overflow-hidden"
+        className="relative p-8 sm:p-12 rounded-[50px] shadow-[0_40px_100px_rgba(0,0,0,0.9)] w-full overflow-hidden mobile-foam-compact"
         style={{
           background: '#2d1a10', // Rich leather brown
           backgroundImage: `
@@ -71,9 +71,9 @@ export default function RouletteTable({
 
         {/* The green felt area — Unified horizontal row */}
         <div
-          className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-8"
+          className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-8 mobile-felt-stack"
           style={{
-            background: '#2b8673', // Rich casino green
+            background: 'rgb(16, 56, 47)', // Dark casino green
             borderColor: '#11352e',
             padding: '2rem 3rem 2rem 0.5rem',
             zIndex: 2,
@@ -84,7 +84,7 @@ export default function RouletteTable({
           {/* Wheel Section (Left) */}
           <motion.div
             ref={wheelRef}
-            className="relative flex justify-center items-center flex-1"
+            className="relative flex justify-center items-center flex-1 mobile-wheel-section"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
           >
@@ -138,7 +138,7 @@ export default function RouletteTable({
 
           {/* Table Section (Right) */}
           <motion.div
-            className="flex-[2] flex flex-col items-center justify-center p-2"
+            className="flex-[2] flex flex-col items-center justify-center p-2 mobile-table-section"
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
             animate={{ opacity: 1, x: 0.5, scaleX: 1.14, scaleY: 1.55 }}
             transition={{ duration: 0.5 }}
