@@ -140,7 +140,7 @@ export default function RouletteTable({
           <motion.div
             className="flex-[2] flex flex-col items-center justify-center p-2"
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0.5, scale: 1.1 }}
+            animate={{ opacity: 1, x: 0.5, scaleX: 1.14, scaleY: 1.55 }}
             transition={{ duration: 0.5 }}
           >
             <div className="w-full">
