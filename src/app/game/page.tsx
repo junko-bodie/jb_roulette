@@ -85,64 +85,17 @@ export default function GamePage() {
       className="flex flex-col h-screen w-full overflow-hidden select-none mobile-root-scroll"
       style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
     >
+      {/* ═══ TOP BAR — HISTORY ONLY ═══ */}
       <header
-        className="flex-shrink-0 flex items-center justify-between px-4 lg:px-6 py-0.5 z-10 gap-3 mobile-header-compact"
+        className="flex-shrink-0 flex items-center px-6 py-3 z-10 mobile-header-compact"
         style={{
           background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
           borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
           boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
+          minHeight: '60px',
         }}
       >
-        <div className="flex items-center gap-3">
-          <h1
-            className="text-base font-bold tracking-wider"
-            style={{
-              fontFamily: 'var(--font-playfair)',
-              color: '#f4fbfb',
-              textTransform: 'uppercase',
-              letterSpacing: '0.15em',
-            }}
-          >
-            Junko Bodie
-          </h1>
-          <span
-            className="text-[10px] px-1.5 py-0.5 rounded"
-            style={{
-              background: 'linear-gradient(135deg, #c9a44c, #8b6b22)',
-              color: '#fff',
-              fontFamily: 'var(--font-inter)',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Roulette
-          </span>
-        </div>
-
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-8 mobile-hide">
-            <SessionStats {...game.sessionStats} />
-            <SpinHistory history={game.history} />
-          </div>
-
-          <div className="flex items-center gap-6 mobile-stats-row">
-            {/* Bet Display - Prominent */}
-            <div className="flex flex-col items-center px-6 py-1 rounded-xl bg-black/40 border border-[#c9a44c]/40 shadow-[0_0_15px_rgba(201,164,76,0.2)]">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a44c] font-bold mb-0.5">Total Bet</span>
-              <span className="text-2xl font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
-                ${game.totalBet.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Balance Display - Prominent */}
-            <div className="flex flex-col items-center px-6 py-1 rounded-xl bg-gradient-to-b from-[#3b2518] to-black border-2 border-[#c9a44c]/60 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a44c]/80 font-bold mb-0.5">Balance</span>
-              <span className="text-2xl font-black text-[#f4fbfb]" style={{ fontFamily: 'var(--font-playfair)' }}>
-                ${game.balance.toLocaleString()}
-              </span>
-            </div>
-          </div>
-        </div>
+        <SpinHistory history={game.history} />
       </header>
 
       <div className="mobile-rotate-warning">
@@ -152,7 +105,7 @@ export default function GamePage() {
         </div>
       </div>
 
-      <main className="mobile-game-content mobile-landscape-main flex-1 relative px-0.5 md:px-1 lg:px-2 py-0 overflow-hidden flex flex-col justify-start pt-4 items-center">
+      <main className="mobile-game-content mobile-landscape-main flex-1 relative px-0.5 md:px-1 lg:px-2 py-0 overflow-hidden flex flex-col justify-start pt-0 items-center">
 
         <RouletteTable
           wheelType={game.wheelType}
@@ -168,86 +121,68 @@ export default function GamePage() {
           lastPayout={game.lastPayout}
           phase={game.phase}
           setWheelType={game.setWheelType}
+          onSpin={handleSpin}
+          onRebet={game.rebet}
+          onClearBets={game.clearBets}
+          onClearLastBet={game.clearLastBet}
+          hasLastSpin={game.hasLastSpin}
         />
       </main>
 
-      {/* NEW BOTTOM BAR (CHANGE 11) */}
+      {/* ═══ FOOTER — Chips left, Stats right ═══ */}
       <footer
-        className="flex-shrink-0 h-24 w-full px-6 flex items-center justify-between z-10 mobile-footer-compact"
+        className="flex-shrink-0 w-full px-4 flex items-center justify-between z-10 mobile-footer-compact"
         style={{
           background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
           borderTop: '1px solid rgba(201, 164, 76, 0.3)',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.5)'
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.5)',
+          padding: '8px 16px',
         }}
       >
-        {/* Left: Chip Selection Tray */}
-        <div className="flex-1 max-w-[500px]">
-          <ChipTray
-            selectedChip={game.selectedChip}
-            onSelectChip={game.setSelectedChip}
-            balance={game.balance}
-            totalBet={game.totalBet}
-            disabled={isSpinningWheel}
-          />
+        {/* Left: Chip Selection Tray + Player Info */}
+        <div className="flex items-center gap-3">
+          <div className="max-w-[400px]">
+            <ChipTray
+              selectedChip={game.selectedChip}
+              onSelectChip={game.setSelectedChip}
+              balance={game.balance}
+              totalBet={game.totalBet}
+              disabled={isSpinningWheel}
+            />
+          </div>
+
+          {/* Player Info */}
+          <div className="flex items-center gap-2 px-4 border-x border-white/5 mobile-player-info">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c9a44c] to-[#8b6b22] border-2 border-white/10 flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-sm">JB</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-[#c9a44c] uppercase tracking-widest">Player One</span>
+              <span className="text-[9px] text-white/40">Tier: High Roller</span>
+            </div>
+          </div>
         </div>
 
-        {/* Center: Player Info Placeholder */}
-        <div className="flex items-center gap-3 px-8 border-x border-white/5 mobile-player-info">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#c9a44c] to-[#8b6b22] border-2 border-white/10 flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">JB</span>
+        {/* Right: Balance + Stats */}
+        <div className="flex items-center gap-3">
+          {/* Balance */}
+          <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold">Balance</span>
+            <span className="text-sm font-black text-[#f4fbfb]" style={{ fontFamily: 'var(--font-playfair)' }}>
+              ${game.balance.toLocaleString()}
+            </span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-[#c9a44c] uppercase tracking-widest">Player One</span>
-            <span className="text-[10px] text-white/40">Tier: High Roller</span>
+
+          {/* Session Stats (Last Bet, Last Win, Session) */}
+          <SessionStats {...game.sessionStats} />
+
+          {/* Total Bet */}
+          <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-black/40 border border-[#c9a44c]/30 shadow-inner">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold">Total Bet</span>
+            <span className="text-sm font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
+              ${game.totalBet.toLocaleString()}
+            </span>
           </div>
-        </div>
-
-        {/* Right: Action Buttons Group */}
-        <div className="flex-1 flex items-center justify-end gap-3 mobile-actions-grid">
-          {/* Rebet */}
-          <button
-            onClick={game.rebet}
-            disabled={isSpinningWheel || game.phase !== 'BETTING' || !game.hasLastSpin}
-            className="px-12 py-6 rounded-xl font-black text-base uppercase tracking-[0.2em] transition-all duration-300 border border-[#c9a44c]/40 bg-gradient-to-br from-[#c9a44c] to-[#8b6b22] text-white shadow-[0_4px_15px_rgba(0,0,0,0.3),0_0_15px_rgba(201,164,76,0.2)] hover:scale-105 active:scale-95 hover:shadow-[0_6px_20px_rgba(201,164,76,0.4)] disabled:opacity-20 disabled:grayscale disabled:scale-100"
-            style={{ fontFamily: 'var(--font-inter)' }}
-          >
-            Rebet
-          </button>
-
-          {/* Clear Last Bet */}
-          <button
-            onClick={game.clearLastBet}
-            disabled={isSpinningWheel || game.phase !== 'BETTING' || game.bets.size === 0}
-            className="px-12 py-6 rounded-xl font-black text-base uppercase tracking-[0.2em] transition-all duration-300 border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white shadow-[0_4px_10px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95 disabled:opacity-20 disabled:scale-100"
-            style={{ fontFamily: 'var(--font-inter)' }}
-          >
-            Clear Last
-          </button>
-
-          {/* Clear All */}
-          <button
-            onClick={game.clearBets}
-            disabled={isSpinningWheel || game.phase !== 'BETTING' || game.bets.size === 0}
-            className="px-12 py-6 rounded-xl font-black text-base uppercase tracking-[0.2em] transition-all duration-300 border border-red-500/30 bg-red-500/5 text-red-400/80 hover:bg-red-500/15 hover:text-red-400 shadow-[0_4px_10px_rgba(0,0,0,0.2)] hover:scale-105 active:scale-95 disabled:opacity-20 disabled:scale-100"
-            style={{ fontFamily: 'var(--font-inter)' }}
-          >
-            Clear
-          </button>
-
-          {/* SPIN - LARGEST */}
-          <button
-            onClick={handleSpin}
-            disabled={isSpinningWheel || game.phase !== 'BETTING' || game.bets.size === 0}
-            className={`
-              ml-4 px-16 py-7 rounded-xl font-black text-2xl uppercase tracking-widest transition-all duration-300 shadow-xl
-              ${(game.bets.size > 0 && !(isSpinningWheel || game.phase !== 'BETTING'))
-                ? 'bg-gradient-to-b from-[#10b981] to-[#047857] text-white scale-105 hover:scale-110 active:scale-95 shadow-emerald-500/20'
-                : 'bg-gray-800 text-gray-600 cursor-not-allowed opacity-50'}
-            `}
-            style={{ fontFamily: 'var(--font-playfair)' }}
-          >
-            {isSpinningWheel ? 'Spinning...' : 'Spin'}
-          </button>
         </div>
       </footer>
 

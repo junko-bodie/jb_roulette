@@ -236,7 +236,7 @@ function OutsideBetCell({
   phase,
   usePremiumFont,
 }: {
-  label: string;
+  label: React.ReactNode;
   bet: PlacedBet | undefined;
   onPlace: () => void;
   onRemove: () => void;
@@ -354,8 +354,8 @@ export default function BettingLayout({
           boxShadow: `0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(30, 77, 43, 0.1)`,
         }}
       >
-        {/* Zero row */}
-        <div className="grid grid-cols-[32px_1fr] sm:grid-cols-[48px_1fr] md:grid-cols-[60px_1fr] gap-0">
+        {/* Zero row + number grid + 2-1 column */}
+        <div className="grid grid-cols-[32px_1fr_32px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0">
           {/* 0 and 00 */}
           <div className="grid grid-rows-2 gap-0 relative">
             <NumberCell
@@ -596,15 +596,32 @@ export default function BettingLayout({
               />
             </div>
           </div>
+
+          {/* 2-1 Column bet buttons (right side) */}
+          <div className="grid grid-rows-3 gap-0">
+            {['column-3rd', 'column-2nd', 'column-1st'].map((colId) => (
+              <OutsideBetCell
+                key={colId}
+                label="2-1"
+                bet={bets.get(colId)}
+                onPlace={() => onPlaceBet(colId)}
+                onRemove={() => onRemoveBet(colId)}
+                disabled={disabled}
+                isWinner={isBetWinner(colId)}
+                phase={phase}
+                usePremiumFont={true}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Dozens row */}
-        <div className="grid grid-cols-[32px_1fr_1fr_1fr] sm:grid-cols-[48px_1fr_1fr_1fr] md:grid-cols-[60px_1fr_1fr_1fr] gap-0">
+        <div className="grid grid-cols-[32px_1fr_1fr_1fr_32px] sm:grid-cols-[48px_1fr_1fr_1fr_40px] md:grid-cols-[60px_1fr_1fr_1fr_48px] gap-0">
           <div />
           {[
-            { id: 'dozen-1st', label: '1st 12' },
-            { id: 'dozen-2nd', label: '2nd 12' },
-            { id: 'dozen-3rd', label: '3rd 12' },
+            { id: 'dozen-1st', label: <span>1<sup style={{ fontSize: '0.65em' }}>st</sup> 12</span> },
+            { id: 'dozen-2nd', label: <span>2<sup style={{ fontSize: '0.65em' }}>nd</sup> 12</span> },
+            { id: 'dozen-3rd', label: <span>3<sup style={{ fontSize: '0.65em' }}>rd</sup> 12</span> },
           ].map((item) => (
             <OutsideBetCell
               key={item.id}
@@ -618,10 +635,11 @@ export default function BettingLayout({
               usePremiumFont={true}
             />
           ))}
+          <div />
         </div>
 
         {/* Even-money bets row */}
-        <div className="grid grid-cols-[32px_1fr_1fr_1fr_1fr_1fr_1fr] sm:grid-cols-[48px_1fr_1fr_1fr_1fr_1fr_1fr] md:grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr] gap-0">
+        <div className="grid grid-cols-[32px_1fr_1fr_1fr_1fr_1fr_1fr_32px] sm:grid-cols-[48px_1fr_1fr_1fr_1fr_1fr_1fr_40px] md:grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr_48px] gap-0">
           <div />
           <OutsideBetCell
             label="1-18"
@@ -679,6 +697,7 @@ export default function BettingLayout({
             isWinner={isBetWinner('high')}
             phase={phase}
           />
+          <div />
         </div>
 
       </div>

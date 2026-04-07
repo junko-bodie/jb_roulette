@@ -24,18 +24,16 @@ function getCircleBg(color: SpinResult['color']): string {
 }
 
 export default function SpinHistory({ history }: SpinHistoryProps) {
-  if (history.length === 0) return null;
-
   return (
-    <div className="flex items-center gap-2 px-4 py-2">
+    <div className="flex items-center gap-3 px-4 py-1">
       <span
-        className="text-[10px] uppercase tracking-widest mr-1 whitespace-nowrap"
-        style={{ color: COLORS.textSecondary, fontFamily: 'var(--font-inter)' }}
+        className="text-sm font-bold uppercase tracking-[0.2em] mr-3 whitespace-nowrap"
+        style={{ color: '#e0d6c2', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.2em' }}
       >
         History
       </span>
 
-      <div className="flex flex-row-reverse items-center justify-end gap-1.5 overflow-hidden">
+      <div className="flex flex-row items-center justify-start gap-1.5 overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
           {history.map((result, index) => {
             const isNewest = index === history.length - 1;
@@ -55,7 +53,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
                   scale: { type: 'spring', stiffness: 400, damping: 22 },
                   opacity: { duration: 0.3 },
                 }}
-                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{
                   background: getCircleBg(result.color),
                   border: isNewest
@@ -68,7 +66,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
               >
                 <span
                   className="text-white font-semibold"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: '0.6rem' }}
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: '0.75rem' }}
                 >
                   {result.displayNumber}
                 </span>

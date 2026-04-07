@@ -23,6 +23,12 @@ interface RouletteTableProps {
   lastPayout: PayoutResult | null;
   phase: string;
   setWheelType: (type: WheelType) => void;
+  // Button action props
+  onSpin: () => void;
+  onRebet: () => void;
+  onClearBets: () => void;
+  onClearLastBet: () => void;
+  hasLastSpin: boolean;
 }
 
 export default function RouletteTable({
@@ -39,7 +45,16 @@ export default function RouletteTable({
   lastPayout,
   phase,
   setWheelType,
+  onSpin,
+  onRebet,
+  onClearBets,
+  onClearLastBet,
+  hasLastSpin,
 }: RouletteTableProps) {
+  const canBet = !isSpinning && phase === 'BETTING';
+  const hasBets = bets.size > 0;
+  const spinEnabled = canBet && hasBets;
+
   return (
     <div className="mx-auto w-full max-w-[1500px]">
       {/* THE FOAM BUFFER — Unified for both wheel and table */}
@@ -73,7 +88,7 @@ export default function RouletteTable({
         <div
           className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-8 mobile-felt-stack"
           style={{
-            background: 'rgb(16, 56, 47)', // Dark casino green
+            background: 'rgba(10, 35, 29, 1)', // Dark casino green
             borderColor: '#11352e',
             padding: '2rem 3rem 2rem 0.5rem',
             zIndex: 2,
@@ -143,6 +158,38 @@ export default function RouletteTable({
             animate={{ opacity: 1, x: 0.5, scaleX: 1.14, scaleY: 1.55 }}
             transition={{ duration: 0.5 }}
           >
+            {/* Junko Bodie Title — above the betting grid */}
+            <div className="flex flex-col items-center mb-0.5 -mt-2" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
+              <h1
+                className="text-2xl md:text-3xl tracking-wider"
+                style={{
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontStyle: 'italic',
+                  color: '#f0e6c8',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(201,164,76,0.15)',
+                  letterSpacing: '0.2em',
+                  fontWeight: 400,
+                }}
+              >
+                Junko Bodie
+              </h1>
+              <div className="flex items-center gap-2 -mt-0.5">
+                <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" />
+                <span
+                  className="text-[10px] uppercase tracking-[0.3em]"
+                  style={{
+                    color: '#c9a44c',
+                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontWeight: 600,
+                  }}
+                >
+                  Roulette
+                </span>
+                <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" />
+              </div>
+            </div>
+
+            {/* Betting Grid */}
             <div className="w-full">
               <BettingLayout
                 bets={bets}
@@ -154,6 +201,131 @@ export default function RouletteTable({
                 showWinHighlight={!!currentResult && !isSpinning}
                 phase={phase}
               />
+            </div>
+
+            {/* ═══ BUTTONS — directly below betting grid ═══ */}
+            <div
+              className="flex items-center justify-end gap-2 mt-1.5 w-full"
+              style={{ transform: 'scaleX(0.877) scaleY(0.645)' }}
+            >
+              {/* RESET — compact bordered box */}
+              <button
+                onClick={onRebet}
+                disabled={!canBet || !hasLastSpin}
+                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                style={{
+                  fontFamily: 'var(--font-inter)',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                  color: '#d4d0c4',
+                  background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                  border: '1.5px solid #5ea896',
+                  borderRadius: '3px',
+                  padding: '5px 10px',
+                  lineHeight: 1,
+                }}
+              >
+                Reset
+              </button>
+
+              {/* CLEAR — compact bordered box (clears all bets) */}
+              <button
+                onClick={onClearBets}
+                disabled={!canBet || !hasBets}
+                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                style={{
+                  fontFamily: 'var(--font-inter)',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                  color: '#d4d0c4',
+                  background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                  border: '1.5px solid #5ea896',
+                  borderRadius: '3px',
+                  padding: '5px 10px',
+                  lineHeight: 1,
+                }}
+              >
+                Clear
+              </button>
+
+              {/* CLEAR LAST BET — compact bordered box with sub-label */}
+              <button
+                onClick={onClearLastBet}
+                disabled={!canBet || !hasBets}
+                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                style={{
+                  fontFamily: 'var(--font-inter)',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                  color: '#d4d0c4',
+                  background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                  border: '1.5px solid #5ea896',
+                  borderRadius: '3px',
+                  padding: '3px 8px',
+                  lineHeight: 1,
+                  display: 'flex',
+                  flexDirection: 'column' as const,
+                  alignItems: 'center',
+                  gap: '1px',
+                }}
+              >
+                <span>Clear</span>
+                <span style={{ fontSize: '6px', opacity: 0.6, letterSpacing: '0.05em' }}>LAST BET</span>
+              </button>
+
+              {/* SPIN — dark green oval with thick gold border */}
+              <motion.button
+                onClick={onSpin}
+                disabled={!spinEnabled}
+                whileHover={spinEnabled ? { scale: 1.06, y: -1 } : {}}
+                whileTap={spinEnabled ? { scale: 1.12, y: 1 } : {}}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="relative overflow-hidden cursor-pointer disabled:cursor-not-allowed ml-1"
+                style={{
+                  background: spinEnabled
+                    ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
+                    : 'linear-gradient(180deg, #1a1a1a 0%, #111 100%)',
+                  color: spinEnabled ? '#ffffff' : '#444',
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontStyle: 'italic',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase' as const,
+                  padding: '10px 38px',
+                  borderRadius: '9999px',
+                  borderWidth: spinEnabled ? '3.5px' : '2px',
+                  borderStyle: 'solid',
+                  borderColor: spinEnabled ? '#c9a44c' : '#333',
+                  boxShadow: spinEnabled
+                    ? `0 0 0 2px #1a0f09, 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.3), 0 0 20px rgba(201, 168, 76, 0.2)`
+                    : 'none',
+                  textShadow: spinEnabled ? '0 1px 3px rgba(0,0,0,0.5)' : 'none',
+                }}
+              >
+                {/* Shimmer overlay */}
+                {spinEnabled && !isSpinning && (
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.15) 50%, transparent 65%)',
+                      backgroundSize: '200% 100%',
+                      borderRadius: '9999px',
+                    }}
+                    animate={{ backgroundPosition: ['200% 0%', '-200% 0%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'linear', repeatDelay: 2 }}
+                  />
+                )}
+                <span className="relative z-10">
+                  {isSpinning ? 'Spinning...' : 'SPIN'}
+                </span>
+              </motion.button>
             </div>
           </motion.div>
         </div>

@@ -23,9 +23,9 @@ const TWO_PI = Math.PI * 2;
 
 // ─── Physics constants ────────────────────────────────────────────────────────
 const BALL_ORBIT_START = 0.88;  // fraction of wheel radius
-const BALL_ORBIT_END = 0.58;  // fraction where ball drops into pocket
+const BALL_ORBIT_END = 0.50;  // fraction where ball drops deep into pocket
 const SPIN_DURATION = 6000;  // ms total spin
-const BALL_SETTLE_AT = 0.72;  // fraction into spin when ball starts dropping
+const BALL_SETTLE_AT = 0.68;  // fraction into spin when ball starts dropping (earlier start for more drama)
 
 function easeOutQuad(t: number) { return 1 - (1 - t) * (1 - t); }
 function easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3); }
@@ -500,12 +500,12 @@ export default function RouletteWheel({
       // pocketMid is aligned with where pocket labels are drawn so the ball
       // visually "locks" onto one value (not between two).
       const trackMid = R * 0.885;
-      const pocketMid = R * 0.821;
+      const pocketBottom = R * 0.68; // deep into the pocket, near the inner edge
       const t = Math.min(
         1,
         Math.max(0, (ballRadius - BALL_ORBIT_END) / (BALL_ORBIT_START - BALL_ORBIT_END))
-      ); // 0 (dropped) … 1 (outer track)
-      const orbitR = pocketMid + t * (trackMid - pocketMid);
+      ); // 0 (dropped to pocket bottom) … 1 (outer track)
+      const orbitR = pocketBottom + t * (trackMid - pocketBottom);
 
       const yScale = 1; // perspective squash handled by CSS rotateX
       const bx = cx + Math.cos(ballAngle) * orbitR;
@@ -592,39 +592,50 @@ export default function RouletteWheel({
         if (t > BALL_SETTLE_AT) {
           const dropT = (t - BALL_SETTLE_AT) / (1 - BALL_SETTLE_AT);
           
-          // Realistic spiral inward
-          s.ballRadius = BALL_ORBIT_START - (BALL_ORBIT_START - BALL_ORBIT_END) * easeOutCubic(dropT);
+          // Spiral inward: fast initial drop, then slow settle into pocket
+          const spiralT = easeOutCubic(dropT);
+          s.ballRadius = BALL_ORBIT_START - (BALL_ORBIT_START - BALL_ORBIT_END) * spiralT;
 
-          // ── REALISTIC BOUNCE LOGIC (CHANGE 6) ──
-          // Use a decaying sine wave for height (Z) with multiple impacts
-          if (dropT < 0.8) {
-            // Three main bounces
-            const bouncePhase = dropT * 22; // Frequency of bounces
-            const bounceHeight = Math.abs(Math.sin(bouncePhase)) * Math.pow(1 - dropT, 1.5) * 22;
+          // ── REALISTIC POCKET BOUNCE ──
+          // Three distinct bounces with rapidly decaying height
+          if (dropT < 0.85) {
+            // Phase 1: Initial dramatic drop with 3 clear bounces
+            const bounceFreq = dropT * 18; // controls how many bounces
+            const decay = Math.pow(1 - dropT * 0.9, 2.5); // sharp decay
+            const bounceHeight = Math.abs(Math.sin(bounceFreq * Math.PI)) * decay * 28;
             s.ballZ = bounceHeight;
 
-            // Add slight "jitter" to angle when hitting or near the floor (impact)
-            if (bounceHeight < 3) {
-              s.wobble = (Math.random() - 0.5) * 0.015;
+            // Slight radial wiggle during bounces — ball rattles in the pocket
+            if (bounceHeight > 2) {
+              const wobbleAmount = bounceHeight * 0.003;
+              s.ballRadius += Math.sin(bounceFreq * 3) * wobbleAmount;
+            }
+
+            // Impact sounds when ball hits pocket floor
+            if (bounceHeight < 2 && s.ballZ < 3) {
+              s.wobble = (Math.random() - 0.5) * 0.01;
               s.ballAngle += s.wobble;
               
-              // Occasionally play a soft bounce sound if nearing impact
-              if (now - s.lastTickTime > 120 && Math.random() > 0.7) {
-                soundEngine?.playWheelTick(); // Using tick as a placeholder bounce sound
+              if (now - s.lastTickTime > 150 && Math.random() > 0.6) {
+                soundEngine?.playWheelTick();
                 s.lastTickTime = now;
               }
             } else {
-              s.wobble *= 0.9;
+              s.wobble *= 0.85;
             }
           } else {
-            // Settle phase
-            s.ballZ *= 0.7; // Dampen remaining vertical velocity
-            if (s.ballZ < 0.1) s.ballZ = 0;
+            // Phase 2: Final settle — ball comes to rest at pocket bottom
+            const settleT = (dropT - 0.85) / 0.15;
+            s.ballZ *= (1 - settleT); // smooth damp to zero
+            if (s.ballZ < 0.05) s.ballZ = 0;
             s.wobble = 0;
             
-            // Lock ball angle to target pocket more aggressively as we approach t=1
-            const lockT = (dropT - 0.8) / 0.2;
-            s.ballAngle = s.ballAngle * (1 - lockT * 0.1) + s.targetBallAngle * (lockT * 0.1);
+            // Ensure ball is fully at pocket bottom
+            s.ballRadius = BALL_ORBIT_END;
+            
+            // Lock ball angle smoothly to target
+            const lockStrength = easeOutCubic(settleT) * 0.15;
+            s.ballAngle = s.ballAngle * (1 - lockStrength) + s.targetBallAngle * lockStrength;
           }
         } else {
           s.ballRadius = BALL_ORBIT_START;
