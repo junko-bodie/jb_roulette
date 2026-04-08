@@ -4,85 +4,108 @@ import { Howl } from 'howler';
 
 /**
  * AudioEngine — Manages all game sound effects using Howler.js
- * Uses royalty-free sound assets for a premium casino experience.
+ * Uses local sound assets for a premium casino experience.
+ *
+ * Sound files:
+ *   /sounds/spin.mp3  — looping roulette wheel spin
+ *   /sounds/win.mp3   — victory fanfare
+ *   /sounds/lose.mp3  — loss / bust effect
  */
 class AudioEngine {
   private sounds: Record<string, Howl> = {};
   private enabled: boolean = true;
+  private spinId: number | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
       this.sounds = {
         chip: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'], // Casino chip
-          volume: 0.3
-        }),
-        tick: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/500/500-preview.mp3'], // Clean click
-          volume: 0.05
-        }),
-        win: new Howl({
-          src: ['https://raw.githubusercontent.com/IgorAntun/Roulette/master/sounds/win.wav'], // Clean winner chime
-          volume: 0.5
-        }),
-        loss: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'], // Soft loss
-          volume: 0.3
+          src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'],
+          volume: 0.3,
         }),
         spin: new Howl({
-          src: ['https://raw.githubusercontent.com/IgorAntun/Roulette/master/sounds/spin.wav'], // Clean mechanical spin
-          volume: 0.3,
-          loop: true
-        })
+          src: ['/sounds/spin.mp3'],
+          volume: 0.25,
+          loop: true,
+          preload: true,
+        }),
+        win: new Howl({
+          src: ['/sounds/win.mp3'],
+          volume: 0.5,
+          preload: true,
+        }),
+        loss: new Howl({
+          src: ['/sounds/lose.mp3'],
+          volume: 0.4,
+          preload: true,
+        }),
       };
     }
   }
+
+  // ── Chip / Tick ────────────────────────────────────────────────────────────
 
   playChipSound() {
     if (this.enabled && this.sounds.chip) this.sounds.chip.play();
   }
 
   playWheelTick() {
-    // Play with slight random pitch to sound more natural/physical
     if (this.enabled && this.sounds.tick) {
       const id = this.sounds.tick.play();
       this.sounds.tick.rate(0.8 + Math.random() * 0.4, id);
     }
   }
 
+  // ── Win / Loss ─────────────────────────────────────────────────────────────
+
   playWinSound() {
-    if (this.enabled && this.sounds.win) this.sounds.win.play();
-  }
-
-  playLossSound() {
-    if (this.enabled && this.sounds.loss) this.sounds.loss.play();
-  }
-
-  startSpinSound() {
-    if (this.enabled && this.sounds.spin) {
-      console.log('AudioEngine: Starting spin sound');
-      this.sounds.spin.stop();
-      this.sounds.spin.volume(0.2);
-      this.sounds.spin.play();
+    if (this.enabled && this.sounds.win) {
+      this.sounds.win.stop();   // reset in case it's still playing
+      this.sounds.win.play();
     }
   }
 
+  playLossSound() {
+    if (this.enabled && this.sounds.loss) {
+      this.sounds.loss.stop();
+      this.sounds.loss.play();
+    }
+  }
+
+  // ── Spin sound (looping, with real-time volume/rate control) ───────────────
+
+  startSpinSound() {
+    if (this.enabled && this.sounds.spin) {
+      this.sounds.spin.stop();
+      this.sounds.spin.volume(0.25);
+      this.sounds.spin.rate(1.0);
+      this.spinId = this.sounds.spin.play();
+    }
+  }
+
+  /**
+   * Dynamically adjust the spinning sound to follow the wheel deceleration.
+   * Called every animation frame by RouletteWheel.tsx.
+   */
   setSpinEffect(volume: number, rate: number) {
     if (this.sounds.spin && this.sounds.spin.playing()) {
-      this.sounds.spin.volume(volume);
-      this.sounds.spin.rate(rate);
+      this.sounds.spin.volume(Math.max(0, Math.min(1, volume)));
+      this.sounds.spin.rate(Math.max(0.1, Math.min(2, rate)));
     }
   }
 
   stopSpinSound() {
     if (this.sounds.spin) {
-      console.log('AudioEngine: Stopping spin sound');
       this.sounds.spin.stop();
+      this.spinId = null;
     }
   }
 
+  // ── Global controls ───────────────────────────────────────────────────────
+
   stopAll() {
     Object.values(this.sounds).forEach(s => s.stop());
+    this.spinId = null;
   }
 
   toggleSound() {
