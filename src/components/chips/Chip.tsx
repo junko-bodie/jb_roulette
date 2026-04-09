@@ -119,7 +119,7 @@ export default function Chip({
             style={{
               color: textColor,
               fontSize: size * 0.22,
-              fontFamily: 'var(--font-inter)',
+              fontFamily: "'Bodoni Moda', serif",
               filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))'
             }}
           >

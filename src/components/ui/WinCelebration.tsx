@@ -50,7 +50,7 @@ export default function WinCelebration({ show, onComplete }: WinCelebrationProps
               animate={{ 
                 x: `${p.x}vw`, 
                 y: `${p.y}vh`, 
-                scale: [0, 1.5, 0.5], 
+                scale: [0, 2.5, 1], // Increased scale
                 opacity: [1, 1, 0],
                 rotate: 360
               }}
@@ -59,7 +59,7 @@ export default function WinCelebration({ show, onComplete }: WinCelebrationProps
                 delay: p.delay,
                 ease: "easeOut"
               }}
-              className="absolute w-4 h-4 rounded-full border-2 border-yellow-500 shadow-[0_0_10px_rgba(251,191,36,0.6)]"
+              className="absolute w-6 h-6 rounded-full border-2 border-yellow-500 shadow-[0_0_15px_rgba(251,191,36,0.7)]" // Increased size and shadow
               style={{
                 background: 'linear-gradient(135deg, #fbbf24, #d97706)',
               }}
@@ -68,10 +68,14 @@ export default function WinCelebration({ show, onComplete }: WinCelebrationProps
 
           {/* WIN Text */}
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.5 }}
-            animate={{ opacity: [0, 1, 1, 0], y: [20, 0, -20, -40], scale: [0.5, 1.2, 1.2, 1] }}
+            initial={{ opacity: 0, y: 100, scale: 0.5 }} // Start lower
+            animate={{ 
+              opacity: [0, 1, 1, 0], 
+              y: [120, 150, 180, 200], // Move it further down to avoid the center circle
+              scale: [0.5, 1.5, 1.5, 1.2] // 50% bigger
+            }}
             transition={{ duration: 2, ease: "easeOut" }}
-            className="absolute text-6xl font-black text-yellow-400 drop-shadow-[0_0_30px_rgba(251,191,36,0.8)]"
+            className="absolute text-8xl font-black text-yellow-400 drop-shadow-[0_0_40px_rgba(251,191,36,0.9)]" // Bigger text and shadow
             style={{ fontFamily: 'var(--font-playfair)', textTransform: 'uppercase', letterSpacing: '0.2em' }}
           >
             Big Win!

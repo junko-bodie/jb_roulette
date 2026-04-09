@@ -82,7 +82,7 @@ export default function GamePage() {
 
   return (
     <div
-      className="flex flex-col h-screen w-full overflow-hidden select-none mobile-root-scroll"
+      className="flex flex-col h-screen w-full overflow-hidden sm:overflow-hidden select-none mobile-root-scroll"
       style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
     >
       {/* ═══ TOP BAR — HISTORY ONLY ═══ */}
@@ -105,7 +105,7 @@ export default function GamePage() {
         </div>
       </div>
 
-      <main className="mobile-game-content mobile-landscape-main flex-1 relative px-0.5 md:px-1 lg:px-2 py-0 overflow-hidden flex flex-col justify-start pt-0 items-center">
+      <main className="mobile-game-content mobile-landscape-main flex-1 relative px-0.5 md:px-1 lg:px-2 py-0 overflow-visible sm:overflow-hidden flex flex-col justify-start pt-0 items-center">
 
         <RouletteTable
           wheelType={game.wheelType}
@@ -152,7 +152,7 @@ export default function GamePage() {
           </div>
 
           {/* Player Info */}
-          <div className="flex items-center gap-2 px-4 border-x border-white/5 mobile-player-info">
+          <div className="hidden sm:flex items-center gap-2 px-4 border-x border-white/5 mobile-player-info">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c9a44c] to-[#8b6b22] border-2 border-white/10 flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-sm">JB</span>
             </div>

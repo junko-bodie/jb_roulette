@@ -733,17 +733,6 @@ export default function RouletteWheel({
           }}
         />
       </div>
-      <div
-        className="absolute top-[5%] left-1/2 -translate-x-1/2 z-10"
-        style={{
-          width: 0,
-          height: 0,
-          borderLeft: '9px solid transparent',
-          borderRight: '9px solid transparent',
-          borderTop: '20px solid #f8e39a',
-          filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.6))',
-        }}
-      />
     </div>
   );
 }

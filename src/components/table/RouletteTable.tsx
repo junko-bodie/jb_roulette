@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import RouletteWheel from './RouletteWheel';
 import BettingLayout from './BettingLayout';
@@ -51,6 +51,17 @@ export default function RouletteTable({
   onClearLastBet,
   hasLastSpin,
 }: RouletteTableProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const canBet = !isSpinning && phase === 'BETTING';
   const hasBets = bets.size > 0;
   const spinEnabled = canBet && hasBets;
@@ -93,7 +104,6 @@ export default function RouletteTable({
             padding: '2rem 3rem 2rem 0.5rem',
             zIndex: 2,
             boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
-            minHeight: '560px'
           }}
         >
           {/* Wheel Section (Left) */}
@@ -153,9 +163,12 @@ export default function RouletteTable({
 
           {/* Table Section (Right) */}
           <motion.div
-            className="flex-[2] flex flex-col items-center justify-center p-2 mobile-table-section"
+            className="flex-[2] flex flex-col items-center justify-center p-2 mobile-table-section w-full"
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0.5, scaleX: 1.14, scaleY: 1.55 }}
+            animate={isMobile 
+              ? { opacity: 1, x: 0, scale: 1 } 
+              : { opacity: 1, x: 0.5, scaleX: 1.14, scaleY: 1.82 }
+            }
             transition={{ duration: 0.5 }}
           >
             {/* Junko Bodie Title — above the betting grid */}
@@ -163,7 +176,7 @@ export default function RouletteTable({
               <h1
                 className="text-2xl md:text-3xl tracking-wider"
                 style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontFamily: "'Bodoni Moda', serif",
                   fontStyle: 'italic',
                   color: '#f0e6c8',
                   textShadow: '0 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(201,164,76,0.15)',
@@ -179,7 +192,7 @@ export default function RouletteTable({
                   className="text-[10px] uppercase tracking-[0.3em]"
                   style={{
                     color: '#c9a44c',
-                    fontFamily: "'Playfair Display', Georgia, serif",
+                    fontFamily: "'Bodoni Moda', serif",
                     fontWeight: 600,
                   }}
                 >
@@ -292,7 +305,7 @@ export default function RouletteTable({
                     ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
                     : 'linear-gradient(180deg, #1a1a1a 0%, #111 100%)',
                   color: spinEnabled ? '#ffffff' : '#444',
-                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontFamily: "'Bodoni Moda', serif",
                   fontStyle: 'italic',
                   fontWeight: 700,
                   fontSize: '1rem',

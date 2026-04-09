@@ -86,7 +86,7 @@ export default function ResultDisplay({
           onClick={onDismiss}
         >
           <motion.div
-            className="flex flex-col items-center gap-5"
+            className="flex flex-col items-center gap-8" // Increased gap from 5 to 8
             onClick={(e) => e.stopPropagation()}
           >
             {/* Outer glow ring */}
@@ -98,7 +98,7 @@ export default function ResultDisplay({
             >
               {/* Glow pulse behind the ball */}
               <motion.div
-                className="absolute inset-[-20px] rounded-full"
+                className="absolute inset-[-30px] rounded-full" // Increased inset from -20 to -30
                 style={{
                   background: result.color === 'red'
                     ? 'radial-gradient(circle, rgba(192,57,43,0.4), transparent 70%)'
@@ -107,7 +107,7 @@ export default function ResultDisplay({
                     : 'radial-gradient(circle, rgba(201,168,76,0.3), transparent 70%)',
                 }}
                 animate={{
-                  scale: [1, 1.3, 1],
+                  scale: [1, 1.4, 1], // Increased pulse scale
                   opacity: [0.6, 0.3, 0.6],
                 }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -122,15 +122,15 @@ export default function ResultDisplay({
                   ease: [0.16, 1, 0.3, 1],
                   delay: 0.1,
                 }}
-                className="relative w-36 h-36 rounded-full flex items-center justify-center"
+                className="relative w-52 h-52 rounded-full flex items-center justify-center" // Increased size from 36 to 52
                 style={{
                   background: getResultBg(result.color),
-                  border: `3px solid ${COLORS.gold}`,
+                  border: `4px solid ${COLORS.gold}`, // Thicker border
                   boxShadow: `
-                    0 0 40px rgba(201, 168, 76, 0.35),
-                    0 0 80px rgba(201, 168, 76, 0.15),
-                    inset 0 -4px 12px rgba(0,0,0,0.4),
-                    inset 0 4px 8px rgba(255,255,255,0.1)
+                    0 0 60px rgba(201, 168, 76, 0.45),
+                    0 0 120px rgba(201, 168, 76, 0.25),
+                    inset 0 -6px 16px rgba(0,0,0,0.4),
+                    inset 0 6px 12px rgba(255,255,255,0.1)
                   `,
                 }}
               >
@@ -138,10 +138,10 @@ export default function ResultDisplay({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.4, ease: 'easeOut' }}
-                  className="text-6xl font-bold text-white"
+                  className="text-8xl font-bold text-white" // Increased size from 6xl to 8xl
                   style={{
                     fontFamily: 'var(--font-playfair)',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+                    textShadow: '0 4px 12px rgba(0,0,0,0.6)',
                   }}
                 >
                   {result.displayNumber}
@@ -149,38 +149,7 @@ export default function ResultDisplay({
               </motion.div>
             </motion.div>
 
-            {/* Properties tags */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="flex gap-2"
-            >
-              <span
-                className="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase"
-                style={{
-                  background: result.color === 'red' ? 'rgba(192,57,43,0.8)' :
-                    result.color === 'green' ? 'rgba(39,174,96,0.8)' : 'rgba(60,60,60,0.8)',
-                  color: '#fff',
-                  backdropFilter: 'blur(4px)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
-              >
-                {result.color}
-              </span>
-              {result.parity !== 'none' && (
-                <span className="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase"
-                  style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  {result.parity}
-                </span>
-              )}
-              {result.half !== 'none' && (
-                <span className="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase"
-                  style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  {result.half}
-                </span>
-              )}
-            </motion.div>
+            {/* Removing property tags as requested */}
 
             {/* Payout summary */}
             {payout && (
@@ -191,15 +160,15 @@ export default function ResultDisplay({
                 className="text-center"
               >
                 {payout.netResult > 0 ? (
-                  <p className="text-3xl font-bold" style={{ color: COLORS.gold, fontFamily: 'var(--font-playfair)' }}>
+                  <p className="text-5xl font-bold" style={{ color: COLORS.gold, fontFamily: 'var(--font-playfair)' }}>
                     +$<AnimatedCounter value={payout.netResult} duration={1500} />
                   </p>
                 ) : payout.netResult === 0 && payout.totalReturned > 0 ? (
-                  <p className="text-xl" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-playfair)' }}>
+                  <p className="text-2xl" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-playfair)' }}>
                     Push — Bet Returned
                   </p>
                 ) : (
-                  <p className="text-2xl font-bold" style={{ color: '#e74c3c', fontFamily: 'var(--font-playfair)' }}>
+                  <p className="text-4xl font-bold" style={{ color: '#e74c3c', fontFamily: 'var(--font-playfair)' }}>
                     -$<AnimatedCounter value={payout.totalWagered} duration={800} />
                   </p>
                 )}
@@ -211,7 +180,7 @@ export default function ResultDisplay({
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.35 }}
               transition={{ delay: 2, duration: 0.8 }}
-              className="text-xs text-white mt-4"
+              className="text-sm text-white mt-8" // Slightly larger and more margin
               style={{ fontFamily: 'var(--font-inter)' }}
             >
               Tap anywhere to continue

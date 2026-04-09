@@ -51,7 +51,7 @@ export const COLORS = {
 
 export const FONTS = {
   /** Headline / display font — premium serif */
-  primary: '"Playfair Display", "Georgia", serif',
+  primary: '"Bodoni Moda", "Playfair Display", serif',
   /** Body / UI font — clean sans-serif */
   secondary: '"Inter", "Helvetica Neue", sans-serif',
 } as const;

@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { COLORS } from '@/styles/theme';
 import ChipStack from '@/components/chips/ChipStack';
@@ -31,20 +31,29 @@ interface BettingLayoutProps {
   phase: string;
 }
 
+// --- Number Mappings for Outside Bets ---
+const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+const BLACK_NUMBERS = [2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35];
+const EVEN_NUMBERS = Array.from({ length: 18 }, (_, i) => (i + 1) * 2);
+const ODD_NUMBERS = Array.from({ length: 18 }, (_, i) => i * 2 + 1);
+const LOW_NUMBERS = Array.from({ length: 18 }, (_, i) => i + 1);
+const HIGH_NUMBERS = Array.from({ length: 18 }, (_, i) => i + 19);
+const DOZEN_1ST = Array.from({ length: 12 }, (_, i) => i + 1);
+const DOZEN_2ND = Array.from({ length: 12 }, (_, i) => i + 13);
+const DOZEN_3RD = Array.from({ length: 12 }, (_, i) => i + 25);
+const COLUMN_1ST = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34];
+const COLUMN_2ND = [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35];
+const COLUMN_3RD = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36];
+
 /**
  * Standard roulette numbers grid layout:
  * Rows go left-to-right: [3,6,9,...,36] (top), [2,5,8,...,35] (mid), [1,4,7,...,34] (bot)
  * But we display columns as rows for typical CSS grid.
  */
-
-// The grid: 12 columns x 3 rows of numbers
-// Row 1 (top): 3, 6, 9, ..., 36
-// Row 2 (mid): 2, 5, 8, ..., 35
-// Row 3 (bot): 1, 4, 7, ..., 34
 const GRID_ROWS = [
-  [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36],
-  [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],
-  [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34],
+  COLUMN_3RD,
+  COLUMN_2ND,
+  COLUMN_1ST,
 ];
 
 function getCellBg(num: number): string {
@@ -67,6 +76,8 @@ function NumberCell({
   disabled,
   isWinner,
   phase,
+  style = {},
+  isHovered = false,
 }: {
   num: number;
   bet: PlacedBet | undefined;
@@ -75,6 +86,8 @@ function NumberCell({
   disabled: boolean;
   isWinner: boolean;
   phase: string;
+  style?: React.CSSProperties;
+  isHovered?: boolean;
 }) {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -95,14 +108,17 @@ function NumberCell({
     <motion.button
       onClick={handlePlace}
       onContextMenu={handleContextMenu}
-      className="relative flex items-center justify-center cursor-pointer select-none text-[11px] sm:text-[13px] md:text-sm min-h-[22px] sm:min-h-[30px] md:min-h-[44px] group"
+      className="relative flex items-center justify-center cursor-pointer select-none text-[9px] sm:text-[11px] md:text-sm min-h-[18px] sm:min-h-[30px] md:min-h-[44px] group"
+      initial={{ borderColor: '#5ea896' }}
       style={{
         background: getCellBg(num),
-        border: '1px solid #5ea896',
-        fontFamily: "'Playfair Display', serif",
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        fontFamily: "'Bodoni Moda', serif",
         fontWeight: 700,
         color: '#fff',
-        transition: 'all 0.15s ease',
+        transition: 'background 0.15s ease, color 0.15s ease',
+        ...style,
       }}
       whileHover={
         disabled
@@ -122,7 +138,17 @@ function NumberCell({
             ],
             borderColor: COLORS.gold,
           }
-          : {}
+          : isHovered
+            ? {
+              borderColor: COLORS.gold,
+              boxShadow: `inset 0 0 16px rgba(201, 168, 76, 0.4)`,
+              scale: 1.02,
+            }
+            : {
+              borderColor: (style.borderRight || style.borderLeft || style.borderTop || style.borderBottom) ? undefined : '#5ea896',
+              boxShadow: 'none',
+              scale: 1
+            }
       }
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
@@ -153,6 +179,9 @@ function DropZone({
   disabled,
   isWinner,
   phase,
+  numbers = [],
+  onHover,
+  onHoverEnd,
 }: {
   betId: string;
   x: string;
@@ -165,6 +194,9 @@ function DropZone({
   disabled: boolean;
   isWinner: boolean;
   phase: string;
+  numbers?: number[];
+  onHover?: (nums: number[]) => void;
+  onHoverEnd?: () => void;
 }) {
   const bet = bets.get(betId);
 
@@ -200,6 +232,8 @@ function DropZone({
           }
         }}
         onContextMenu={handleContextMenu}
+        onMouseEnter={() => !disabled && onHover?.(numbers)}
+        onMouseLeave={() => !disabled && onHoverEnd?.()}
         whileHover={disabled ? {} : { scale: 1.2 }}
       />
       {bet && (
@@ -234,7 +268,9 @@ function OutsideBetCell({
   className = '',
   isRed,
   phase,
-  usePremiumFont,
+  numbers = [],
+  onHover,
+  onHoverEnd,
 }: {
   label: React.ReactNode;
   bet: PlacedBet | undefined;
@@ -246,7 +282,9 @@ function OutsideBetCell({
   className?: string;
   isRed?: boolean;
   phase: string;
-  usePremiumFont?: boolean;
+  numbers?: number[];
+  onHover?: (nums: number[]) => void;
+  onHoverEnd?: () => void;
 }) {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -267,16 +305,20 @@ function OutsideBetCell({
     <motion.button
       onClick={handlePlace}
       onContextMenu={handleContextMenu}
-      className={`relative flex items-center justify-center cursor-pointer select-none text-[7px] sm:text-[9px] md:text-xs min-h-[28px] sm:min-h-[36px] md:min-h-[42px] group ${className}`}
+      onMouseEnter={() => !disabled && onHover?.(numbers)}
+      onMouseLeave={() => !disabled && onHoverEnd?.()}
+      className={`relative flex items-center justify-center cursor-pointer select-none text-[6px] sm:text-[9px] md:text-xs min-h-[24px] sm:min-h-[36px] md:min-h-[42px] group ${className}`}
+      initial={{ borderColor: '#5ea896' }}
       style={{
         background: isRed === true ? COLORS.rouletteRed : isRed === false ? '#1e1e1e' : 'transparent',
-        border: '1px solid #5ea896',
-        fontFamily: usePremiumFont ? "'Playfair Display', serif" : 'var(--font-inter)',
-        fontWeight: usePremiumFont ? 700 : 600,
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        fontFamily: "'Bodoni Moda', serif",
+        fontWeight: 700,
         color: '#fff',
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
-        transition: 'all 0.15s ease',
+        transition: 'background 0.15s ease, color 0.15s ease',
         ...style,
       }}
       whileHover={
@@ -325,6 +367,8 @@ export default function BettingLayout({
   showWinHighlight,
   phase,
 }: BettingLayoutProps) {
+  const [hoveredNumbers, setHoveredNumbers] = useState<number[]>([]);
+
   // Check if a specific bet zone won
   const isBetWinner = useCallback(
     (betId: string): boolean => {
@@ -343,285 +387,128 @@ export default function BettingLayout({
     [showWinHighlight, winningResult]
   );
 
+  const handleHover = useCallback((nums: number[]) => {
+    setHoveredNumbers(nums);
+  }, []);
+
+  const handleHoverEnd = useCallback(() => {
+    setHoveredNumbers([]);
+  }, []);
+
   return (
-    <div className="flex flex-col items-center w-full mx-auto">
-      {/* Main grid area */}
+    <div className="flex flex-col items-center w-full mx-auto p-1">
+      {/* SECTION 1: Top Part (Zeros, Numbers, Columns) */}
       <div
-        className="w-full rounded-lg overflow-hidden"
-        style={{
-          background: 'transparent',
-          border: `1px solid #5ea896`,
-          boxShadow: `0 0 30px rgba(0,0,0,0.5), inset 0 0 60px rgba(30, 77, 43, 0.1)`,
-        }}
+        className="grid grid-cols-[32px_1fr_32px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full"
+        style={{ boxShadow: '0 0 30px rgba(0,0,0,0.5)' }}
       >
-        {/* Zero row + number grid + 2-1 column */}
-        <div className="grid grid-cols-[32px_1fr_32px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0">
-          {/* 0 and 00 */}
-          <div className="grid grid-rows-2 gap-0 relative">
-            <NumberCell
-              num={0}
-              bet={bets.get('straight-0')}
-              onPlace={() => onPlaceBet('straight-0')}
-              onRemove={() => onRemoveBet('straight-0')}
-              disabled={disabled}
-              isWinner={isWinningNumber(0) || isBetWinner('straight-0')}
-              phase={phase}
-            />
-            <NumberCell
-              num={37}
-              bet={bets.get('straight-00')}
-              onPlace={() => onPlaceBet('straight-00')}
-              onRemove={() => onRemoveBet('straight-00')}
-              disabled={disabled}
-              isWinner={isWinningNumber(37) || isBetWinner('straight-00')}
-              phase={phase}
-            />
+        {/* ZEROS BLOCK */}
+        <div className="grid grid-rows-2 gap-0 border-l border-t border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative">
+          <NumberCell
+            num={0}
+            bet={bets.get('straight-0')}
+            onPlace={() => onPlaceBet('straight-0')}
+            onRemove={() => onRemoveBet('straight-0')}
+            disabled={disabled}
+            isWinner={isWinningNumber(0) || isBetWinner('straight-0')}
+            phase={phase}
+            style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #000' }}
+            isHovered={hoveredNumbers.includes(0)}
+          />
+          <NumberCell
+            num={37}
+            bet={bets.get('straight-00')}
+            onPlace={() => onPlaceBet('straight-00')}
+            onRemove={() => onRemoveBet('straight-00')}
+            disabled={disabled}
+            isWinner={isWinningNumber(37) || isBetWinner('straight-00')}
+            phase={phase}
+            style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }}
+            isHovered={hoveredNumbers.includes(37)}
+          />
+          {/* Split 0-00 target */}
+          <DropZone
+            betId="split-0-00"
+            x="100%"
+            y="50%"
+            bets={bets}
+            onPlace={onPlaceBet}
+            onRemove={onRemoveBet}
+            disabled={disabled}
+            isWinner={isBetWinner('split-0-00')}
+            phase={phase}
+            numbers={[0, 37]}
+            onHover={handleHover}
+            onHoverEnd={handleHoverEnd}
+          />
+        </div>
 
-            {/* Split 0-00 target — Restored for Week 1 sign-off */}
-            <DropZone
-              betId="split-0-00"
-              x="50%"
-              y="50%"
-              width="24px"
-              height="14px"
-              bets={bets}
-              onPlace={onPlaceBet}
-              onRemove={onRemoveBet}
-              disabled={disabled}
-              isWinner={isBetWinner('split-0-00')}
-              phase={phase}
-            />
-          </div>
-
-          {/* Number grid: 3 rows x 12 columns */}
-          <div className="grid grid-rows-3 gap-0 relative">
-            {GRID_ROWS.map((row, rowIdx) => (
-              <div key={rowIdx} className="grid grid-cols-12 gap-0">
-                {row.map((num) => {
-                  const betId = `straight-${num}`;
-                  return (
-                    <NumberCell
-                      key={num}
-                      num={num}
-                      bet={bets.get(betId)}
-                      onPlace={() => onPlaceBet(betId)}
-                      onRemove={() => onRemoveBet(betId)}
-                      disabled={disabled}
-                      isWinner={isWinningNumber(num) || isBetWinner(betId)}
-                      phase={phase}
-                    />
-                  );
-                })}
-              </div>
-            ))}
-
-            {/* COMBINATION BETS OVERLAY (Splits, Corners, Streets) — Restored for Week 1 sign-off */}
-            <div className="absolute inset-0 pointer-events-none">
-              {/* Horizontal Splits (adjacent columns) */}
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33].map(n => {
-                const betId = `split-${n}-${n + 3}`;
-                const col = Math.floor((n - 1) / 3);
-                const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 1) * (100 / 12)}%`;
-                const top = `${(row + 0.5) * (100 / 3)}%`;
-
+        {/* NUMBERS GRID */}
+        <div className="grid grid-rows-3 gap-0 relative border-t border-[#5ea896] bg-black/10">
+          {GRID_ROWS.map((row, rowIdx) => (
+            <div key={rowIdx} className="grid grid-cols-12 gap-0">
+              {row.map((num) => {
+                const betId = `straight-${num}`;
                 return (
-                  <DropZone
-                    key={betId}
-                    betId={betId}
-                    x={left}
-                    y={top}
-                    width="12px"
-                    height="20px"
-                    bets={bets}
-                    onPlace={onPlaceBet}
-                    onRemove={onRemoveBet}
+                  <NumberCell
+                    key={num}
+                    num={num}
+                    bet={bets.get(betId)}
+                    onPlace={() => onPlaceBet(betId)}
+                    onRemove={() => onRemoveBet(betId)}
                     disabled={disabled}
-                    isWinner={isBetWinner(betId)}
+                    isWinner={isWinningNumber(num) || isBetWinner(betId)}
                     phase={phase}
+                    style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }}
+                    isHovered={hoveredNumbers.includes(num)}
                   />
                 );
               })}
-
-              {/* Vertical Splits (adjacent rows) */}
-              {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32, 34, 35].map(n => {
-                const betId = `split-${n}-${n + 1}`;
-                const col = Math.floor((n - 1) / 3);
-                const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 0.5) * (100 / 12)}%`;
-                const top = `${(row) * (100 / 3)}%`;
-
-                return (
-                  <DropZone
-                    key={betId}
-                    betId={betId}
-                    x={left}
-                    y={top}
-                    width="24px"
-                    height="12px"
-                    bets={bets}
-                    onPlace={onPlaceBet}
-                    onRemove={onRemoveBet}
-                    disabled={disabled}
-                    isWinner={isBetWinner(betId)}
-                    phase={phase}
-                  />
-                );
-              })}
-
-              {/* Corner Bets (4 numbers) */}
-              {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32].map(n => {
-                const betId = `corner-${n}-${n + 1}-${n + 3}-${n + 4}`;
-                const col = Math.floor((n - 1) / 3);
-                const row = 2 - ((n - 1) % 3);
-                const left = `${(col + 1) * (100 / 12)}%`;
-                const top = `${(row) * (100 / 3)}%`;
-
-                return (
-                  <DropZone
-                    key={betId}
-                    betId={betId}
-                    x={left}
-                    y={top}
-                    width="14px"
-                    height="14px"
-                    bets={bets}
-                    onPlace={onPlaceBet}
-                    onRemove={onRemoveBet}
-                    disabled={disabled}
-                    isWinner={isBetWinner(betId)}
-                    phase={phase}
-                  />
-                );
-              })}
-
-              {/* Street Bets (Row of 3) */}
-              {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34].map(n => {
-                const betId = `street-${n}-${n + 1}-${n + 2}`;
-                const col = Math.floor((n - 1) / 3);
-                const left = `${(col + 0.5) * (100 / 12)}%`;
-                const top = `100%`; // Target bottom of the column
-
-                return (
-                  <DropZone
-                    key={betId}
-                    betId={betId}
-                    x={left}
-                    y={top}
-                    width="24px"
-                    height="12px"
-                    bets={bets}
-                    onPlace={onPlaceBet}
-                    onRemove={onRemoveBet}
-                    disabled={disabled}
-                    isWinner={isBetWinner(betId)}
-                    phase={phase}
-                  />
-                );
-              })}
-
-              {/* Sixline Bets (2 adjacent columns) */}
-              {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31].map(n => {
-                const betId = `sixline-${n}-${n + 5}`;
-                const col = Math.floor((n - 1) / 3);
-                const left = `${(col + 1) * (100 / 12)}%`;
-                const top = `100%`;
-
-                return (
-                  <DropZone
-                    key={betId}
-                    betId={betId}
-                    x={left}
-                    y={top}
-                    width="14px"
-                    height="14px"
-                    bets={bets}
-                    onPlace={onPlaceBet}
-                    onRemove={onRemoveBet}
-                    disabled={disabled}
-                    isWinner={isBetWinner(betId)}
-                    phase={phase}
-                  />
-                );
-              })}
-
-              {/* Trio Bets (0-1-2, 0-2-3, 00-2-3) */}
-              <DropZone
-                betId="trio-0-1-2"
-                x="0%"
-                y="66.6%"
-                bets={bets}
-                onPlace={onPlaceBet}
-                onRemove={onRemoveBet}
-                disabled={disabled}
-                isWinner={isBetWinner('trio-0-1-2')}
-                phase={phase}
-              />
-              <DropZone
-                betId="trio-0-2-3"
-                x="0%"
-                y="33.3%"
-                bets={bets}
-                onPlace={onPlaceBet}
-                onRemove={onRemoveBet}
-                disabled={disabled}
-                isWinner={isBetWinner('trio-0-2-3')}
-                phase={phase}
-              />
-              <DropZone
-                betId="trio-00-2-3"
-                x="0%"
-                y="33.3%"
-                bets={bets}
-                onPlace={onPlaceBet}
-                onRemove={onRemoveBet}
-                disabled={disabled}
-                isWinner={isBetWinner('trio-00-2-3')}
-                phase={phase}
-              />
-
-              {/* Basket / Top Line (0-00-1-2-3) */}
-              <DropZone
-                betId="basket-0-00-1-2-3"
-                x="0%"
-                y="50%"
-                width="14px"
-                height="44px"
-                bets={bets}
-                onPlace={onPlaceBet}
-                onRemove={onRemoveBet}
-                disabled={disabled}
-                isWinner={isBetWinner('basket-0-00-1-2-3')}
-                phase={phase}
-              />
             </div>
-          </div>
+          ))}
 
-          {/* 2-1 Column bet buttons (right side) */}
-          <div className="grid grid-rows-3 gap-0">
-            {['column-3rd', 'column-2nd', 'column-1st'].map((colId) => (
-              <OutsideBetCell
-                key={colId}
-                label="2-1"
-                bet={bets.get(colId)}
-                onPlace={() => onPlaceBet(colId)}
-                onRemove={() => onRemoveBet(colId)}
-                disabled={disabled}
-                isWinner={isBetWinner(colId)}
-                phase={phase}
-                usePremiumFont={true}
-              />
-            ))}
+          {/* COMBINATION BETS OVERLAY */}
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Horizontal Splits */}
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33].map(n => {
+              const betId = `split-${n}-${n + 3}`, col = Math.floor((n - 1) / 3), row = 2 - ((n - 1) % 3);
+              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y={`${(row + 0.5) * (100 / 3)}%`} width="12px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+            })}
+            {/* Vertical Splits */}
+            {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32, 34, 35].map(n => {
+              const betId = `split-${n}-${n + 1}`, col = Math.floor((n - 1) / 3), row = 2 - ((n - 1) % 3);
+              return <DropZone key={betId} betId={betId} x={`${(col + 0.5) * (100 / 12)}%`} y={`${(row) * (100 / 3)}%`} width="24px" height="12px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1]} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+            })}
+            {/* Corner Bets */}
+            {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32].map(n => {
+              const betId = `corner-${n}-${n + 1}-${n + 3}-${n + 4}`, col = Math.floor((n - 1) / 3), row = 2 - ((n - 1) % 3);
+              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y={`${(row) * (100 / 3)}%`} width="14px" height="14px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1, n + 3, n + 4]} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+            })}
+            {/* Street Bets */}
+            {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34].map(n => {
+              const betId = `street-${n}-${n + 1}-${n + 2}`, col = Math.floor((n - 1) / 3);
+              return <DropZone key={betId} betId={betId} x={`${(col + 0.5) * (100 / 12)}%`} y="100%" width="24px" height="12px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1, n + 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+            })}
+            {/* Sixline Bets */}
+            {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31].map(n => {
+              const betId = `sixline-${n}-${n + 5}`, col = Math.floor((n - 1) / 3);
+              const nums = [n, n + 1, n + 2, n + 3, n + 4, n + 5];
+              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y="100%" width="14px" height="14px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={nums} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+            })}
+            {/* Trio & Basket */}
+            <DropZone betId="trio-0-1-2" x="0%" y="66.6%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-1-2')} phase={phase} numbers={[0, 1, 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
+            <DropZone betId="trio-0-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-2-3')} phase={phase} numbers={[0, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
+            <DropZone betId="trio-00-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-00-2-3')} phase={phase} numbers={[37, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
+            <DropZone betId="basket-0-00-1-2-3" x="0%" y="50%" width="14px" height="44px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('basket-0-00-1-2-3')} phase={phase} numbers={[0, 37, 1, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
           </div>
         </div>
 
-        {/* Dozens row */}
-        <div className="grid grid-cols-[32px_1fr_1fr_1fr_32px] sm:grid-cols-[48px_1fr_1fr_1fr_40px] md:grid-cols-[60px_1fr_1fr_1fr_48px] gap-0">
-          <div />
+        {/* COLUMNS BLOCK */}
+        <div className="grid grid-rows-3 gap-0 border-t border-r border-[#5ea896] rounded-tr-lg overflow-hidden bg-black/10">
           {[
-            { id: 'dozen-1st', label: <span>1<sup style={{ fontSize: '0.65em' }}>st</sup> 12</span> },
-            { id: 'dozen-2nd', label: <span>2<sup style={{ fontSize: '0.65em' }}>nd</sup> 12</span> },
-            { id: 'dozen-3rd', label: <span>3<sup style={{ fontSize: '0.65em' }}>rd</sup> 12</span> },
+            { id: 'column-3rd', label: '2-1', nums: COLUMN_3RD },
+            { id: 'column-2nd', label: '2-1', nums: COLUMN_2ND },
+            { id: 'column-1st', label: '2-1', nums: COLUMN_1ST }
           ].map((item) => (
             <OutsideBetCell
               key={item.id}
@@ -632,74 +519,80 @@ export default function BettingLayout({
               disabled={disabled}
               isWinner={isBetWinner(item.id)}
               phase={phase}
-              usePremiumFont={true}
+              numbers={item.nums}
+              onHover={handleHover}
+              onHoverEnd={handleHoverEnd}
+              style={{ border: 'none', borderBottom: '1px solid #5ea896' }}
             />
           ))}
-          <div />
         </div>
+      </div>
 
-        {/* Even-money bets row */}
-        <div className="grid grid-cols-[32px_1fr_1fr_1fr_1fr_1fr_1fr_32px] sm:grid-cols-[48px_1fr_1fr_1fr_1fr_1fr_1fr_40px] md:grid-cols-[60px_1fr_1fr_1fr_1fr_1fr_1fr_48px] gap-0">
-          <div />
-          <OutsideBetCell
-            label="1-18"
-            bet={bets.get('low')}
-            onPlace={() => onPlaceBet('low')}
-            onRemove={() => onRemoveBet('low')}
-            disabled={disabled}
-            isWinner={isBetWinner('low')}
-            phase={phase}
-          />
-          <OutsideBetCell
-            label="Even"
-            bet={bets.get('even')}
-            onPlace={() => onPlaceBet('even')}
-            onRemove={() => onRemoveBet('even')}
-            disabled={disabled}
-            isWinner={isBetWinner('even')}
-            phase={phase}
-          />
-          <OutsideBetCell
-            label="Red"
-            isRed={true}
-            bet={bets.get('red')}
-            onPlace={() => onPlaceBet('red')}
-            onRemove={() => onRemoveBet('red')}
-            disabled={disabled}
-            isWinner={isBetWinner('red')}
-            phase={phase}
-          />
-          <OutsideBetCell
-            label="Black"
-            isRed={false}
-            bet={bets.get('black')}
-            onPlace={() => onPlaceBet('black')}
-            onRemove={() => onRemoveBet('black')}
-            disabled={disabled}
-            isWinner={isBetWinner('black')}
-            phase={phase}
-          />
-          <OutsideBetCell
-            label="Odd"
-            bet={bets.get('odd')}
-            onPlace={() => onPlaceBet('odd')}
-            onRemove={() => onRemoveBet('odd')}
-            disabled={disabled}
-            isWinner={isBetWinner('odd')}
-            phase={phase}
-          />
-          <OutsideBetCell
-            label="19-36"
-            bet={bets.get('high')}
-            onPlace={() => onPlaceBet('high')}
-            onRemove={() => onRemoveBet('high')}
-            disabled={disabled}
-            isWinner={isBetWinner('high')}
-            phase={phase}
-          />
-          <div />
+      {/* SECTION 2: Dozens Row */}
+      <div className="grid grid-cols-[32px_1fr_32px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full">
+        <div /> {/* Empty Corner Left */}
+        <div className="grid grid-cols-3 gap-0 bg-black/10">
+          {[
+            { id: 'dozen-1st', label: '1st 12', nums: DOZEN_1ST },
+            { id: 'dozen-2nd', label: '2nd 12', nums: DOZEN_2ND },
+            { id: 'dozen-3rd', label: '3rd 12', nums: DOZEN_3RD }
+          ].map((item, idx) => (
+            <OutsideBetCell
+              key={item.id}
+              label={item.label}
+              bet={bets.get(item.id)}
+              onPlace={() => onPlaceBet(item.id)}
+              onRemove={() => onRemoveBet(item.id)}
+              disabled={disabled}
+              isWinner={isBetWinner(item.id)}
+              phase={phase}
+              numbers={item.nums}
+              onHover={handleHover}
+              onHoverEnd={handleHoverEnd}
+              style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896', borderLeft: idx === 0 ? '1px solid #5ea896' : 'none' }}
+            />
+          ))}
         </div>
+        <div /> {/* Empty Corner Right */}
+      </div>
 
+      {/* SECTION 3: Even-Money Row */}
+      <div className="grid grid-cols-[32px_1fr_32px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full">
+        <div /> {/* Empty Corner Left */}
+        <div className="grid grid-cols-6 gap-0 bg-black/10">
+          {[
+            { id: 'low', label: '1-18', nums: LOW_NUMBERS },
+            { id: 'even', label: 'Even', nums: EVEN_NUMBERS },
+            { id: 'red', label: 'Red', isRed: true, nums: RED_NUMBERS },
+            { id: 'black', label: 'Black', isRed: false, nums: BLACK_NUMBERS },
+            { id: 'odd', label: 'Odd', nums: ODD_NUMBERS },
+            { id: 'high', label: '19-36', nums: HIGH_NUMBERS }
+          ].map((item, idx) => (
+            <OutsideBetCell
+              key={item.id}
+              label={item.label}
+              isRed={item.isRed}
+              bet={bets.get(item.id)}
+              onPlace={() => onPlaceBet(item.id)}
+              onRemove={() => onRemoveBet(item.id)}
+              disabled={disabled}
+              isWinner={isBetWinner(item.id)}
+              phase={phase}
+              numbers={item.nums}
+              onHover={handleHover}
+              onHoverEnd={handleHoverEnd}
+              style={{
+                border: 'none',
+                borderRight: '1px solid #5ea896',
+                borderBottom: '1px solid #5ea896',
+                borderLeft: idx === 0 ? '1px solid #5ea896' : 'none',
+                borderBottomLeftRadius: idx === 0 ? '8px' : '0',
+                borderBottomRightRadius: idx === 5 ? '8px' : '0'
+              }}
+            />
+          ))}
+        </div>
+        <div /> {/* Empty Corner Right */}
       </div>
     </div>
   );

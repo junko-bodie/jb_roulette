@@ -1,8 +1,8 @@
 /**
- * SpinHistory — Last 10 results with smooth slide-in
+ * SpinHistory — Last 25 results with smooth slide-in
  *
  * Clean horizontal strip. New results ease in from the left
- * with a subtle scale pop. Most recent result has a glow.
+ * with a subtle scale pop. Most recent result has a gold border and glow.
  */
 
 'use client';
@@ -28,7 +28,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
     <div className="flex items-center gap-3 px-4 py-1">
       <span
         className="text-sm font-bold uppercase tracking-[0.2em] mr-3 whitespace-nowrap"
-        style={{ color: '#e0d6c2', fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.2em' }}
+        style={{ color: '#e0d6c2', fontFamily: "'Bodoni Moda', serif", letterSpacing: '0.2em' }}
       >
         History
       </span>
@@ -36,7 +36,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
       <div className="flex flex-row items-center justify-start gap-1.5 overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
           {history.map((result, index) => {
-            const isNewest = index === history.length - 1;
+            const isNewest = index === 0;
             return (
               <motion.div
                 key={`${result.displayNumber}-${index}`}
@@ -44,7 +44,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
                 initial={{ scale: 0, opacity: 0, x: -30 }}
                 animate={{
                   scale: 1,
-                  opacity: isNewest ? 1 : 0.7 + (index / 10) * 0.3,
+                  opacity: isNewest ? 1 : Math.max(0.4, 0.9 - (index / 25)), // Better opacity falloff
                   x: 0,
                 }}
                 exit={{ scale: 0, opacity: 0, x: 20 }}

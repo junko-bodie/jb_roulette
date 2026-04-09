@@ -29,9 +29,9 @@
   --color-overlay: rgba(0, 0, 0, 0.7);
 
   /* Typography */
-  --font-primary: 'Playfair Display', 'Georgia', serif;
+  --font-primary: 'Bodoni Moda', 'Playfair Display', serif;
   --font-secondary: 'Inter', 'Helvetica Neue', sans-serif;
-  --font-playfair: 'Playfair Display', 'Georgia', serif;
+  --font-playfair: 'Bodoni Moda', 'Playfair Display', serif;
   --font-inter: 'Inter', 'Helvetica Neue', sans-serif;
 
   /* Shadows */
@@ -223,11 +223,15 @@ body {
 }
 
 /* ──────────────────────────────────────────────
-   Mobile Portrait — Stacked Layout
+   Mobile & Tablet — Stacked Layout
    ────────────────────────────────────────────── */
-@media (max-width: 900px) and (orientation: portrait) {
+@media (max-width: 1024px) {
 
-  /* Hide the rotate warning — we now support portrait */
+  body {
+    overflow: auto !important;
+  }
+
+  /* Hide the rotate warning — we now support vertical stacking */
   .mobile-rotate-warning {
     display: none !important;
   }
@@ -236,8 +240,16 @@ body {
   .mobile-root-scroll {
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    height: 100vh;
-    height: 100dvh;
+    height: auto !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .mobile-felt-stack {
+    overflow-y: visible !important;
+    height: auto !important;
   }
 
   /* Compact header */
@@ -254,9 +266,11 @@ body {
   /* Stack the felt area vertically */
   .mobile-felt-stack {
     flex-direction: column !important;
-    gap: 1rem !important;
-    padding: 0.75rem !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem !important;
     min-height: auto !important;
+    height: auto !important;
+    overflow-y: visible !important;
   }
 
   /* Foam buffer — reduce padding */
@@ -284,14 +298,18 @@ body {
     flex: none !important;
     width: 100% !important;
     transform: none !important;
+    min-height: 240px !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   /* Compact footer */
   .mobile-footer-compact {
     height: auto !important;
-    padding: 8px 10px !important;
-    flex-wrap: wrap;
-    gap: 6px;
+    padding: 6px 4px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px;
   }
 
   .mobile-footer-compact .mobile-actions-grid {

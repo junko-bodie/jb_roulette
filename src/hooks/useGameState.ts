@@ -190,7 +190,7 @@ export function useGameState() {
     if (balance < lastTotal) return;
 
     setBets(cloneBetsMap(lastSpinBets));
-    
+
     // Reconstruct history roughly for clearLast
     const history: { betId: string; amount: number }[] = [];
     lastSpinBets.forEach((bet, id) => {
@@ -205,7 +205,7 @@ export function useGameState() {
   const executeSpin = useCallback(async (): Promise<SpinResult | null> => {
     // Archive current bets for Rebet
     setLastSpinBets(cloneBetsMap(bets));
-    
+
     // Deduct total bet from balance
     setBalance((prev) => prev - totalBet);
     setPhase('SPINNING');
@@ -234,7 +234,7 @@ export function useGameState() {
     // Update session stats
     const spinBetTotal = betArray.reduce((sum, b) => sum + b.amount, 0);
     const winAmount = payout.totalReturned - spinBetTotal;
-    
+
     // Play sounds
     if (winAmount > 0) {
       soundEngine?.playWinSound();
@@ -248,8 +248,8 @@ export function useGameState() {
       sessionWin: prev.sessionWin + winAmount
     }));
 
-    // Add to history (keep last 10)
-    setHistory((prev) => [...prev, currentResult].slice(-10));
+    // Add to history (newest first, keep last 25)
+    setHistory((prev) => [currentResult, ...prev].slice(0, 25));
   }, [currentResult, bets]);
 
   /**
