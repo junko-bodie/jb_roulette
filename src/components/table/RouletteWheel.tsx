@@ -372,7 +372,7 @@ export default function RouletteWheel({
       ctx!.arc(0, 0, hubR, 0, TWO_PI);
       ctx!.fillStyle = socket;
       ctx!.fill();
-      
+
       // Drop inner shadow for socket
       ctx!.beginPath();
       ctx!.arc(0, 0, hubR, 0, TWO_PI);
@@ -390,7 +390,7 @@ export default function RouletteWheel({
         ctx!.rotate(i * (Math.PI / 2));
 
         // Horizontal gradient from top to bottom of the bat to look spherical
-        const handleGrad = ctx!.createLinearGradient(0, -R*0.06, 0, R*0.06);
+        const handleGrad = ctx!.createLinearGradient(0, -R * 0.06, 0, R * 0.06);
         handleGrad.addColorStop(0, '#75541c');
         handleGrad.addColorStop(0.2, '#d4af37'); // bright top hit
         handleGrad.addColorStop(0.5, '#fef1a6'); // reflection stripe down the middle
@@ -401,21 +401,21 @@ export default function RouletteWheel({
         ctx!.beginPath();
         // Thin base
         ctx!.moveTo(armStart, -R * 0.02);
-        
+
         // Smooth curve flaring gradually outwards
         ctx!.bezierCurveTo(
-          armStart + (armEnd - armStart) * 0.3, -R * 0.02, 
-          armStart + (armEnd - armStart) * 0.6, -R * 0.05, 
+          armStart + (armEnd - armStart) * 0.3, -R * 0.02,
+          armStart + (armEnd - armStart) * 0.6, -R * 0.05,
           armEnd, -R * 0.04
         );
-        
+
         // Flat outer edge
         ctx!.lineTo(armEnd, R * 0.04);
 
         // Smooth curve tapering back inwards
         ctx!.bezierCurveTo(
-          armStart + (armEnd - armStart) * 0.6, R * 0.05, 
-          armStart + (armEnd - armStart) * 0.3, R * 0.02, 
+          armStart + (armEnd - armStart) * 0.6, R * 0.05,
+          armStart + (armEnd - armStart) * 0.3, R * 0.02,
           armStart, R * 0.02
         );
         ctx!.closePath();
@@ -591,7 +591,7 @@ export default function RouletteWheel({
         // Ball spirals inward after BALL_SETTLE_AT
         if (t > BALL_SETTLE_AT) {
           const dropT = (t - BALL_SETTLE_AT) / (1 - BALL_SETTLE_AT);
-          
+
           // Spiral inward: fast initial drop, then slow settle into pocket
           const spiralT = easeOutCubic(dropT);
           s.ballRadius = BALL_ORBIT_START - (BALL_ORBIT_START - BALL_ORBIT_END) * spiralT;
@@ -615,7 +615,7 @@ export default function RouletteWheel({
             if (bounceHeight < 2 && s.ballZ < 3) {
               s.wobble = (Math.random() - 0.5) * 0.01;
               s.ballAngle += s.wobble;
-              
+
               if (now - s.lastTickTime > 150 && Math.random() > 0.6) {
                 soundEngine?.playWheelTick();
                 s.lastTickTime = now;
@@ -629,10 +629,10 @@ export default function RouletteWheel({
             s.ballZ *= (1 - settleT); // smooth damp to zero
             if (s.ballZ < 0.05) s.ballZ = 0;
             s.wobble = 0;
-            
+
             // Ensure ball is fully at pocket bottom
             s.ballRadius = BALL_ORBIT_END;
-            
+
             // Lock ball angle smoothly to target
             const lockStrength = easeOutCubic(settleT) * 0.15;
             s.ballAngle = s.ballAngle * (1 - lockStrength) + s.targetBallAngle * lockStrength;
@@ -705,16 +705,6 @@ export default function RouletteWheel({
         }}
       />
 
-      {/* Decorative Brand Chips */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          transform: 'rotateX(14deg) translateZ(10px)',
-          transformStyle: 'preserve-3d'
-        }}
-      >
-        <DecorativeChips size={size} />
-      </div>
       <div
         className="w-full h-full"
         style={{
@@ -736,79 +726,4 @@ export default function RouletteWheel({
     </div>
   );
 }
-
-// ── Decorative Chips Component ───────────────────────────────────────────────
-function DecorativeChips({ size }: { size: number }) {
-  // Brand colors
-  const gold = 'linear-gradient(135deg, #fef1a6 0%, #d4af37 50%, #8b6b22 100%)';
-  const green = 'linear-gradient(135deg, #2ecc71 0%, #197a3d 50%, #0e4a23 100%)';
-  const black = 'linear-gradient(135deg, #444 0%, #1a1a1a 50%, #000 100%)';
-
-  // Positions around the lower front arc (angles in degrees)
-  // In our coordinates, 90 is directly "south" (front)
-  const stacks = [
-    { angle: 50, count: 5, color: black },
-    { angle: 65, count: 3, color: gold },
-    { angle: 80, count: 6, color: green },
-    { angle: 95, count: 4, color: black },
-    { angle: 110, count: 7, color: gold },
-    { angle: 125, count: 4, color: green },
-    { angle: 140, count: 5, color: black },
-  ];
-
-  const radius = size * 0.47; // slightly further out for visibility
-
-  return (
-    <>
-      {stacks.map((s, i) => {
-        const rad = (s.angle * Math.PI) / 180;
-        const x = 50 + (Math.cos(rad) * radius / size) * 100;
-        const y = 50 + (Math.sin(rad) * radius / size) * 100;
-
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: `${x}%`,
-              top: `${y}%`,
-              transform: 'translate(-50%, -50%)',
-              transformStyle: 'preserve-3d',
-            }}
-          >
-            {Array.from({ length: s.count }).map((_, j) => (
-              <div
-                key={j}
-                style={{
-                  position: 'absolute',
-                  bottom: j * 2.5, // slightly taller stacks
-                  width: size * 0.055, // slightly larger chips
-                  height: size * 0.055,
-                  borderRadius: '50%',
-                  background: s.color,
-                  border: '1px solid rgba(0,0,0,0.5)',
-                  boxShadow: '0 1px 1px rgba(0,0,0,0.3)',
-                  // Counter-rotate slightly so the "face" is visible
-                  transform: 'rotateX(-12deg)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {/* Decorative inner ring */}
-                <div
-                  style={{
-                    width: '70%',
-                    height: '70%',
-                    borderRadius: '50%',
-                    border: '1px dashed rgba(255,255,255,0.25)',
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        );
-      })}
-    </>
-  );
-}
+
