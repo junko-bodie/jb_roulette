@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { COLORS } from '@/styles/theme';
 import ChipStack from '@/components/chips/ChipStack';
@@ -18,7 +18,7 @@ import { getNumberColor, getDisplayNumber } from '@/lib/rng';
 import { type SpinResult } from '@/lib/rng';
 import { type PayoutResult } from '@/lib/payouts';
 import { soundEngine } from '@/lib/audioEngine';
-import { type PlacedBet } from '@/lib/bets';
+import { type PlacedBet, BET_MAP } from '@/lib/bets';
 
 interface BettingLayoutProps {
   bets: Map<string, PlacedBet>;
@@ -78,6 +78,10 @@ function NumberCell({
   phase,
   style = {},
   isHovered = false,
+  hoveredComboBets = [],
+  comboBetsOnNumber = [],
+  onNumberHover,
+  onNumberHoverEnd,
 }: {
   num: number;
   bet: PlacedBet | undefined;
@@ -88,6 +92,10 @@ function NumberCell({
   phase: string;
   style?: React.CSSProperties;
   isHovered?: boolean;
+  hoveredComboBets?: PlacedBet[];
+  comboBetsOnNumber?: PlacedBet[];
+  onNumberHover?: (num: number) => void;
+  onNumberHoverEnd?: () => void;
 }) {
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -104,10 +112,15 @@ function NumberCell({
     }
   };
 
+  // Combine: own straight bet tooltip + combo bet tooltips from DropZone hover + combo bets from number hover
+  const showComboTooltips = isHovered && hoveredComboBets.length > 0;
+
   return (
     <motion.button
       onClick={handlePlace}
       onContextMenu={handleContextMenu}
+      onMouseEnter={() => !disabled && onNumberHover?.(num)}
+      onMouseLeave={() => !disabled && onNumberHoverEnd?.()}
       className="relative flex items-center justify-center cursor-pointer select-none text-[9px] sm:text-[11px] md:text-sm min-h-[18px] sm:min-h-[30px] md:min-h-[44px] group"
       initial={{ borderColor: '#5ea896' }}
       style={{
@@ -153,14 +166,34 @@ function NumberCell({
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
       {getDisplayNumber(num)}
+      {/* Straight bet chip + tooltip */}
       {bet && (
         <>
           <ChipIndicator bet={bet} phase={phase} />
-          {/* Tooltip */}
           <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
             ${bet.amount.toLocaleString()}
           </div>
         </>
+      )}
+      {/* Combo bet tooltips shown when DropZone is hovered */}
+      {showComboTooltips && (
+        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 z-50 pointer-events-none">
+          {hoveredComboBets.map((cb) => (
+            <div key={cb.betId} className="bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap">
+              ${cb.amount.toLocaleString()}
+            </div>
+          ))}
+        </div>
+      )}
+      {/* Combo bet tooltips shown when hovering this number cell directly */}
+      {!showComboTooltips && comboBetsOnNumber.length > 0 && (
+        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+          {comboBetsOnNumber.map((cb) => (
+            <div key={cb.betId} className="bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap">
+              {cb.betId.split('-').slice(0, 1)[0]}: ${cb.amount.toLocaleString()}
+            </div>
+          ))}
+        </div>
       )}
     </motion.button>
   );
@@ -195,7 +228,7 @@ function DropZone({
   isWinner: boolean;
   phase: string;
   numbers?: number[];
-  onHover?: (nums: number[]) => void;
+  onHover?: (nums: number[], betId?: string) => void;
   onHoverEnd?: () => void;
 }) {
   const bet = bets.get(betId);
@@ -232,7 +265,7 @@ function DropZone({
           }
         }}
         onContextMenu={handleContextMenu}
-        onMouseEnter={() => !disabled && onHover?.(numbers)}
+        onMouseEnter={() => !disabled && onHover?.(numbers, betId)}
         onMouseLeave={() => !disabled && onHoverEnd?.()}
         whileHover={disabled ? {} : { scale: 1.2 }}
       />
@@ -368,6 +401,8 @@ export default function BettingLayout({
   phase,
 }: BettingLayoutProps) {
   const [hoveredNumbers, setHoveredNumbers] = useState<number[]>([]);
+  const [hoveredBetId, setHoveredBetId] = useState<string | null>(null);
+  const [selfHoveredNumber, setSelfHoveredNumber] = useState<number | null>(null);
 
   // Check if a specific bet zone won
   const isBetWinner = useCallback(
@@ -387,13 +422,45 @@ export default function BettingLayout({
     [showWinHighlight, winningResult]
   );
 
-  const handleHover = useCallback((nums: number[]) => {
+  const handleHover = useCallback((nums: number[], betId?: string) => {
     setHoveredNumbers(nums);
+    setHoveredBetId(betId ?? null);
   }, []);
 
   const handleHoverEnd = useCallback(() => {
     setHoveredNumbers([]);
+    setHoveredBetId(null);
   }, []);
+
+  const handleNumberHover = useCallback((num: number) => {
+    setSelfHoveredNumber(num);
+  }, []);
+
+  const handleNumberHoverEnd = useCallback(() => {
+    setSelfHoveredNumber(null);
+  }, []);
+
+  // Build a map: number -> list of placed combo bets covering that number
+  const comboBetsByNumber = useMemo(() => {
+    const map = new Map<number, PlacedBet[]>();
+    bets.forEach((bet, betId) => {
+      // Only combo bets (not straight, not outside)
+      if (betId.startsWith('split-') || betId.startsWith('corner-') || betId.startsWith('street-') || betId.startsWith('sixline-') || betId.startsWith('trio-') || betId.startsWith('basket-')) {
+        const def = BET_MAP.get(betId);
+        if (def) {
+          for (const n of def.numbers) {
+            if (!map.has(n)) map.set(n, []);
+            map.get(n)!.push(bet);
+          }
+        }
+      }
+    });
+    return map;
+  }, [bets]);
+
+  // Get the hovered combo bet as a PlacedBet (for DropZone hover)
+  const hoveredComboBet = hoveredBetId ? bets.get(hoveredBetId) : undefined;
+  const hoveredComboBets = hoveredComboBet ? [hoveredComboBet] : [];
 
   return (
     <div className="flex flex-col items-center w-full mx-auto p-1">
@@ -414,6 +481,10 @@ export default function BettingLayout({
             phase={phase}
             style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #000' }}
             isHovered={hoveredNumbers.includes(0)}
+            hoveredComboBets={hoveredNumbers.includes(0) ? hoveredComboBets : []}
+            comboBetsOnNumber={comboBetsByNumber.get(0) || []}
+            onNumberHover={handleNumberHover}
+            onNumberHoverEnd={handleNumberHoverEnd}
           />
           <NumberCell
             num={37}
@@ -425,6 +496,10 @@ export default function BettingLayout({
             phase={phase}
             style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }}
             isHovered={hoveredNumbers.includes(37)}
+            hoveredComboBets={hoveredNumbers.includes(37) ? hoveredComboBets : []}
+            comboBetsOnNumber={comboBetsByNumber.get(37) || []}
+            onNumberHover={handleNumberHover}
+            onNumberHoverEnd={handleNumberHoverEnd}
           />
           {/* Split 0-00 target */}
           <DropZone
@@ -461,6 +536,10 @@ export default function BettingLayout({
                     phase={phase}
                     style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }}
                     isHovered={hoveredNumbers.includes(num)}
+                    hoveredComboBets={hoveredNumbers.includes(num) ? hoveredComboBets : []}
+                    comboBetsOnNumber={comboBetsByNumber.get(num) || []}
+                    onNumberHover={handleNumberHover}
+                    onNumberHoverEnd={handleNumberHoverEnd}
                   />
                 );
               })}
@@ -533,9 +612,9 @@ export default function BettingLayout({
         <div /> {/* Empty Corner Left */}
         <div className="grid grid-cols-3 gap-0 bg-black/10">
           {[
-            { id: 'dozen-1st', label: '1st 12', nums: DOZEN_1ST },
-            { id: 'dozen-2nd', label: '2nd 12', nums: DOZEN_2ND },
-            { id: 'dozen-3rd', label: '3rd 12', nums: DOZEN_3RD }
+            { id: 'dozen-1st', label: <span>1<sup style={{ fontSize: '0.6em', verticalAlign: 'super' }}>st</sup> 12</span>, nums: DOZEN_1ST },
+            { id: 'dozen-2nd', label: <span>2<sup style={{ fontSize: '0.6em', verticalAlign: 'super' }}>nd</sup> 12</span>, nums: DOZEN_2ND },
+            { id: 'dozen-3rd', label: <span>3<sup style={{ fontSize: '0.6em', verticalAlign: 'super' }}>rd</sup> 12</span>, nums: DOZEN_3RD }
           ].map((item, idx) => (
             <OutsideBetCell
               key={item.id}
