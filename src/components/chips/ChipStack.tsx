@@ -58,8 +58,8 @@ export default function ChipStack({ chips, phase, className = '' }: ChipStackPro
       })}
 
       {hiddenCount > 0 && (
-        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 px-2 py-0.5 rounded-sm border border-white/10 shadow-xl z-[100]"> // Adjusted bottom and padding
-          <span className="text-[9px] font-black text-white leading-tight"> // Increased from 7px to 9px
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 px-2 py-0.5 rounded-sm border border-white/10 shadow-xl z-[100]">
+          <span className="text-[9px] font-black text-white leading-tight">
             +{hiddenCount}
           </span>
         </div>
