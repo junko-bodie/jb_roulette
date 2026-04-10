@@ -58,7 +58,7 @@ export default function BettingControlButtons({
             ? `0 0 12px ${COLORS.gold}80, inset 0 1px 0 rgba(255,255,255,0.3)`
             : 'inset 0 1px 0 rgba(0,0,0,0.3)',
           border: `2px solid ${canDouble ? COLORS.gold : '#555'}`,
-        }}
+        } as React.CSSProperties}
       >
         2X
         {canDouble && (
@@ -79,14 +79,14 @@ export default function BettingControlButtons({
         style={{
           background: deleteMode
             ? 'linear-gradient(135deg, #ff4444, #cc2222)'
-            : 'linear-gradient(135deg, #8b7355, #6b5345)',
-          color: deleteMode ? '#fff' : '#9a8080',
+            : `linear-gradient(135deg, ${COLORS.gold}cc, #b8943f)`,
+          color: deleteMode ? '#fff' : '#1a0f09',
           boxShadow: deleteMode
             ? `0 0 15px #ff4444cc, inset 0 1px 0 rgba(255,255,255,0.2)`
-            : 'inset 0 1px 0 rgba(0,0,0,0.3)',
-          border: `2px solid ${deleteMode ? '#ff6666' : '#666'}`,
+            : `0 0 8px ${COLORS.gold}40, inset 0 1px 0 rgba(255,255,255,0.3)`,
+          border: `2px solid ${deleteMode ? '#ff6666' : COLORS.gold}`,
           cursor: 'pointer',
-        }}
+        } as React.CSSProperties}
       >
         ✕
         {deleteMode && (
@@ -94,7 +94,7 @@ export default function BettingControlButtons({
             className="absolute inset-0 rounded-full"
             style={{
               boxShadow: `inset 0 0 20px #ff444466`,
-            }}
+            } as React.CSSProperties}
             animate={{
               boxShadow: [
                 `inset 0 0 25px #ff444466`,

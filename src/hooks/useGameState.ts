@@ -210,6 +210,11 @@ export function useGameState() {
       return next;
     });
 
+    // Also double the amounts in bet placement history so clearLastBet stays in sync
+    setBetPlacementHistory((prev) =>
+      prev.map((entry) => ({ ...entry, amount: entry.amount * 2 }))
+    );
+
     // Play 2X sound
     soundEngine?.play2XSound();
 

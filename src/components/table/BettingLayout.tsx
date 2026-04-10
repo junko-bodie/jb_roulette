@@ -156,14 +156,14 @@ function NumberCell({
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
-    
+
     // If it didn't reach long press duration, do a single pop
     if (deleteMode && !isLongPress && bet && onPopLastChip) {
       const betId = `straight-${num}`;
       console.log('Quick tap on', betId, '- popping last chip');
       onPopLastChip(betId);
     }
-    
+
     setIsLongPress(false);
   }, [deleteMode, isLongPress, bet, num, onPopLastChip]);
 
@@ -199,7 +199,7 @@ function NumberCell({
       initial={{ borderColor: '#5ea896' }}
       style={{
         background: getCellBg(num),
-        borderWidth: '1px',
+        borderWidth: 0,
         borderStyle: 'solid',
         fontFamily: "'Bodoni Moda', serif",
         fontWeight: 700,
@@ -207,7 +207,7 @@ function NumberCell({
         transition: 'background 0.15s ease, color 0.15s ease',
         cursor: deleteMode && bet ? 'grab' : 'pointer',
         ...style,
-      }}
+      } as React.CSSProperties}
       whileHover={
         disabled || deleteMode
           ? {}
@@ -233,7 +233,7 @@ function NumberCell({
               scale: 1.02,
             }
             : {
-              borderColor: (style.borderRight || style.borderLeft || style.borderTop || style.borderBottom) ? undefined : '#5ea896',
+              borderColor: '#5ea896',
               boxShadow: 'none',
               scale: 1
             }
@@ -245,16 +245,16 @@ function NumberCell({
       {bet && (
         <>
           <ChipIndicator bet={bet} phase={phase} />
-          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
+          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity -top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-0.5 px-1.5 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
             ${bet.amount.toLocaleString()}
           </div>
         </>
       )}
       {/* Combo bet tooltips shown when DropZone is hovered */}
       {showComboTooltips && (
-        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 z-50 pointer-events-none">
+        <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 z-50 pointer-events-none">
           {hoveredComboBets.map((cb) => (
-            <div key={cb.betId} className="bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap">
+            <div key={cb.betId} className="bg-black/90 text-[#c9a44c] text-[10px] font-bold py-0.5 px-1.5 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap">
               ${cb.amount.toLocaleString()}
             </div>
           ))}
@@ -262,9 +262,9 @@ function NumberCell({
       )}
       {/* Combo bet tooltips shown when hovering this number cell directly */}
       {!showComboTooltips && comboBetsOnNumber.length > 0 && (
-        <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
           {comboBetsOnNumber.map((cb) => (
-            <div key={cb.betId} className="bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap">
+            <div key={cb.betId} className="bg-black/90 text-[#c9a44c] text-[10px] font-bold py-0.5 px-1.5 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap">
               {cb.betId.split('-').slice(0, 1)[0]}: ${cb.amount.toLocaleString()}
             </div>
           ))}
@@ -390,7 +390,7 @@ function DropZone({
         className="w-full h-full rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity group"
         style={{
           background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(200,160,50,0.2) 60%, transparent 100%)',
-        }}
+        } as React.CSSProperties}
         onClick={() => {
           if (!deleteMode && !disabled) {
             soundEngine?.playChipSound();
@@ -544,7 +544,7 @@ function OutsideBetCell({
       initial={{ borderColor: '#5ea896' }}
       style={{
         background: isRed === true ? COLORS.rouletteRed : isRed === false ? '#1e1e1e' : 'transparent',
-        borderWidth: '1px',
+        borderWidth: 0,
         borderStyle: 'solid',
         fontFamily: "'Bodoni Moda', serif",
         fontWeight: 700,
@@ -553,7 +553,7 @@ function OutsideBetCell({
         textTransform: 'uppercase',
         transition: 'background 0.15s ease, color 0.15s ease',
         ...style,
-      }}
+      } as React.CSSProperties}
       whileHover={
         disabled
           ? {}
@@ -674,7 +674,7 @@ export default function BettingLayout({
         style={{ boxShadow: '0 0 30px rgba(0,0,0,0.5)' }}
       >
         {/* ZEROS BLOCK */}
-        <div className="grid grid-rows-2 gap-0 border-l border-t border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative">
+        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-l border-t border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
           <NumberCell
             num={0}
             bet={bets.get('straight-0')}
@@ -683,7 +683,7 @@ export default function BettingLayout({
             disabled={disabled}
             isWinner={isWinningNumber(0) || isBetWinner('straight-0')}
             phase={phase}
-            style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #000' }}
+            style={{ borderWidth: '0 1px 1px 0' }}
             isHovered={hoveredNumbers.includes(0)}
             hoveredComboBets={hoveredNumbers.includes(0) ? hoveredComboBets : []}
             comboBetsOnNumber={comboBetsByNumber.get(0) || []}
@@ -693,26 +693,28 @@ export default function BettingLayout({
             onPopLastChip={onPopLastChip}
             onClearZone={onClearZone}
           />
-          <NumberCell
-            num={37}
-            bet={bets.get('straight-00')}
-            onPlace={() => onPlaceBet('straight-00')}
-            onRemove={() => onRemoveBet('straight-00')}
-            disabled={disabled}
-            deleteMode={deleteMode}
-            onPopLastChip={onPopLastChip}
-            onClearZone={onClearZone}
-            isWinner={isWinningNumber(37) || isBetWinner('straight-00')}
-            phase={phase}
-            style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }}
-            isHovered={hoveredNumbers.includes(37)}
-            hoveredComboBets={hoveredNumbers.includes(37) ? hoveredComboBets : []}
-            comboBetsOnNumber={comboBetsByNumber.get(37) || []}
-            onNumberHover={handleNumberHover}
-            onNumberHoverEnd={handleNumberHoverEnd}
-          />
-          {/* Split 0-00 or 0-3 target */}
-          {wheelType === 'american' ? (
+          {wheelType === 'american' && (
+            <NumberCell
+              num={37}
+              bet={bets.get('straight-00')}
+              onPlace={() => onPlaceBet('straight-00')}
+              onRemove={() => onRemoveBet('straight-00')}
+              disabled={disabled}
+              deleteMode={deleteMode}
+              onPopLastChip={onPopLastChip}
+              onClearZone={onClearZone}
+              isWinner={isWinningNumber(37) || isBetWinner('straight-00')}
+              phase={phase}
+              style={{ borderWidth: '0 1px 1px 0' }}
+              isHovered={hoveredNumbers.includes(37)}
+              hoveredComboBets={hoveredNumbers.includes(37) ? hoveredComboBets : []}
+              comboBetsOnNumber={comboBetsByNumber.get(37) || []}
+              onNumberHover={handleNumberHover}
+              onNumberHoverEnd={handleNumberHoverEnd}
+            />
+          )}
+          {/* Split 0-00 target (American only) */}
+          {wheelType === 'american' && (
             <DropZone
               betId="split-0-00"
               x="50%"
@@ -730,7 +732,7 @@ export default function BettingLayout({
               onPopLastChip={onPopLastChip}
               onClearZone={onClearZone}
             />
-          ) : null}
+          )}
         </div>
 
         {/* NUMBERS GRID */}
@@ -749,7 +751,7 @@ export default function BettingLayout({
                     disabled={disabled}
                     isWinner={isWinningNumber(num) || isBetWinner(betId)}
                     phase={phase}
-                    style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }}
+                    style={{ borderWidth: '0 1px 1px 0' }}
                     isHovered={hoveredNumbers.includes(num)}
                     hoveredComboBets={hoveredNumbers.includes(num) ? hoveredComboBets : []}
                     comboBetsOnNumber={comboBetsByNumber.get(num) || []}
@@ -803,14 +805,18 @@ export default function BettingLayout({
             ) : (
               <DropZone betId="split-0-3" x="0%" y="16.6%" width="20px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('split-0-3')} phase={phase} numbers={[0, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />
             )}
-            
+
             {/* Trio & Basket */}
             <DropZone betId="trio-0-1-2" x="0%" y="66.6%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-1-2')} phase={phase} numbers={[0, 1, 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />
             {wheelType === 'american' ? (
               <DropZone betId="trio-0-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-2-3')} phase={phase} numbers={[0, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
             ) : null}
-            <DropZone betId="trio-00-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-00-2-3')} phase={phase} numbers={[37, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
-            <DropZone betId="basket-0-00-1-2-3" x="0%" y="50%" width="14px" height="44px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('basket-0-00-1-2-3')} phase={phase} numbers={[0, 37, 1, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
+            {wheelType === 'american' && (
+              <DropZone betId="trio-00-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-00-2-3')} phase={phase} numbers={[37, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
+            )}
+            {wheelType === 'american' && (
+              <DropZone betId="basket-0-00-1-2-3" x="0%" y="50%" width="14px" height="44px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('basket-0-00-1-2-3')} phase={phase} numbers={[0, 37, 1, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
+            )}
           </div>
         </div>
 
@@ -837,7 +843,7 @@ export default function BettingLayout({
               deleteMode={deleteMode}
               onPopLastChip={onPopLastChip}
               onClearZone={onClearZone}
-              style={{ border: 'none', borderBottom: '1px solid #5ea896' }}
+              style={{ borderWidth: '0 0 1px 0' }}
             />
           ))}
         </div>
@@ -868,7 +874,7 @@ export default function BettingLayout({
               deleteMode={deleteMode}
               onPopLastChip={onPopLastChip}
               onClearZone={onClearZone}
-              style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896', borderLeft: idx === 0 ? '1px solid #5ea896' : 'none' }}
+              style={{ borderWidth: idx === 0 ? '0 1px 1px 1px' : '0 1px 1px 0' }}
             />
           ))}
         </div>
@@ -905,10 +911,7 @@ export default function BettingLayout({
               onPopLastChip={onPopLastChip}
               onClearZone={onClearZone}
               style={{
-                border: 'none',
-                borderRight: '1px solid #5ea896',
-                borderBottom: '1px solid #5ea896',
-                borderLeft: idx === 0 ? '1px solid #5ea896' : 'none',
+                borderWidth: idx === 0 ? '0 1px 1px 1px' : '0 1px 1px 0',
                 borderBottomLeftRadius: idx === 0 ? '8px' : '0',
                 borderBottomRightRadius: idx === 5 ? '8px' : '0'
               }}

@@ -82,7 +82,7 @@ export default function ResultDisplay({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' } as React.CSSProperties}
           onClick={onDismiss}
         >
           <motion.div
@@ -105,7 +105,7 @@ export default function ResultDisplay({
                     : result.color === 'green'
                     ? 'radial-gradient(circle, rgba(39,174,96,0.4), transparent 70%)'
                     : 'radial-gradient(circle, rgba(201,168,76,0.3), transparent 70%)',
-                }}
+                } as React.CSSProperties}
                 animate={{
                   scale: [1, 1.4, 1], // Increased pulse scale
                   opacity: [0.6, 0.3, 0.6],
@@ -132,7 +132,7 @@ export default function ResultDisplay({
                     inset 0 -10px 20px rgba(0,0,0,0.5),
                     inset 0 10px 20px rgba(255,255,255,0.2)
                   `,
-                }}
+                } as React.CSSProperties}
               >
                 <motion.span
                   initial={{ opacity: 0, y: 20, scale: 0.8 }}
@@ -140,13 +140,14 @@ export default function ResultDisplay({
                   transition={{ delay: 0.4, duration: 0.6, type: 'spring', bounce: 0.5 }}
                   className="text-[120px] font-black text-white leading-none tracking-tighter" 
                   style={{
-                    fontFamily: 'var(--font-playfair)',
+                    fontFamily: 'var(--font-inter)',
+                    fontWeight: 900,
                     textShadow: `
                       0 8px 16px rgba(0,0,0,0.8),
                       0 2px 4px rgba(255,255,255,0.4),
                       0 0 40px rgba(255,255,255,0.3)
                     `,
-                  }}
+                  } as React.CSSProperties}
                 >
                   {result.displayNumber}
                 </motion.span>
@@ -185,7 +186,7 @@ export default function ResultDisplay({
               animate={{ opacity: 0.35 }}
               transition={{ delay: 2, duration: 0.8 }}
               className="text-sm text-white mt-8" // Slightly larger and more margin
-              style={{ fontFamily: 'var(--font-inter)' }}
+              style={{ fontFamily: 'var(--font-inter)' } as React.CSSProperties}
             >
               Tap anywhere to continue
             </motion.p>
