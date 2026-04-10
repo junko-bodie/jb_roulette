@@ -138,14 +138,17 @@ export default function ResultDisplay({
                   initial={{ opacity: 0, y: 20, scale: 0.8 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: 0.4, duration: 0.6, type: 'spring', bounce: 0.5 }}
-                  className="text-[120px] font-black text-white leading-none tracking-tighter" 
+                  className="font-black text-white leading-none" 
                   style={{
-                    fontFamily: 'var(--font-inter)',
+                    fontFamily: '"Cinzel Decorative", "Georgia", serif',
                     fontWeight: 900,
+                    fontSize: result.displayNumber.length > 2 ? '80px' : result.displayNumber.length > 1 ? '110px' : '120px',
+                    letterSpacing: result.displayNumber.length > 1 ? '0.02em' : '0.05em',
                     textShadow: `
                       0 8px 16px rgba(0,0,0,0.8),
                       0 2px 4px rgba(255,255,255,0.4),
-                      0 0 40px rgba(255,255,255,0.3)
+                      0 0 40px rgba(255,255,255,0.3),
+                      0 0 60px rgba(201,168,76,0.2)
                     `,
                   } as React.CSSProperties}
                 >
