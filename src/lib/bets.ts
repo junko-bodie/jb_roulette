@@ -137,6 +137,13 @@ function buildSplitBets(): BetDefinition[] {
     payout: 17,
   });
 
+  // Zero to First Row splits
+  bets.push({ id: 'split-0-1', type: 'split', label: '0|1', numbers: [0, 1], payout: 17 });
+  bets.push({ id: 'split-0-2', type: 'split', label: '0|2', numbers: [0, 2], payout: 17 });
+  bets.push({ id: 'split-0-3', type: 'split', label: '0|3', numbers: [0, 3], payout: 17 }); // European 0-3 split
+  bets.push({ id: 'split-00-2', type: 'split', label: '00|2', numbers: [37, 2], payout: 17 });
+  bets.push({ id: 'split-00-3', type: 'split', label: '00|3', numbers: [37, 3], payout: 17 });
+
   return bets;
 }
 

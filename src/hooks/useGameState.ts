@@ -52,7 +52,7 @@ export function useGameState() {
   const [balance, setBalance] = useState(5000 /* STARTING_BALANCE */);
   const [bets, setBets] = useState<Map<string, PlacedBet>>(new Map());
   const [selectedChip, setSelectedChip] = useState(5);
-  const [wheelType, setWheelType] = useState<WheelType>('american');
+  const [wheelType, setWheelType] = useState<WheelType>('european');
   const [phase, setPhase] = useState<GamePhase>('BETTING');
   const [currentResult, setCurrentResult] = useState<SpinResult | null>(null);
   const [lastPayout, setLastPayout] = useState<PayoutResult | null>(null);
@@ -64,6 +64,8 @@ export function useGameState() {
     lastWin: 0,
     sessionWin: 0
   });
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [deleteModeTarget, setDeleteModeTarget] = useState<string | null>(null);
 
   // Calculate total bet
   const totalBet = Array.from(bets.values()).reduce((sum, b) => sum + b.amount, 0);
@@ -177,7 +179,99 @@ export function useGameState() {
     if (phase !== 'BETTING') return;
     setBets(new Map());
     setBetPlacementHistory([]);
+    setDeleteMode(false);
   }, [phase]);
+
+  /**
+   * Double all bets by multiplying each bet's value by 2.
+   * Returns false if insufficient funds (toast will be shown by caller).
+   */
+  const doubleAllBets = useCallback(() => {
+    if (phase !== 'BETTING' || bets.size === 0) return true; // Already valid state
+
+    const totalBet = Array.from(bets.values()).reduce((sum, b) => sum + b.amount, 0);
+    const newTotalBet = totalBet * 2;
+
+    // Check if user has enough balance
+    if (balance < newTotalBet) {
+      return false; // Insufficient funds
+    }
+
+    // Double all bets
+    setBets((prev) => {
+      const next = new Map<string, PlacedBet>();
+      prev.forEach((bet, betId) => {
+        next.set(betId, {
+          ...bet,
+          amount: bet.amount * 2,
+          chips: bet.chips.map((c) => c * 2),
+        });
+      });
+      return next;
+    });
+
+    // Play 2X sound
+    soundEngine?.play2XSound();
+
+    return true;
+  }, [phase, bets, balance]);
+
+  /**
+   * Toggle delete mode. When enabled, clicking a bet zone removes chips.
+   */
+  const toggleDeleteMode = useCallback(() => {
+    setDeleteMode((prev) => !prev);
+    setDeleteModeTarget(null);
+  }, []);
+
+  /**
+   * Pop the last (highest value) chip from a bet zone.
+   */
+  const popLastChip = useCallback(
+    (betId: string) => {
+      if (phase !== 'BETTING') return;
+
+      setBets((prev) => {
+        const next = new Map(prev);
+        const existing = next.get(betId);
+        if (!existing || existing.chips.length === 0) return prev;
+
+        const chips = [...existing.chips];
+        const removedChip = chips.pop()!;
+        const newAmount = existing.amount - removedChip;
+
+        if (chips.length === 0) {
+          next.delete(betId);
+        } else {
+          next.set(betId, { ...existing, amount: newAmount, chips });
+        }
+        return next;
+      });
+
+      // Play drip sound for single chip removal
+      soundEngine?.playChipRemoveSound();
+    },
+    [phase]
+  );
+
+  /**
+   * Clear all chips from a specific bet zone.
+   */
+  const clearZone = useCallback(
+    (betId: string) => {
+      if (phase !== 'BETTING') return;
+
+      setBets((prev) => {
+        const next = new Map(prev);
+        next.delete(betId);
+        return next;
+      });
+
+      // Play whoosh sound for zone clear
+      soundEngine?.playClearZoneSound();
+    },
+    [phase]
+  );
 
   /**
    * Re-apply the bets from the previous spin.
@@ -209,6 +303,7 @@ export function useGameState() {
     // Deduct total bet from balance
     setBalance((prev) => prev - totalBet);
     setPhase('SPINNING');
+    setDeleteMode(false);
 
     const result = await spinWheel(wheelType);
     setCurrentResult(result);
@@ -261,6 +356,7 @@ export function useGameState() {
     setBetPlacementHistory([]);
     setCurrentResult(null);
     setLastPayout(null);
+    setDeleteMode(false);
   }, []);
 
   return {
@@ -276,15 +372,22 @@ export function useGameState() {
     totalBet,
     sessionStats,
     hasLastSpin: lastSpinBets.size > 0,
+    deleteMode,
+    deleteModeTarget,
 
     // Actions
     placeBet,
     removeBet,
     clearLastBet,
     clearBets,
+    doubleAllBets,
+    toggleDeleteMode,
+    popLastChip,
+    clearZone,
     rebet,
     setSelectedChip,
     setWheelType,
+    setDeleteModeTarget,
     executeSpin,
     resolveResult,
     startNewRound,

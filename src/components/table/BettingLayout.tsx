@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { COLORS } from '@/styles/theme';
 import ChipStack from '@/components/chips/ChipStack';
@@ -29,6 +29,10 @@ interface BettingLayoutProps {
   payoutResult: PayoutResult | null;
   showWinHighlight: boolean;
   phase: string;
+  deleteMode?: boolean;
+  onPopLastChip?: (betId: string) => void;
+  onClearZone?: (betId: string) => void;
+  wheelType?: 'american' | 'european';
 }
 
 // --- Number Mappings for Outside Bets ---
@@ -82,6 +86,9 @@ function NumberCell({
   comboBetsOnNumber = [],
   onNumberHover,
   onNumberHoverEnd,
+  deleteMode = false,
+  onPopLastChip,
+  onClearZone,
 }: {
   num: number;
   bet: PlacedBet | undefined;
@@ -96,7 +103,32 @@ function NumberCell({
   comboBetsOnNumber?: PlacedBet[];
   onNumberHover?: (num: number) => void;
   onNumberHoverEnd?: () => void;
+  deleteMode?: boolean;
+  onPopLastChip?: (betId: string) => void;
+  onClearZone?: (betId: string) => void;
 }) {
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isLongPress, setIsLongPress] = useState(false);
+
+  // Cleanup timer when deleteMode is disabled or component unmounts
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Reset state when exiting delete mode
+  useEffect(() => {
+    if (!deleteMode && longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+      setIsLongPress(false);
+    }
+  }, [deleteMode]);
+
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -104,6 +136,45 @@ function NumberCell({
     },
     [disabled, bet, onRemove]
   );
+
+  const handlePointerDown = useCallback(() => {
+    if (deleteMode && bet) {
+      setIsLongPress(false);
+      // Start long press timer
+      longPressTimerRef.current = setTimeout(() => {
+        const betId = `straight-${num}`;
+        console.log('Long press on', betId, '- clearing zone');
+        setIsLongPress(true);
+        onClearZone?.(betId);
+      }, 500); // 500ms threshold
+    }
+  }, [deleteMode, bet, num, onClearZone]);
+
+  const handlePointerUp = useCallback(() => {
+    // Cancel the long press timer if it's still running
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    
+    // If it didn't reach long press duration, do a single pop
+    if (deleteMode && !isLongPress && bet && onPopLastChip) {
+      const betId = `straight-${num}`;
+      console.log('Quick tap on', betId, '- popping last chip');
+      onPopLastChip(betId);
+    }
+    
+    setIsLongPress(false);
+  }, [deleteMode, isLongPress, bet, num, onPopLastChip]);
+
+  const handlePointerLeave = useCallback(() => {
+    // Cancel the long press timer if leaving
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    setIsLongPress(false);
+  }, []);
 
   const handlePlace = () => {
     if (!disabled) {
@@ -117,8 +188,11 @@ function NumberCell({
 
   return (
     <motion.button
-      onClick={handlePlace}
+      onClick={deleteMode ? undefined : handlePlace}
       onContextMenu={handleContextMenu}
+      onPointerDown={deleteMode ? handlePointerDown : undefined}
+      onPointerUp={deleteMode ? handlePointerUp : undefined}
+      onPointerLeave={deleteMode ? handlePointerLeave : undefined}
       onMouseEnter={() => !disabled && onNumberHover?.(num)}
       onMouseLeave={() => !disabled && onNumberHoverEnd?.()}
       className="relative flex items-center justify-center cursor-pointer select-none text-[9px] sm:text-[11px] md:text-sm min-h-[18px] sm:min-h-[30px] md:min-h-[44px] group"
@@ -131,10 +205,11 @@ function NumberCell({
         fontWeight: 700,
         color: '#fff',
         transition: 'background 0.15s ease, color 0.15s ease',
+        cursor: deleteMode && bet ? 'grab' : 'pointer',
         ...style,
       }}
       whileHover={
-        disabled
+        disabled || deleteMode
           ? {}
           : {
             borderColor: COLORS.gold,
@@ -215,6 +290,9 @@ function DropZone({
   numbers = [],
   onHover,
   onHoverEnd,
+  deleteMode = false,
+  onPopLastChip,
+  onClearZone,
 }: {
   betId: string;
   x: string;
@@ -230,8 +308,32 @@ function DropZone({
   numbers?: number[];
   onHover?: (nums: number[], betId?: string) => void;
   onHoverEnd?: () => void;
+  deleteMode?: boolean;
+  onPopLastChip?: (betId: string) => void;
+  onClearZone?: (betId: string) => void;
 }) {
   const bet = bets.get(betId);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isLongPress, setIsLongPress] = useState(false);
+
+  // Cleanup timer when deleteMode is disabled or component unmounts
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Reset state when exiting delete mode
+  useEffect(() => {
+    if (!deleteMode && longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+      setIsLongPress(false);
+    }
+  }, [deleteMode]);
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -240,6 +342,37 @@ function DropZone({
     },
     [disabled, bet, onRemove, betId]
   );
+
+  const handlePointerDown = useCallback(() => {
+    if (deleteMode && bet) {
+      setIsLongPress(false);
+      longPressTimerRef.current = setTimeout(() => {
+        console.log('Long press on', betId, '- clearing zone');
+        setIsLongPress(true);
+        onClearZone?.(betId);
+      }, 500);
+    }
+  }, [deleteMode, bet, betId, onClearZone]);
+
+  const handlePointerUp = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    if (deleteMode && !isLongPress && bet && onPopLastChip) {
+      console.log('Quick tap on', betId, '- popping last chip');
+      onPopLastChip(betId);
+    }
+    setIsLongPress(false);
+  }, [deleteMode, isLongPress, bet, betId, onPopLastChip]);
+
+  const handlePointerLeave = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    setIsLongPress(false);
+  }, []);
 
   return (
     <div
@@ -259,11 +392,14 @@ function DropZone({
           background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(200,160,50,0.2) 60%, transparent 100%)',
         }}
         onClick={() => {
-          if (!disabled) {
+          if (!deleteMode && !disabled) {
             soundEngine?.playChipSound();
             onPlace(betId);
           }
         }}
+        onPointerDown={deleteMode ? handlePointerDown : undefined}
+        onPointerUp={deleteMode ? handlePointerUp : undefined}
+        onPointerLeave={deleteMode ? handlePointerLeave : undefined}
         onContextMenu={handleContextMenu}
         onMouseEnter={() => !disabled && onHover?.(numbers, betId)}
         onMouseLeave={() => !disabled && onHoverEnd?.()}
@@ -304,6 +440,10 @@ function OutsideBetCell({
   numbers = [],
   onHover,
   onHoverEnd,
+  betId = '',
+  deleteMode = false,
+  onPopLastChip,
+  onClearZone,
 }: {
   label: React.ReactNode;
   bet: PlacedBet | undefined;
@@ -318,7 +458,33 @@ function OutsideBetCell({
   numbers?: number[];
   onHover?: (nums: number[]) => void;
   onHoverEnd?: () => void;
+  betId?: string;
+  deleteMode?: boolean;
+  onPopLastChip?: (betId: string) => void;
+  onClearZone?: (betId: string) => void;
 }) {
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isLongPress, setIsLongPress] = useState(false);
+
+  // Cleanup timer when deleteMode is disabled or component unmounts
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Reset state when exiting delete mode
+  useEffect(() => {
+    if (!deleteMode && longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+      setIsLongPress(false);
+    }
+  }, [deleteMode]);
+
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -327,8 +493,39 @@ function OutsideBetCell({
     [disabled, bet, onRemove]
   );
 
+  const handlePointerDown = useCallback(() => {
+    if (deleteMode && bet) {
+      setIsLongPress(false);
+      longPressTimerRef.current = setTimeout(() => {
+        console.log('Long press on', betId, '- clearing zone');
+        setIsLongPress(true);
+        onClearZone?.(betId);
+      }, 500);
+    }
+  }, [deleteMode, bet, betId, onClearZone]);
+
+  const handlePointerUp = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    if (deleteMode && !isLongPress && bet && onPopLastChip) {
+      console.log('Quick tap on', betId, '- popping last chip');
+      onPopLastChip(betId);
+    }
+    setIsLongPress(false);
+  }, [deleteMode, isLongPress, bet, betId, onPopLastChip]);
+
+  const handlePointerLeave = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    setIsLongPress(false);
+  }, []);
+
   const handlePlace = () => {
-    if (!disabled) {
+    if (!deleteMode && !disabled) {
       soundEngine?.playChipSound();
       onPlace();
     }
@@ -337,6 +534,9 @@ function OutsideBetCell({
   return (
     <motion.button
       onClick={handlePlace}
+      onPointerDown={deleteMode ? handlePointerDown : undefined}
+      onPointerUp={deleteMode ? handlePointerUp : undefined}
+      onPointerLeave={deleteMode ? handlePointerLeave : undefined}
       onContextMenu={handleContextMenu}
       onMouseEnter={() => !disabled && onHover?.(numbers)}
       onMouseLeave={() => !disabled && onHoverEnd?.()}
@@ -399,6 +599,10 @@ export default function BettingLayout({
   payoutResult,
   showWinHighlight,
   phase,
+  deleteMode = false,
+  onPopLastChip,
+  onClearZone,
+  wheelType = 'american',
 }: BettingLayoutProps) {
   const [hoveredNumbers, setHoveredNumbers] = useState<number[]>([]);
   const [hoveredBetId, setHoveredBetId] = useState<string | null>(null);
@@ -485,6 +689,9 @@ export default function BettingLayout({
             comboBetsOnNumber={comboBetsByNumber.get(0) || []}
             onNumberHover={handleNumberHover}
             onNumberHoverEnd={handleNumberHoverEnd}
+            deleteMode={deleteMode}
+            onPopLastChip={onPopLastChip}
+            onClearZone={onClearZone}
           />
           <NumberCell
             num={37}
@@ -492,6 +699,9 @@ export default function BettingLayout({
             onPlace={() => onPlaceBet('straight-00')}
             onRemove={() => onRemoveBet('straight-00')}
             disabled={disabled}
+            deleteMode={deleteMode}
+            onPopLastChip={onPopLastChip}
+            onClearZone={onClearZone}
             isWinner={isWinningNumber(37) || isBetWinner('straight-00')}
             phase={phase}
             style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }}
@@ -501,21 +711,26 @@ export default function BettingLayout({
             onNumberHover={handleNumberHover}
             onNumberHoverEnd={handleNumberHoverEnd}
           />
-          {/* Split 0-00 target */}
-          <DropZone
-            betId="split-0-00"
-            x="100%"
-            y="50%"
-            bets={bets}
-            onPlace={onPlaceBet}
-            onRemove={onRemoveBet}
-            disabled={disabled}
-            isWinner={isBetWinner('split-0-00')}
-            phase={phase}
-            numbers={[0, 37]}
-            onHover={handleHover}
-            onHoverEnd={handleHoverEnd}
-          />
+          {/* Split 0-00 or 0-3 target */}
+          {wheelType === 'american' ? (
+            <DropZone
+              betId="split-0-00"
+              x="50%"
+              y="50%"
+              bets={bets}
+              onPlace={onPlaceBet}
+              onRemove={onRemoveBet}
+              disabled={disabled}
+              isWinner={isBetWinner('split-0-00')}
+              phase={phase}
+              numbers={[0, 37]}
+              onHover={handleHover}
+              onHoverEnd={handleHoverEnd}
+              deleteMode={deleteMode}
+              onPopLastChip={onPopLastChip}
+              onClearZone={onClearZone}
+            />
+          ) : null}
         </div>
 
         {/* NUMBERS GRID */}
@@ -540,6 +755,9 @@ export default function BettingLayout({
                     comboBetsOnNumber={comboBetsByNumber.get(num) || []}
                     onNumberHover={handleNumberHover}
                     onNumberHoverEnd={handleNumberHoverEnd}
+                    deleteMode={deleteMode}
+                    onPopLastChip={onPopLastChip}
+                    onClearZone={onClearZone}
                   />
                 );
               })}
@@ -551,32 +769,46 @@ export default function BettingLayout({
             {/* Horizontal Splits */}
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33].map(n => {
               const betId = `split-${n}-${n + 3}`, col = Math.floor((n - 1) / 3), row = 2 - ((n - 1) % 3);
-              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y={`${(row + 0.5) * (100 / 3)}%`} width="12px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y={`${(row + 0.5) * (100 / 3)}%`} width="12px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />;
             })}
             {/* Vertical Splits */}
             {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32, 34, 35].map(n => {
               const betId = `split-${n}-${n + 1}`, col = Math.floor((n - 1) / 3), row = 2 - ((n - 1) % 3);
-              return <DropZone key={betId} betId={betId} x={`${(col + 0.5) * (100 / 12)}%`} y={`${(row) * (100 / 3)}%`} width="24px" height="12px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1]} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+              return <DropZone key={betId} betId={betId} x={`${(col + 0.5) * (100 / 12)}%`} y={`${(row) * (100 / 3)}%`} width="24px" height="12px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />;
             })}
             {/* Corner Bets */}
             {[1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32].map(n => {
               const betId = `corner-${n}-${n + 1}-${n + 3}-${n + 4}`, col = Math.floor((n - 1) / 3), row = 2 - ((n - 1) % 3);
-              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y={`${(row) * (100 / 3)}%`} width="14px" height="14px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1, n + 3, n + 4]} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y={`${(row) * (100 / 3)}%`} width="14px" height="14px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1, n + 3, n + 4]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />;
             })}
             {/* Street Bets */}
             {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34].map(n => {
               const betId = `street-${n}-${n + 1}-${n + 2}`, col = Math.floor((n - 1) / 3);
-              return <DropZone key={betId} betId={betId} x={`${(col + 0.5) * (100 / 12)}%`} y="100%" width="24px" height="12px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1, n + 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+              return <DropZone key={betId} betId={betId} x={`${(col + 0.5) * (100 / 12)}%`} y="100%" width="24px" height="12px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={[n, n + 1, n + 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />;
             })}
             {/* Sixline Bets */}
             {[1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31].map(n => {
               const betId = `sixline-${n}-${n + 5}`, col = Math.floor((n - 1) / 3);
               const nums = [n, n + 1, n + 2, n + 3, n + 4, n + 5];
-              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y="100%" width="14px" height="14px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={nums} onHover={handleHover} onHoverEnd={handleHoverEnd} />;
+              return <DropZone key={betId} betId={betId} x={`${(col + 1) * (100 / 12)}%`} y="100%" width="14px" height="14px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner(betId)} phase={phase} numbers={nums} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />;
             })}
+            {/* Zero/First Row Splits */}
+            <DropZone betId="split-0-1" x="0%" y="83.3%" width="20px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('split-0-1')} phase={phase} numbers={[0, 1]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />
+            <DropZone betId="split-0-2" x="0%" y={wheelType === 'american' ? '60.0%' : '50.0%'} width="20px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('split-0-2')} phase={phase} numbers={[0, 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />
+            {wheelType === 'american' ? (
+              <>
+                <DropZone betId="split-00-2" x="0%" y="40.0%" width="20px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('split-00-2')} phase={phase} numbers={[37, 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />
+                <DropZone betId="split-00-3" x="0%" y="16.6%" width="20px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('split-00-3')} phase={phase} numbers={[37, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />
+              </>
+            ) : (
+              <DropZone betId="split-0-3" x="0%" y="16.6%" width="20px" height="20px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('split-0-3')} phase={phase} numbers={[0, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />
+            )}
+            
             {/* Trio & Basket */}
-            <DropZone betId="trio-0-1-2" x="0%" y="66.6%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-1-2')} phase={phase} numbers={[0, 1, 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
-            <DropZone betId="trio-0-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-2-3')} phase={phase} numbers={[0, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
+            <DropZone betId="trio-0-1-2" x="0%" y="66.6%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-1-2')} phase={phase} numbers={[0, 1, 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} />
+            {wheelType === 'american' ? (
+              <DropZone betId="trio-0-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-2-3')} phase={phase} numbers={[0, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
+            ) : null}
             <DropZone betId="trio-00-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-00-2-3')} phase={phase} numbers={[37, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
             <DropZone betId="basket-0-00-1-2-3" x="0%" y="50%" width="14px" height="44px" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('basket-0-00-1-2-3')} phase={phase} numbers={[0, 37, 1, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} />
           </div>
@@ -601,6 +833,10 @@ export default function BettingLayout({
               numbers={item.nums}
               onHover={handleHover}
               onHoverEnd={handleHoverEnd}
+              betId={item.id}
+              deleteMode={deleteMode}
+              onPopLastChip={onPopLastChip}
+              onClearZone={onClearZone}
               style={{ border: 'none', borderBottom: '1px solid #5ea896' }}
             />
           ))}
@@ -628,6 +864,10 @@ export default function BettingLayout({
               numbers={item.nums}
               onHover={handleHover}
               onHoverEnd={handleHoverEnd}
+              betId={item.id}
+              deleteMode={deleteMode}
+              onPopLastChip={onPopLastChip}
+              onClearZone={onClearZone}
               style={{ border: 'none', borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896', borderLeft: idx === 0 ? '1px solid #5ea896' : 'none' }}
             />
           ))}
@@ -660,6 +900,10 @@ export default function BettingLayout({
               numbers={item.nums}
               onHover={handleHover}
               onHoverEnd={handleHoverEnd}
+              betId={item.id}
+              deleteMode={deleteMode}
+              onPopLastChip={onPopLastChip}
+              onClearZone={onClearZone}
               style={{
                 border: 'none',
                 borderRight: '1px solid #5ea896',

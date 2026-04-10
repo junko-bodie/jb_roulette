@@ -39,6 +39,22 @@ class AudioEngine {
           volume: 0.4,
           preload: true,
         }),
+        // Advanced betting UI sounds
+        click: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'],
+          volume: 0.35,
+          preload: true,
+        }),
+        drip: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2547/2547-preview.mp3'],
+          volume: 0.3,
+          preload: true,
+        }),
+        whoosh: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2548/2548-preview.mp3'],
+          volume: 0.4,
+          preload: true,
+        }),
       };
     }
   }
@@ -54,6 +70,23 @@ class AudioEngine {
       const id = this.sounds.tick.play();
       this.sounds.tick.rate(0.8 + Math.random() * 0.4, id);
     }
+  }
+
+  // ── Advanced Betting Sounds ────────────────────────────────────────────────
+
+  play2XSound() {
+    if (this.enabled && this.sounds.click) this.sounds.click.play();
+  }
+
+  playChipRemoveSound() {
+    if (this.enabled && this.sounds.chip) {
+      const id = this.sounds.chip.play();
+      this.sounds.chip.rate(1.6, id);
+    }
+  }
+
+  playClearZoneSound() {
+    if (this.enabled && this.sounds.whoosh) this.sounds.whoosh.play();
   }
 
   // ── Win / Loss ─────────────────────────────────────────────────────────────

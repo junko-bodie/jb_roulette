@@ -118,30 +118,34 @@ export default function ResultDisplay({
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{
-                  duration: 0.7,
+                  duration: 0.8,
                   ease: [0.16, 1, 0.3, 1],
                   delay: 0.1,
                 }}
-                className="relative w-52 h-52 rounded-full flex items-center justify-center" // Increased size from 36 to 52
+                className="relative w-64 h-64 rounded-full flex items-center justify-center" 
                 style={{
                   background: getResultBg(result.color),
-                  border: `4px solid ${COLORS.gold}`, // Thicker border
+                  border: `6px solid ${COLORS.gold}`, 
                   boxShadow: `
-                    0 0 60px rgba(201, 168, 76, 0.45),
-                    0 0 120px rgba(201, 168, 76, 0.25),
-                    inset 0 -6px 16px rgba(0,0,0,0.4),
-                    inset 0 6px 12px rgba(255,255,255,0.1)
+                    0 0 80px rgba(201, 168, 76, 0.5),
+                    0 0 140px rgba(201, 168, 76, 0.3),
+                    inset 0 -10px 20px rgba(0,0,0,0.5),
+                    inset 0 10px 20px rgba(255,255,255,0.2)
                   `,
                 }}
               >
                 <motion.span
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.4, ease: 'easeOut' }}
-                  className="text-8xl font-bold text-white" // Increased size from 6xl to 8xl
+                  initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.4, duration: 0.6, type: 'spring', bounce: 0.5 }}
+                  className="text-[120px] font-black text-white leading-none tracking-tighter" 
                   style={{
                     fontFamily: 'var(--font-playfair)',
-                    textShadow: '0 4px 12px rgba(0,0,0,0.6)',
+                    textShadow: `
+                      0 8px 16px rgba(0,0,0,0.8),
+                      0 2px 4px rgba(255,255,255,0.4),
+                      0 0 40px rgba(255,255,255,0.3)
+                    `,
                   }}
                 >
                   {result.displayNumber}

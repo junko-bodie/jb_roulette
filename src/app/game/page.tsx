@@ -126,6 +126,13 @@ export default function GamePage() {
           onClearBets={game.clearBets}
           onClearLastBet={game.clearLastBet}
           hasLastSpin={game.hasLastSpin}
+          balance={game.balance}
+          totalBet={game.totalBet}
+          onDoubleAllBets={game.doubleAllBets}
+          onToggleDeleteMode={game.toggleDeleteMode}
+          deleteMode={game.deleteMode}
+          onPopLastChip={game.popLastChip}
+          onClearZone={game.clearZone}
         />
       </main>
 

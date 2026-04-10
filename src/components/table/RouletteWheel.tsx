@@ -666,6 +666,10 @@ export default function RouletteWheel({
         if (!s.ballSettled) {
           s.wheelAngle += 0.0008;
           s.ballAngle -= 0.0005;
+        } else {
+          // Keep wheel drifting, and ball drifting synchronously with it!
+          s.wheelAngle += 0.0008;
+          s.ballAngle += 0.0008;
         }
         // ballSettled === true → wheel and ball stay exactly where they are
       }

@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import RouletteWheel from './RouletteWheel';
 import BettingLayout from './BettingLayout';
+import BettingControlButtons from '@/components/ui/BettingControlBar';
 import { type WheelType, type SpinResult } from '@/lib/rng';
 import { type PlacedBet } from '@/lib/bets';
 import { type PayoutResult } from '@/lib/payouts';
@@ -29,6 +30,14 @@ interface RouletteTableProps {
   onClearBets: () => void;
   onClearLastBet: () => void;
   hasLastSpin: boolean;
+  // Advanced betting props
+  balance?: number;
+  totalBet?: number;
+  onDoubleAllBets?: () => boolean;
+  onToggleDeleteMode?: () => void;
+  deleteMode?: boolean;
+  onPopLastChip?: (betId: string) => void;
+  onClearZone?: (betId: string) => void;
 }
 
 export default function RouletteTable({
@@ -50,6 +59,13 @@ export default function RouletteTable({
   onClearBets,
   onClearLastBet,
   hasLastSpin,
+  balance = 0,
+  totalBet = 0,
+  onDoubleAllBets,
+  onToggleDeleteMode,
+  deleteMode = false,
+  onPopLastChip,
+  onClearZone,
 }: RouletteTableProps) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -213,14 +229,33 @@ export default function RouletteTable({
                 payoutResult={lastPayout}
                 showWinHighlight={!!currentResult && !isSpinning}
                 phase={phase}
+                deleteMode={deleteMode}
+                onPopLastChip={onPopLastChip}
+                onClearZone={onClearZone}
+                wheelType={wheelType}
               />
             </div>
 
             {/* ═══ BUTTONS — directly below betting grid ═══ */}
             <div
-              className="flex items-center justify-end gap-2 mt-1.5 w-full"
+              className="flex items-center justify-end gap-3 mt-1.5 w-full"
               style={{ transform: 'scaleX(0.877) scaleY(0.645)' }}
             >
+              {/* 2X and Delete Mode Buttons — Left Side */}
+              {!isBettingDisabled && totalBet > 0 && (
+                <>
+                  <BettingControlButtons
+                    totalBet={totalBet}
+                    balance={balance}
+                    onDouble={onDoubleAllBets || (() => false)}
+                    onToggleDelete={onToggleDeleteMode || (() => {})}
+                    deleteMode={deleteMode}
+                    disabled={isBettingDisabled}
+                  />
+                  <div style={{ width: '1px', height: '24px', background: '#5ea896', opacity: 0.3 }} />
+                </>
+              )}
+
               {/* RESET — compact bordered box */}
               <button
                 onClick={onRebet}
