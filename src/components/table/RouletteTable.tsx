@@ -1,14 +1,18 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import RouletteWheel from './RouletteWheel';
 import BettingLayout from './BettingLayout';
 import BettingControlButtons from '@/components/ui/BettingControlBar';
 import { type WheelType, type SpinResult } from '@/lib/rng';
 import { type PlacedBet } from '@/lib/bets';
 import { type PayoutResult } from '@/lib/payouts';
+import { soundEngine } from '@/lib/audioEngine';
 import type React from 'react';
+
+import { useGame } from '@/context/GameContext';
+import BetTimer from '@/components/ui/BetTimer';
 
 interface RouletteTableProps {
   wheelType: WheelType;
@@ -38,6 +42,7 @@ interface RouletteTableProps {
   deleteMode?: boolean;
   onPopLastChip?: (betId: string) => void;
   onClearZone?: (betId: string) => void;
+  onTimeout?: () => void;
 }
 
 export default function RouletteTable({
@@ -66,8 +71,35 @@ export default function RouletteTable({
   deleteMode = false,
   onPopLastChip,
   onClearZone,
+  onTimeout,
 }: RouletteTableProps) {
   const [isMobile, setIsMobile] = useState(false);
+  const { isSoundEnabled, isTimerEnabled } = useGame();
+
+  const handleSpinClick = () => {
+    if (soundEngine) soundEngine.playSpinClick();
+    onSpin();
+  };
+
+  const handleClearBetsClick = () => {
+    if (soundEngine) soundEngine.playSwoosh();
+    onClearBets();
+  };
+
+  const handleClearLastBetClick = () => {
+    if (soundEngine) soundEngine.playSwoosh();
+    onClearLastBet();
+  };
+
+  const handlePopLastChip = (betId: string) => {
+    if (soundEngine) soundEngine.playSwoosh();
+    onPopLastChip?.(betId);
+  };
+
+  const handleClearZone = (betId: string) => {
+    if (soundEngine) soundEngine.playSwoosh();
+    onClearZone?.(betId);
+  };
 
   useEffect(() => {
     const checkMobile = () => {
@@ -79,6 +111,7 @@ export default function RouletteTable({
   }, []);
 
   const canBet = !isSpinning && phase === 'BETTING';
+  const isLocked = phase === 'LOCKED';
   const hasBets = bets.size > 0;
   const spinEnabled = canBet && hasBets;
 
@@ -181,8 +214,8 @@ export default function RouletteTable({
           <motion.div
             className="flex-[2] flex flex-col items-center justify-center p-2 mobile-table-section w-full"
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
-            animate={isMobile 
-              ? { opacity: 1, x: 0, scale: 1 } 
+            animate={isMobile
+              ? { opacity: 1, x: 0, scale: 1 }
               : { opacity: 1, x: 0.5, scaleX: 1.14, scaleY: 1.82 }
             }
             transition={{ duration: 0.5 }}
@@ -218,29 +251,74 @@ export default function RouletteTable({
               </div>
             </div>
 
-            {/* Betting Grid */}
-            <div className="w-full">
-              <BettingLayout
-                bets={bets}
-                onPlaceBet={onPlaceBet}
-                onRemoveBet={onRemoveBet}
-                disabled={isBettingDisabled}
-                winningResult={currentResult}
-                payoutResult={lastPayout}
-                showWinHighlight={!!currentResult && !isSpinning}
-                phase={phase}
-                deleteMode={deleteMode}
-                onPopLastChip={onPopLastChip}
-                onClearZone={onClearZone}
-                wheelType={wheelType}
-              />
+            {/* Betting Grid Section with Blur & Overlay */}
+            <div className="w-full relative">
+              <div 
+                className="transition-all duration-700"
+                style={{ filter: isLocked || isSpinning ? 'blur(8px)' : 'none' }}
+              >
+                <BettingLayout
+                  bets={bets}
+                  onPlaceBet={onPlaceBet}
+                  onRemoveBet={onRemoveBet}
+                  disabled={isBettingDisabled || isLocked}
+                  winningResult={currentResult}
+                  payoutResult={lastPayout}
+                  showWinHighlight={!!currentResult && !isSpinning}
+                  phase={phase}
+                  deleteMode={deleteMode}
+                  onPopLastChip={handlePopLastChip}
+                  onClearZone={handleClearZone}
+                  wheelType={wheelType}
+                />
+              </div>
+
+              {/* BETS CLOSED Overlay */}
+              <AnimatePresence>
+                {isLocked && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.1 }}
+                    className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"
+                  >
+                    <div 
+                      className="px-8 py-4 rounded-xl border-4 border-[#c9a44c] bg-black/80 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center gap-2"
+                      style={{ transform: 'rotate(-5deg)' }}
+                    >
+                      <span className="text-4xl font-black text-white tracking-[0.2em] italic" style={{ fontFamily: "'Bodoni Moda', serif" }}>
+                        BETS CLOSED
+                      </span>
+                      <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" />
+                      <span className="text-[10px] text-[#c9a44c] uppercase tracking-[0.4em] font-bold">Good Luck</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* ═══ BUTTONS — directly below betting grid ═══ */}
             <div
-              className="flex items-center justify-end gap-3 mt-1.5 w-full"
+              className="flex items-center justify-end gap-3 mt-1.5 w-full pr-10"
               style={{ transform: 'scaleX(0.877) scaleY(0.645)' }}
             >
+              {/* Timer UI - only show if betting and timer enabled */}
+              <div className="flex flex-col items-center justify-center mr-4">
+                {isTimerEnabled && !isSpinning && phase === 'BETTING' && (
+                  <BetTimer
+                    duration={45}
+                    isActive={!isSpinning && phase === 'BETTING'}
+                    onTimeout={() => {
+                      if (onTimeout) {
+                        onTimeout();
+                      } else if (hasBets && !isSpinning) {
+                        handleSpinClick();
+                      }
+                    }}
+                  />
+                )}
+              </div>
+
               {/* 2X and Delete Mode Buttons — Left Side */}
               {!isBettingDisabled && totalBet > 0 && (
                 <>
@@ -248,7 +326,7 @@ export default function RouletteTable({
                     totalBet={totalBet}
                     balance={balance}
                     onDouble={onDoubleAllBets || (() => false)}
-                    onToggleDelete={onToggleDeleteMode || (() => {})}
+                    onToggleDelete={onToggleDeleteMode || (() => { })}
                     deleteMode={deleteMode}
                     disabled={isBettingDisabled}
                   />
@@ -280,7 +358,7 @@ export default function RouletteTable({
 
               {/* CLEAR — compact bordered box (clears all bets) */}
               <button
-                onClick={onClearBets}
+                onClick={handleClearBetsClick}
                 disabled={!canBet || !hasBets}
                 className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                 style={{
@@ -290,7 +368,7 @@ export default function RouletteTable({
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase' as const,
                   color: '#d4d0c4',
-                  background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                  background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
                   border: '1.5px solid #5ea896',
                   borderRadius: '3px',
                   padding: '5px 10px',
@@ -302,7 +380,7 @@ export default function RouletteTable({
 
               {/* CLEAR LAST BET — compact bordered box with sub-label */}
               <button
-                onClick={onClearLastBet}
+                onClick={handleClearLastBetClick}
                 disabled={!canBet || !hasBets}
                 className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                 style={{
@@ -328,8 +406,9 @@ export default function RouletteTable({
               </button>
 
               {/* SPIN — dark green oval with thick gold border */}
+              {/* SPIN — dark green oval with thick gold border */}
               <motion.button
-                onClick={onSpin}
+                onClick={handleSpinClick}
                 disabled={!spinEnabled}
                 whileHover={spinEnabled ? { scale: 1.06, y: -1 } : {}}
                 whileTap={spinEnabled ? { scale: 1.12, y: 1 } : {}}
@@ -355,7 +434,7 @@ export default function RouletteTable({
                     ? `0 0 0 2px #1a0f09, 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.3), 0 0 20px rgba(201, 168, 76, 0.2)`
                     : 'none',
                   textShadow: spinEnabled ? '0 1px 3px rgba(0,0,0,0.5)' : 'none',
-                }}
+                } as React.CSSProperties}
               >
                 {/* Shimmer overlay */}
                 {spinEnabled && !isSpinning && (
@@ -365,7 +444,7 @@ export default function RouletteTable({
                       background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.15) 50%, transparent 65%)',
                       backgroundSize: '200% 100%',
                       borderRadius: '9999px',
-                    }}
+                    } as React.CSSProperties}
                     animate={{ backgroundPosition: ['200% 0%', '-200% 0%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: 'linear', repeatDelay: 2 }}
                   />

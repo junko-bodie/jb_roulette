@@ -7,6 +7,8 @@ export const metadata: Metadata = {
     "A premium, casino-quality play-money roulette tournament experience.",
 };
 
+import { Providers } from "@/components/Providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,7 +26,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#0a0a0a] text-[#f5f5f5]">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

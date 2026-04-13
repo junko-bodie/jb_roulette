@@ -13,6 +13,7 @@ import { type GamePhase } from '@/lib/gamePhases';
 import { type PlacedBet, BET_MAP } from '@/lib/bets';
 import { calculatePayouts, type PayoutResult } from '@/lib/payouts';
 import { soundEngine } from '@/lib/audioEngine';
+import { useGame } from '@/context/GameContext';
 
 export interface GameState {
   balance: number;
@@ -49,7 +50,7 @@ function cloneBetsMap(source: Map<string, PlacedBet>): Map<string, PlacedBet> {
 }
 
 export function useGameState() {
-  const [balance, setBalance] = useState(5000 /* STARTING_BALANCE */);
+  const { balance, setBalance } = useGame();
   const [bets, setBets] = useState<Map<string, PlacedBet>>(new Map());
   const [selectedChip, setSelectedChip] = useState(5);
   const [wheelType, setWheelType] = useState<WheelType>('european');
@@ -216,7 +217,7 @@ export function useGameState() {
     );
 
     // Play 2X sound
-    soundEngine?.play2XSound();
+    soundEngine?.play2XClick();
 
     return true;
   }, [phase, bets, balance]);
@@ -253,8 +254,8 @@ export function useGameState() {
         return next;
       });
 
-      // Play drip sound for single chip removal
-      soundEngine?.playChipRemoveSound();
+      // Play swoosh sound for single chip removal
+      soundEngine?.playSwoosh();
     },
     [phase]
   );
@@ -272,8 +273,8 @@ export function useGameState() {
         return next;
       });
 
-      // Play whoosh sound for zone clear
-      soundEngine?.playClearZoneSound();
+      // Play swoosh sound for zone clear
+      soundEngine?.playSwoosh();
     },
     [phase]
   );
@@ -306,7 +307,7 @@ export function useGameState() {
     setLastSpinBets(cloneBetsMap(bets));
 
     // Deduct total bet from balance
-    setBalance((prev) => prev - totalBet);
+    setBalance((prev: number) => prev - totalBet);
     setPhase('SPINNING');
     setDeleteMode(false);
 
@@ -329,7 +330,7 @@ export function useGameState() {
     setLastPayout(payout);
 
     // Add winnings to balance (returned stakes + profit)
-    setBalance((prev) => prev + payout.totalReturned);
+    setBalance((prev: number) => prev + payout.totalReturned);
 
     // Update session stats
     const spinBetTotal = betArray.reduce((sum, b) => sum + b.amount, 0);

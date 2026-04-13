@@ -7,9 +7,10 @@ interface ChipStackProps {
   chips: number[];
   phase?: string;
   className?: string;
+  deleteMode?: boolean;
 }
 
-export default function ChipStack({ chips, phase, className = '' }: ChipStackProps) {
+export default function ChipStack({ chips, phase, className = '', deleteMode = false }: ChipStackProps) {
   if (chips.length === 0) return null;
 
   // Show last 4 chips visually in the stack
@@ -18,6 +19,18 @@ export default function ChipStack({ chips, phase, className = '' }: ChipStackPro
 
   return (
     <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[25px] h-[25px] pointer-events-none ${className}`}>
+      {/* Royale Roulette Style Delete Badge */}
+      {deleteMode && (
+        <motion.div
+          initial={{ scale: 0, rotate: -45 }}
+          animate={{ scale: 1, rotate: 0 }}
+          className="absolute -top-3 -right-3 w-5 h-5 bg-red-600 rounded-full border-2 border-white flex items-center justify-center shadow-lg z-[110]"
+          style={{ pointerEvents: 'none' }}
+        >
+          <span className="text-white text-[12px] font-black leading-none">✕</span>
+        </motion.div>
+      )}
+
       {visibleChips.map((chipVal, indexInSlice) => {
         const startIdx = Math.max(0, chips.length - 4);
         const originalIndex = startIdx + indexInSlice;

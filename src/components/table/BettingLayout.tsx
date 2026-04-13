@@ -67,8 +67,8 @@ function getCellBg(num: number): string {
   return '#1e1e1e';
 }
 
-function ChipIndicator({ bet, phase }: { bet: PlacedBet; phase: string }) {
-  return <ChipStack chips={bet.chips} phase={phase} />;
+function ChipIndicator({ bet, phase, deleteMode }: { bet: PlacedBet; phase: string; deleteMode?: boolean }) {
+  return <ChipStack chips={bet.chips} phase={phase} deleteMode={deleteMode} />;
 }
 
 /** Single number cell */
@@ -157,15 +157,15 @@ function NumberCell({
       longPressTimerRef.current = null;
     }
 
-    // If it didn't reach long press duration, do a single pop
-    if (deleteMode && !isLongPress && bet && onPopLastChip) {
+    // If it didn't reach long press duration, do a single pop (OR CLEAR IF IN DELETE MODE)
+    if (deleteMode && !isLongPress && bet) {
       const betId = `straight-${num}`;
-      console.log('Quick tap on', betId, '- popping last chip');
-      onPopLastChip(betId);
+      console.log('Delete mode tap on', betId, '- clearing entire zone');
+      onClearZone?.(betId);
     }
 
     setIsLongPress(false);
-  }, [deleteMode, isLongPress, bet, num, onPopLastChip]);
+  }, [deleteMode, isLongPress, bet, num, onClearZone]);
 
   const handlePointerLeave = useCallback(() => {
     // Cancel the long press timer if leaving
@@ -244,7 +244,7 @@ function NumberCell({
       {/* Straight bet chip + tooltip */}
       {bet && (
         <>
-          <ChipIndicator bet={bet} phase={phase} />
+          <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} />
           <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity -top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-0.5 px-1.5 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
             ${bet.amount.toLocaleString()}
           </div>
@@ -359,12 +359,12 @@ function DropZone({
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
-    if (deleteMode && !isLongPress && bet && onPopLastChip) {
-      console.log('Quick tap on', betId, '- popping last chip');
-      onPopLastChip(betId);
+    if (deleteMode && !isLongPress && bet) {
+      console.log('Delete mode tap on', betId, '- clearing entire zone');
+      onClearZone?.(betId);
     }
     setIsLongPress(false);
-  }, [deleteMode, isLongPress, bet, betId, onPopLastChip]);
+  }, [deleteMode, isLongPress, bet, betId, onClearZone]);
 
   const handlePointerLeave = useCallback(() => {
     if (longPressTimerRef.current) {
@@ -407,7 +407,7 @@ function DropZone({
       />
       {bet && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none group">
-          <ChipIndicator bet={bet} phase={phase} />
+          <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} />
           {/* Tooltip */}
           <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50">
             ${bet.amount.toLocaleString()}
@@ -509,12 +509,12 @@ function OutsideBetCell({
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
-    if (deleteMode && !isLongPress && bet && onPopLastChip) {
-      console.log('Quick tap on', betId, '- popping last chip');
-      onPopLastChip(betId);
+    if (deleteMode && !isLongPress && bet) {
+      console.log('Delete mode tap on', betId, '- clearing entire zone');
+      onClearZone?.(betId);
     }
     setIsLongPress(false);
-  }, [deleteMode, isLongPress, bet, betId, onPopLastChip]);
+  }, [deleteMode, isLongPress, bet, betId, onClearZone]);
 
   const handlePointerLeave = useCallback(() => {
     if (longPressTimerRef.current) {
@@ -579,7 +579,7 @@ function OutsideBetCell({
       {label}
       {bet && (
         <>
-          <ChipIndicator bet={bet} phase={phase} />
+          <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} />
           {/* Tooltip */}
           <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
             ${bet.amount.toLocaleString()}

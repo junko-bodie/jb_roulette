@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { COLORS } from '@/styles/theme';
+import { soundEngine } from '@/lib/audioEngine';
 
 interface BettingControlButtonsProps {
   totalBet: number;
@@ -27,6 +28,7 @@ export default function BettingControlButtons({
   const canDelete = !disabled && totalBet > 0;
 
   const handleDouble = () => {
+    if (soundEngine) soundEngine.play2XClick();
     const success = onDouble();
     if (!success) {
       setShowInsufficientFunds(true);
@@ -35,6 +37,7 @@ export default function BettingControlButtons({
   };
 
   const handleDeleteToggle = () => {
+    if (soundEngine) soundEngine.playSwoosh();
     console.log('Delete toggle clicked, current deleteMode:', deleteMode);
     onToggleDelete();
   };

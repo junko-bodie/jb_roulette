@@ -55,6 +55,22 @@ class AudioEngine {
           volume: 0.4,
           preload: true,
         }),
+        // New specific sounds requested by user
+        swoosh: new Howl({
+          src: ['/sounds/dheerajakam4jor-swoosh-sound-effect-for-fight-scenes-or-transitions-1-149889.mp3'],
+          volume: 0.7,
+          preload: true,
+        }),
+        btnSpin: new Howl({
+          src: ['/sounds/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3'],
+          volume: 0.7,
+          preload: true,
+        }),
+        btn2X: new Howl({
+          src: ['/sounds/universfield-new-notification-026-380249.mp3'],
+          volume: 0.7,
+          preload: true,
+        }),
       };
     }
   }
@@ -73,20 +89,26 @@ class AudioEngine {
   }
 
   // ── Advanced Betting Sounds ────────────────────────────────────────────────
-
-  play2XSound() {
-    if (this.enabled && this.sounds.click) this.sounds.click.play();
+  
+  setEnabled(enabled: boolean) {
+    this.enabled = enabled;
+    if (!enabled) this.stopAll();
   }
 
-  playChipRemoveSound() {
-    if (this.enabled && this.sounds.chip) {
-      const id = this.sounds.chip.play();
-      this.sounds.chip.rate(1.6, id);
-    }
+  play2XClick() {
+    if (this.enabled && this.sounds.btn2X) this.sounds.btn2X.play();
   }
 
-  playClearZoneSound() {
-    if (this.enabled && this.sounds.whoosh) this.sounds.whoosh.play();
+  playSwoosh() {
+    if (this.enabled && this.sounds.swoosh) this.sounds.swoosh.play();
+  }
+
+  playSpinClick() {
+    if (this.enabled && this.sounds.btnSpin) this.sounds.btnSpin.play();
+  }
+
+  playRebetSound() {
+    if (this.enabled && this.sounds.swoosh) this.sounds.swoosh.play();
   }
 
   // ── Win / Loss ─────────────────────────────────────────────────────────────
