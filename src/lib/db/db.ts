@@ -6,7 +6,10 @@ const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
 const pool = new Pool({
   connectionString,
-  ssl: connectionString?.includes('supabase.co') || connectionString?.includes('pooler.supabase.com') 
+  ssl: connectionString?.includes('supabase.co') || 
+       connectionString?.includes('pooler.supabase.com') ||
+       connectionString?.includes('vercel-storage.com') ||
+       connectionString?.includes('aws.neon.tech')
     ? { rejectUnauthorized: false } 
     : false,
   // If using port 6543 (transaction mode), disable prepared statements
