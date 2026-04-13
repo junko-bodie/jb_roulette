@@ -21,7 +21,7 @@ export default function GamePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const game = useGameState();
-  const { userProfile } = useGame();
+  const { userProfile, isSoundEnabled } = useGame();
 
   const [showResult, setShowResult] = useState(false);
   const [showWinCelebration, setShowWinCelebration] = useState(false);
@@ -80,9 +80,17 @@ export default function GamePage() {
   const handleTimeout = useCallback(() => {
     // 1. Lock bets immediately
     game.setPhase('LOCKED');
+    
+    // Play lock sound
+    if (isSoundEnabled) {
+      import('@/lib/audioEngine').then(({ soundEngine }) => {
+        soundEngine?.playLockSound();
+      });
+    }
 
     // 2. Short dramatic pause, then spin
     setTimeout(() => {
+      // Re-check phase to ensure we're still locked (optional)
       if (game.bets.size > 0) {
         handleSpin();
       } else {

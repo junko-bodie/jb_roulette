@@ -71,6 +71,11 @@ class AudioEngine {
           volume: 0.7,
           preload: true,
         }),
+        lock: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'], // Heavy click/lock
+          volume: 0.8,
+          preload: true,
+        }),
       };
     }
   }
@@ -105,6 +110,10 @@ class AudioEngine {
 
   playSpinClick() {
     if (this.enabled && this.sounds.btnSpin) this.sounds.btnSpin.play();
+  }
+
+  playLockSound() {
+    if (this.enabled && this.sounds.lock) this.sounds.lock.play();
   }
 
   playRebetSound() {
