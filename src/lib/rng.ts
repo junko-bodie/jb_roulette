@@ -1,10 +1,3 @@
-/**
- * Junko Bodie Roulette Tournament — RNG System
- *
- * Integrated with Supabase Edge Functions for server-side RNG.
- */
-import { supabase } from './supabase';
-
 export type WheelType = 'american' | 'european';
 
 export interface SpinResult {
@@ -99,31 +92,9 @@ function getParity(num: number): 'odd' | 'even' | 'none' {
 }
 
 /**
- * Generate a spin result.
- * 
- * First attempts to call the Supabase Edge Function 'spin-roulette' (Server-side RNG).
- * Falls back to client-side cryptographic RNG if the function is not deployed or fails.
+ * Generate a spin result using client-side cryptographic RNG.
  */
 export async function spinWheel(wheelType: WheelType = 'american'): Promise<SpinResult> {
-  try {
-    if (supabase) {
-      const { data, error } = await supabase.functions.invoke('spin-roulette', {
-        body: { wheelType }
-      });
-
-      if (!error && data) {
-        return data as SpinResult;
-      }
-      
-      console.warn('Supabase Edge Function failed or not found, falling back to client-side RNG:', error);
-    } else {
-      console.log('Supabase client not initialized, using client-side RNG.');
-    }
-  } catch (err) {
-    console.error('Error calling Edge Function:', err);
-  }
-
-  // Fallback to client-side logic
   const pockets = wheelType === 'american' ? AMERICAN_WHEEL_ORDER : EUROPEAN_WHEEL_ORDER;
   const totalPockets = pockets.length;
 
@@ -144,35 +115,11 @@ export async function spinWheel(wheelType: WheelType = 'american'): Promise<Spin
 }
 
 /**
- * Log a spin result to the Supabase 'spin_results' table.
+ * Log a spin result to the database.
+ * Placeholder for future implementation.
  */
 export async function recordSpinResult(result: SpinResult, wheelType: WheelType) {
-  /* Commented out as requested - functionality to be added in the future.
-  try {
-    const { error } = await supabase
-      .from('spin_results')
-      .insert([
-        {
-          number: result.number,
-          display_number: result.displayNumber,
-          color: result.color,
-          wheel_type: wheelType
-        }
-      ]);
-
-    if (error) {
-      console.error('Supabase Insert Error:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-      });
-      throw error;
-    }
-  } catch (err: any) {
-    console.error('Failed to log spin result to Supabase:', err.message || err);
-  }
-  */
+  // TODO: Implement logging to Postgres
 }
 
 

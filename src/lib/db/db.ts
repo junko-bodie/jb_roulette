@@ -1,21 +1,16 @@
 import { Pool, type QueryResultRow } from 'pg';
 
-// Use DATABASE_URL for standard Postgres (Supabase, etc.)
-// Fallback to Vercel Postgres env vars if needed
-const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+// Prioritize Vercel Postgres/Neon storage
+const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
 const pool = new Pool({
   connectionString,
-  ssl: connectionString?.includes('supabase.co') || 
-       connectionString?.includes('pooler.supabase.com') ||
-       connectionString?.includes('vercel-storage.com') ||
-       connectionString?.includes('aws.neon.tech')
-    ? { rejectUnauthorized: false } 
+  ssl: connectionString 
+    ? { rejectUnauthorized: false } // Cloud providers like Vercel/Neon require SSL
     : false,
-  // If using port 6543 (transaction mode), disable prepared statements
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000, // Increased timeout for serverless wake-ups
 });
 
 /**

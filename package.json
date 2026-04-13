@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@pixi/react": "^7.1.2",
-    "@supabase/supabase-js": "^2.100.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/pg": "^8.20.0",
     "@vercel/postgres": "^0.10.0",
