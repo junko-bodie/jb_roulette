@@ -7,7 +7,7 @@ import { sql } from "@/lib/db/db";
 const generateGuestId = () => `guest_${Math.random().toString(36).substr(2, 9)}`;
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-at-least-32-characters-long",
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
