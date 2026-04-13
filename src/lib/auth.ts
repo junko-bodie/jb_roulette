@@ -1,7 +1,7 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { sql } from "@vercel/postgres";
+import { sql } from "@/lib/db/db";
 
 // We'll use a simple guest ID generator for guest logins
 const generateGuestId = () => `guest_${Math.random().toString(36).substr(2, 9)}`;
