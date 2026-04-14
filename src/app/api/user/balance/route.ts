@@ -1,25 +1,45 @@
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
-import { sql } from "@/lib/db/db";
-import { NextResponse } from "next/server";
+import { getUser, ensureUserProfile } from '@/lib/auth';
+import { getDb } from '@/lib/db/mongodb';
+import { NextResponse } from 'next/server';
 
 export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const user = await getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Ensure profile exists first
+    await ensureUserProfile(user);
+
+    const { amount, action } = await req.json();
+    const db = await getDb();
+    const profiles = db.collection('user_profiles');
+
+    if (action === 'increment') {
+      await profiles.updateOne(
+        { supabase_id: user.id },
+        { $inc: { balance: amount }, $set: { updated_at: new Date() } }
+      );
+    } else if (action === 'decrement') {
+      await profiles.updateOne(
+        { supabase_id: user.id },
+        { $inc: { balance: -amount }, $set: { updated_at: new Date() } }
+      );
+    } else if (action === 'set') {
+      await profiles.updateOne(
+        { supabase_id: user.id },
+        { $set: { balance: amount, updated_at: new Date() } }
+      );
+    }
+
+    const result = await profiles.findOne({ supabase_id: user.id });
+    return NextResponse.json({ success: true, balance: result?.balance ?? 1000 });
+  } catch (error: any) {
+    console.error('Balance update error:', error);
+    return NextResponse.json({ 
+      error: 'Failed to update balance', 
+      message: error.message 
+    }, { status: 500 });
   }
-
-  const userId = (session.user as any).id;
-  const { amount, action } = await req.json(); // action: 'increment' or 'decrement' or 'set'
-
-  if (action === 'increment') {
-    await sql`UPDATE user_profiles SET balance = balance + ${amount} WHERE user_id = ${userId}`;
-  } else if (action === 'decrement') {
-    await sql`UPDATE user_profiles SET balance = balance - ${amount} WHERE user_id = ${userId}`;
-  } else if (action === 'set') {
-    await sql`UPDATE user_profiles SET balance = ${amount} WHERE user_id = ${userId}`;
-  }
-
-  const result = await sql`SELECT balance FROM user_profiles WHERE user_id = ${userId}`;
-  return NextResponse.json({ success: true, balance: result.rows[0].balance });
 }

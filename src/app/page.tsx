@@ -5,26 +5,26 @@ import { motion } from 'framer-motion';
 import styles from './homepage.module.css';
 import { useGame } from '@/context/GameContext';
 import { useState, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import SettingsModal from '@/components/ui/SettingsModal';
 import ProfileModal from '@/components/ui/ProfileModal';
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { user, isLoading, userProfile, balance } = useGame();
   const router = useRouter();
-  const { userProfile, balance } = useGame();
+  const supabase = createClient();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (!isLoading && !user) {
       router.push('/login');
     }
-  }, [status, router]);
+  }, [isLoading, user, router]);
 
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0a1f1a]">
         <div className="text-[#c9a44c] text-2xl font-black tracking-widest animate-pulse">
@@ -33,6 +33,12 @@ export default function Home() {
       </div>
     );
   }
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  };
 
   // Format balance with commas
   const formattedBalance = new Intl.NumberFormat('en-US').format(balance);
@@ -87,7 +93,7 @@ export default function Home() {
           <div className={styles.centralLogo}>B</div>
 
           <button 
-            onClick={() => signOut({ callbackUrl: '/login' })}
+            onClick={handleSignOut}
             className={styles.headerRight}
             title="Sign Out"
           >

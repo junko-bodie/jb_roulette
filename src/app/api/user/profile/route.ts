@@ -1,47 +1,64 @@
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
-import { sql } from "@/lib/db/db";
-import { NextResponse } from "next/server";
+import { getUser, ensureUserProfile } from '@/lib/auth';
+import { getDb } from '@/lib/db/mongodb';
+import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const user = await getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Ensure profile exists
+    const profile = await ensureUserProfile(user);
+
+    return NextResponse.json({
+      name: profile.name,
+      balance: profile.balance,
+      is_sound_enabled: profile.is_sound_enabled,
+      is_timer_enabled: profile.is_timer_enabled,
+      avatar_url: profile.avatar_url,
+      tier: profile.tier,
+    });
+  } catch (error: any) {
+    console.error('Profile fetch error:', error);
+    return NextResponse.json({ 
+      error: 'Database connection failed', 
+      message: error.message 
+    }, { status: 500 });
   }
-
-  const userId = (session.user as any).id;
-  const result = await sql`
-    SELECT u.name, up.balance, up.is_sound_enabled, up.is_timer_enabled, up.avatar_url, up.tier
-    FROM users u
-    JOIN user_profiles up ON u.id = up.user_id
-    WHERE u.id = ${userId}
-  `;
-
-  return NextResponse.json(result.rows[0]);
 }
 
 export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const user = await getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Ensure profile exists first
+    await ensureUserProfile(user);
+
+    const { name, avatar_url, is_sound_enabled, is_timer_enabled } = await req.json();
+    const db = await getDb();
+
+    const updateFields: Record<string, any> = { updated_at: new Date() };
+    if (name !== undefined) updateFields.name = name;
+    if (avatar_url !== undefined) updateFields.avatar_url = avatar_url;
+    if (is_sound_enabled !== undefined) updateFields.is_sound_enabled = is_sound_enabled;
+    if (is_timer_enabled !== undefined) updateFields.is_timer_enabled = is_timer_enabled;
+
+    await db.collection('user_profiles').updateOne(
+      { supabase_id: user.id },
+      { $set: updateFields }
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Profile update error:', error);
+    return NextResponse.json({ 
+      error: 'Failed to update profile', 
+      message: error.message 
+    }, { status: 500 });
   }
-
-  const userId = (session.user as any).id;
-  const { name, avatar_url, is_sound_enabled, is_timer_enabled } = await req.json();
-
-  if (name) {
-    await sql`UPDATE users SET name = ${name} WHERE id = ${userId}`;
-  }
-
-  await sql`
-    UPDATE user_profiles 
-    SET 
-      avatar_url = COALESCE(${avatar_url}, avatar_url),
-      is_sound_enabled = COALESCE(${is_sound_enabled}, is_sound_enabled),
-      is_timer_enabled = COALESCE(${is_timer_enabled}, is_timer_enabled),
-      updated_at = CURRENT_TIMESTAMP
-    WHERE user_id = ${userId}
-  `;
-
-  return NextResponse.json({ success: true });
 }

@@ -14,14 +14,13 @@ import { useGameState } from '@/hooks/useGameState';
 import { useGame } from '@/context/GameContext';
 import SettingsModal from '@/components/ui/SettingsModal';
 import ProfileModal from '@/components/ui/ProfileModal';
-import { useSession } from 'next-auth/react';
+
 import { useRouter } from 'next/navigation';
 
 export default function GamePage() {
-  const { data: session, status } = useSession();
+  const { user, isLoading: authLoading, userProfile, isSoundEnabled } = useGame();
   const router = useRouter();
   const game = useGameState();
-  const { userProfile, isSoundEnabled } = useGame();
 
   const [showResult, setShowResult] = useState(false);
   const [showWinCelebration, setShowWinCelebration] = useState(false);
@@ -32,10 +31,10 @@ export default function GamePage() {
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [status, router]);
+  }, [authLoading, user, router]);
 
   const handleSpin = useCallback(async () => {
     const result = await game.executeSpin();
@@ -127,7 +126,7 @@ export default function GamePage() {
     return () => window.removeEventListener('resize', updateWheelSize);
   }, []);
 
-  if (status === 'loading') {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0a1f1a]">
         <div className="text-[#c9a44c] text-2xl font-black tracking-widest animate-pulse">

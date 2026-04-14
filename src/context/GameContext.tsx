@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 interface UserProfile {
   name: string;
@@ -19,12 +20,16 @@ interface GameContextType {
   setIsTournamentMode: (value: boolean) => void;
   userProfile: UserProfile;
   setUserProfile: (profile: UserProfile) => void;
+  user: User | null;
+  isLoading: boolean;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [balance, setBalance] = useState(1000);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [isTimerEnabled, setIsTimerEnabled] = useState(true);
@@ -34,25 +39,53 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     avatar: '/avatars/default.png',
   });
 
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+        setIsLoading(false);
+      }
+    );
+
+    // Get initial session
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   // Load profile and balance from DB or local storage
   useEffect(() => {
     async function loadProfile() {
-      if (status === 'authenticated') {
+      if (user) {
+        // Set initial name/avatar from user metadata while we wait for DB
+        setUserProfile(prev => ({
+          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || prev.name,
+          avatar: user.user_metadata?.avatar_url || user.user_metadata?.picture || prev.avatar,
+        }));
+
         try {
           const res = await fetch('/api/user/profile');
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`API error (${res.status}): ${text.substring(0, 100)}`);
+          }
           const data = await res.json();
           if (data && !data.error) {
             setBalance(Number(data.balance) || 1000);
             setIsSoundEnabled(data.is_sound_enabled ?? true);
             setIsTimerEnabled(data.is_timer_enabled ?? true);
             setUserProfile({
-              name: data.name,
-              avatar: data.avatar_url || '/avatars/default.png'
+              name: data.name || user.user_metadata?.full_name || 'Player',
+              avatar: data.avatar_url || user.user_metadata?.avatar_url || '/avatars/default.png',
             });
             return;
           }
         } catch (e) {
-          console.error('Failed to load DB profile', e);
+          console.warn('Failed to load DB profile, falling back to local storage:', e);
         }
       }
 
@@ -71,7 +104,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       }
     }
     loadProfile();
-  }, [status]);
+  }, [user]);
 
   // Save changes to DB or local storage
   useEffect(() => {
@@ -84,7 +117,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     
     localStorage.setItem('roulette_settings', JSON.stringify(settings));
 
-    if (status === 'authenticated') {
+    if (user) {
       fetch('/api/user/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -92,22 +125,21 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           name: userProfile.name,
           avatar_url: userProfile.avatar,
           is_sound_enabled: isSoundEnabled,
-          is_timer_enabled: isTimerEnabled
-        })
+          is_timer_enabled: isTimerEnabled,
+        }),
       }).catch(e => console.error('Failed to save DB profile', e));
       
-      // Update balance separately to avoid race conditions or use a queue
       fetch('/api/user/balance', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: balance, action: 'set' })
+        body: JSON.stringify({ amount: balance, action: 'set' }),
       }).catch(e => console.error('Failed to sync DB balance', e));
     }
 
     import('@/lib/audioEngine').then(({ soundEngine }) => {
       if (soundEngine) soundEngine.setEnabled(isSoundEnabled);
     });
-  }, [balance, isSoundEnabled, isTimerEnabled, userProfile, isTournamentMode, status]);
+  }, [balance, isSoundEnabled, isTimerEnabled, userProfile, isTournamentMode, user]);
 
   return (
     <GameContext.Provider
@@ -122,6 +154,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setIsTournamentMode,
         userProfile,
         setUserProfile,
+        user,
+        isLoading,
       }}
     >
       {children}
