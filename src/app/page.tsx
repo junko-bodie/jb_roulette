@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import SettingsModal from '@/components/ui/SettingsModal';
 import ProfileModal from '@/components/ui/ProfileModal';
+import Avatar from '@/components/ui/Avatar';
 
 export default function Home() {
   const { user, isLoading, userProfile, balance } = useGame();
@@ -35,9 +36,14 @@ export default function Home() {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-    router.refresh();
+    try {
+      await supabase.auth.signOut();
+      // Use window.location.href to force a full reload and clear any state
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      router.push('/login');
+    }
   };
 
   // Format balance with commas
@@ -59,11 +65,10 @@ export default function Home() {
               onClick={() => setIsProfileOpen(true)}
               className={styles.avatar}
             >
-              <img 
-                src={userProfile.avatar.startsWith('/') ? userProfile.avatar : '/avatars/default.png'} 
-                alt="Avatar" 
-                className="w-full h-full object-cover rounded-full"
-                onError={(e) => (e.currentTarget.src = '/avatars/default.png')}
+              <Avatar 
+                type={userProfile.avatar} 
+                size="md" 
+                className="w-full h-full"
               />
             </button>
             <div className={styles.profileInfo}>
@@ -105,14 +110,20 @@ export default function Home() {
 
         {/* Main Content Areas */}
         <section className={styles.mainActions}>
-          <Link href="/game" className={styles.tile}>
+          <button 
+            onClick={() => {
+              console.log('Navigating to solo game...');
+              router.push('/game');
+            }} 
+            className={styles.tile}
+          >
             <div className={styles.tileIcon}>
               <svg viewBox="0 0 24 24" className="w-16 h-16 ml-2" fill="currentColor">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
             <span className={styles.tileLabel}>SOLO</span>
-          </Link>
+          </button>
         </section>
 
         {/* Sidebar Icons */}

@@ -53,36 +53,36 @@ export default function LoginPage() {
       </div>
 
       {/* Main Container */}
-      <div className="relative z-10 w-full max-w-xl">
+      <div className="relative z-10 w-full max-w-2xl px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="w-full backdrop-blur-3xl bg-black/30 rounded-[3rem] border border-white/10 shadow-[0_32px_80px_rgba(0,0,0,0.8)] overflow-hidden"
+          className="w-full backdrop-blur-3xl bg-black/40 rounded-[4rem] border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.9)] overflow-hidden"
           style={{
-            boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), 0 25px 50px -12px rgba(0, 0, 0, 0.7)'
+            boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), 0 35px 70px -15px rgba(0, 0, 0, 0.8)'
           }}
         >
           {/* Header Section */}
-          <div className="pt-20 pb-12 px-10 text-center relative">
+          <div className="pt-48 pb-32 px-12 text-center relative">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h1 className="text-7xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-[#f0e6c8] to-[#c9a44c] tracking-[0.25em] mb-6" 
-                  style={{ fontFamily: "'Bodoni Moda', serif", filter: 'drop-shadow(0 0 30px rgba(201, 164, 76, 0.4))' }}>
+              <h1 className="text-8xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-[#f0e6c8] to-[#c9a44c] tracking-[0.25em] mb-14" 
+                  style={{ fontFamily: "'Bodoni Moda', serif", filter: 'drop-shadow(0 0 40px rgba(201, 164, 76, 0.5))' }}>
                 JUNKO BODIE
               </h1>
-              <div className="flex items-center justify-center gap-6">
-                <div className="h-px w-24 bg-gradient-to-r from-transparent to-[#c9a44c]" />
-                <span className="text-xs uppercase tracking-[1em] text-[#c9a44c] font-black">Roulette Royale</span>
-                <div className="h-px w-24 bg-gradient-to-l from-transparent to-[#c9a44c]" />
+              <div className="flex items-center justify-center gap-8">
+                <div className="h-px w-32 bg-gradient-to-r from-transparent to-[#c9a44c]" />
+                <span className="text-sm uppercase tracking-[1.2em] text-[#c9a44c] font-black opacity-80">Roulette Royale</span>
+                <div className="h-px w-32 bg-gradient-to-l from-transparent to-[#c9a44c]" />
               </div>
             </motion.div>
           </div>
 
-          <div className="px-16 pb-20 space-y-10">
+          <div className="px-20 pb-48 space-y-24">
             {/* Error Message */}
             <AnimatePresence>
               {error && (
@@ -90,24 +90,24 @@ export default function LoginPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm text-center font-bold"
+                  className="p-8 rounded-3xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm text-center font-bold"
                 >
                   {error}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <div className="space-y-6">
+            <div className="space-y-12">
               {/* Google Login */}
               <motion.button
                 whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,1)' }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-5 py-5 px-8 rounded-2xl bg-white/95 text-black font-black transition-all shadow-2xl group relative overflow-hidden"
+                className="w-full flex items-center justify-center gap-6 py-8 px-10 rounded-3xl bg-white text-black font-black transition-all shadow-2xl group relative overflow-hidden"
               >
-                <img src="https://www.google.com/favicon.ico" alt="google" className="w-6 h-6" />
-                <span className="text-lg tracking-tight">Continue with Google</span>
+                <img src="https://www.google.com/favicon.ico" alt="google" className="w-7 h-7" />
+                <span className="text-xl tracking-tight">Continue with Google</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               </motion.button>
 
@@ -117,24 +117,32 @@ export default function LoginPage() {
                 disabled={isLoading}
                 whileHover={{ scale: 1.02, backgroundColor: 'rgba(201, 164, 76, 0.1)' }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-5 rounded-2xl border-2 border-[#c9a44c]/30 text-[#c9a44c] transition-all text-sm font-black tracking-[0.4em] uppercase hover:border-[#c9a44c]/60"
+                className="w-full py-8 rounded-3xl border-2 border-[#c9a44c]/30 text-[#c9a44c] transition-all text-base font-black tracking-[0.5em] uppercase hover:border-[#c9a44c]/60"
               >
                 Enter as Guest
               </motion.button>
             </div>
 
-            <div className="flex flex-col items-center gap-6 pt-4">
-              <div className="flex gap-2 opacity-40">
+            <div className="flex flex-col items-center gap-14 pt-10">
+              <div className="flex gap-6 opacity-50">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#c9a44c]" />
+                  <motion.div 
+                    key={i} 
+                    animate={{ 
+                      scale: [1, 1.5, 1],
+                      opacity: [0.3, 1, 0.3] 
+                    }}
+                    transition={{ repeat: Infinity, duration: 2.5, delay: i * 0.4 }}
+                    className="w-2.5 h-2.5 rounded-full bg-[#c9a44c]" 
+                  />
                 ))}
               </div>
             </div>
           </div>
 
           {/* Footer Disclaimer */}
-          <div className="py-6 bg-black/40 text-center border-t border-white/5">
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-medium px-12 leading-relaxed">
+          <div className="py-14 bg-black/50 text-center border-t border-white/10 mt-auto">
+            <p className="text-[11px] text-white/30 uppercase tracking-[0.25em] font-medium px-16 leading-relaxed">
               Membership implies agreement to our <br/>
               <span className="text-[#c9a44c]/60 underline cursor-pointer hover:text-[#c9a44c] transition-colors">Terms of Protocol</span> & <span className="text-[#c9a44c]/60 underline cursor-pointer hover:text-[#c9a44c] transition-colors">Privacy Charter</span>
             </p>
