@@ -83,6 +83,11 @@ class AudioEngine {
           onload: () => console.log('AudioEngine: Thump sound loaded'),
           onloaderror: (id, err) => console.error('AudioEngine: Thump load error:', err),
         }),
+        denied: new Howl({
+          src: ['https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'], // Error/denied sound
+          volume: 0.5,
+          preload: true,
+        }),
       };
     }
   }
@@ -130,6 +135,10 @@ class AudioEngine {
 
   playRebetSound() {
     if (this.enabled && this.sounds.swoosh) this.sounds.swoosh.play();
+  }
+
+  playDeniedSound() {
+    if (this.enabled && this.sounds.denied) this.sounds.denied.play();
   }
 
   // ── Win / Loss ─────────────────────────────────────────────────────────────

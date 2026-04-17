@@ -119,40 +119,40 @@ export default function RouletteTable({
     <div className="mx-auto w-full max-w-[1500px]">
       {/* THE FOAM BUFFER — Unified for both wheel and table */}
       <div
-        className="relative p-8 sm:p-12 rounded-[50px] shadow-[0_40px_100px_rgba(0,0,0,0.9)] w-full overflow-hidden mobile-foam-compact"
+        className="relative p-3 sm:p-5 md:p-6 rounded-[40px] shadow-[0_30px_80px_rgba(0,0,0,0.9)] w-full overflow-hidden mobile-foam-compact"
         style={{
           background: '#2d1a10', // Rich leather brown
           backgroundImage: `
             linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(0,0,0,0.3) 100%),
             radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 80%)
           `,
-          border: '6px solid #1a0f09',
+          border: '5px solid #1a0f09',
           boxShadow: `
-            inset 0 20px 40px rgba(255,255,255,0.08), 
-            inset 0 -20px 40px rgba(0,0,0,0.8),
-            0 30px 60px rgba(0,0,0,1)
+            inset 0 15px 30px rgba(255,255,255,0.08), 
+            inset 0 -15px 30px rgba(0,0,0,0.8),
+            0 25px 50px rgba(0,0,0,1)
           `,
           transformStyle: 'preserve-3d',
         }}
       >
         {/* Inner seam line */}
         <div
-          className="absolute inset-[24px] rounded-[30px] border-2 border-black/40 pointer-events-none"
+          className="absolute inset-[16px] rounded-[24px] border-2 border-black/30 pointer-events-none"
           style={{
             zIndex: 1,
-            boxShadow: 'inset 0 0 15px rgba(0,0,0,0.9)'
+            boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8)'
           }}
         />
 
         {/* The green felt area — Unified horizontal row */}
         <div
-          className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-8 mobile-felt-stack"
+          className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-3 md:gap-4 lg:gap-6 mobile-felt-stack"
           style={{
             background: 'rgba(10, 35, 29, 1)', // Dark casino green
             borderColor: '#11352e',
-            padding: '2rem 3rem 2rem 0.5rem',
+            padding: '1rem 1.5rem 1rem 0.5rem',
             zIndex: 2,
-            boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)',
+            boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)',
           }}
         >
           {/* Wheel Section (Left) */}
@@ -216,7 +216,7 @@ export default function RouletteTable({
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
             animate={isMobile
               ? { opacity: 1, x: 0, scale: 1 }
-              : { opacity: 1, x: 0.5, scaleX: 1.14, scaleY: 1.82 }
+              : { opacity: 1, x: 0.5, scaleX: 1.1, scaleY: 1.55 }
             }
             transition={{ duration: 0.5 }}
           >
@@ -253,7 +253,7 @@ export default function RouletteTable({
 
             {/* Betting Grid Section with Blur & Overlay */}
             <div className="w-full relative">
-              <div 
+              <div
                 className="transition-all duration-700"
                 style={{ filter: isLocked || isSpinning ? 'blur(8px)' : 'none' }}
               >
@@ -282,7 +282,7 @@ export default function RouletteTable({
                     exit={{ opacity: 0, scale: 1.1 }}
                     className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"
                   >
-                    <div 
+                    <div
                       className="px-8 py-4 rounded-xl border-4 border-[#c9a44c] bg-black/80 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center gap-2"
                       style={{ transform: 'rotate(-5deg)' }}
                     >

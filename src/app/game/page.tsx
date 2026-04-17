@@ -14,6 +14,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { useGame } from '@/context/GameContext';
 import SettingsModal from '@/components/ui/SettingsModal';
 import ProfileModal from '@/components/ui/ProfileModal';
+import Toast from '@/components/ui/Toast';
 
 import { useRouter } from 'next/navigation';
 
@@ -28,6 +29,7 @@ export default function GamePage() {
   const [wheelSize, setWheelSize] = useState(480);
   const wheelRef = useRef<HTMLDivElement>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -120,12 +122,14 @@ export default function GamePage() {
         setWheelSize(Math.min(window.innerWidth * 0.85, 360));
       } else if (isLandscapeMobile) {
         setWheelSize(320);
+      } else if (window.innerHeight < 600) {
+        setWheelSize(380); // Much smaller for very short desktop screens
       } else if (window.innerHeight < 750) {
-        setWheelSize(500);
+        setWheelSize(460);
       } else if (window.innerWidth < 1300 || window.innerHeight < 900) {
-        setWheelSize(600);
+        setWheelSize(550);
       } else {
-        setWheelSize(700);
+        setWheelSize(650); // Slightly smaller max to be safe
       }
     };
 
@@ -172,17 +176,33 @@ export default function GamePage() {
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Settings Button */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-[#c9a44c] transition-all"
+            title="Settings"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+            </svg>
+          </button>
+
           {/* User Profile */}
           <div
             onClick={() => setIsProfileOpen(true)}
-            className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
+            className="flex items-center gap-3 px-6 py-1.5 rounded-full bg-black/60 border border-[#c9a44c]/30 hover:bg-black/80 hover:border-[#c9a44c]/60 transition-all cursor-pointer shadow-2xl backdrop-blur-xl group min-w-[160px] justify-end"
           >
             <div className="flex flex-col items-end hidden sm:flex">
-              <span className="text-[11px] font-bold text-white leading-tight">{userProfile.name}</span>
-              <span className="text-[8px] text-[#c9a44c] uppercase tracking-wider font-medium">Player</span>
+              <span className="text-[13px] font-black text-white leading-tight whitespace-nowrap group-hover:text-[#c9a44c] transition-colors tracking-tight">
+                {userProfile.name}
+              </span>
+              <span className="text-[9px] text-[#c9a44c]/90 uppercase tracking-[0.2em] font-black mt-0.5">Player</span>
             </div>
-            <div className="w-8 h-8 rounded-full border-2 border-[#c9a44c]/40 overflow-hidden bg-black/40">
-              <img src={userProfile.avatar} alt="avatar" className="w-full h-full object-cover" />
+            <div className="relative flex-shrink-0">
+              <div className="w-10 h-10 rounded-full border-2 border-[#c9a44c]/50 overflow-hidden bg-black/40 shadow-inner group-hover:border-[#c9a44c] transition-all">
+                <img src={userProfile.avatar} alt="avatar" className="w-full h-full object-cover" />
+              </div>
+              <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-black rounded-full" />
             </div>
           </div>
         </div>
@@ -195,7 +215,7 @@ export default function GamePage() {
         </div>
       </div>
 
-      <main className="mobile-game-content mobile-landscape-main flex-1 relative px-0.5 md:px-1 lg:px-2 py-0 overflow-visible sm:overflow-hidden flex flex-col justify-start pt-0 items-center">
+      <main className="mobile-game-content mobile-landscape-main flex-1 min-h-0 relative px-0.5 md:px-1 lg:px-2 py-0 overflow-visible sm:overflow-hidden flex flex-col justify-center items-center">
 
         <RouletteTable
           wheelType={game.wheelType}
@@ -287,6 +307,15 @@ export default function GamePage() {
 
       {/* Modals */}
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Insufficient Funds Toast */}
+      <Toast
+        message={game.fundError || ''}
+        isVisible={!!game.fundError}
+        onClose={() => game.setFundError(null)}
+        type="error"
+      />
     </div>
   );
 }

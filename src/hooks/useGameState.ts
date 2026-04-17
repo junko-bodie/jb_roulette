@@ -67,6 +67,15 @@ export function useGameState() {
   });
   const [deleteMode, setDeleteMode] = useState(false);
   const [deleteModeTarget, setDeleteModeTarget] = useState<string | null>(null);
+  const [fundError, setFundError] = useState<string | null>(null);
+
+  /**
+   * Helper to trigger a temporary funds error
+   */
+  const triggerFundError = useCallback((message: string = 'Insufficient funds for this bet') => {
+    setFundError(message);
+    soundEngine?.playDeniedSound();
+  }, []);
 
   // Calculate total bet
   const totalBet = Array.from(bets.values()).reduce((sum, b) => sum + b.amount, 0);
@@ -81,7 +90,10 @@ export function useGameState() {
       const definition = BET_MAP.get(betId);
       if (!definition) return;
 
-      if (balance - totalBet < selectedChip) return; // Insufficient funds
+      if (balance - totalBet < selectedChip) {
+        triggerFundError();
+        return;
+      }
 
       setBets((prev) => {
         const next = new Map(prev);
@@ -195,6 +207,7 @@ export function useGameState() {
 
     // Check if user has enough balance
     if (balance < newTotalBet) {
+      triggerFundError();
       return false; // Insufficient funds
     }
 
@@ -287,7 +300,10 @@ export function useGameState() {
 
     // Check if we have enough balance
     const lastTotal = Array.from(lastSpinBets.values()).reduce((sum, b) => sum + b.amount, 0);
-    if (balance < lastTotal) return;
+    if (balance < lastTotal) {
+      triggerFundError('Insufficient funds to re-bet');
+      return;
+    }
 
     setBets(cloneBetsMap(lastSpinBets));
 
@@ -380,6 +396,7 @@ export function useGameState() {
     hasLastSpin: lastSpinBets.size > 0,
     deleteMode,
     deleteModeTarget,
+    fundError,
 
     // Actions
     placeBet,
@@ -394,6 +411,7 @@ export function useGameState() {
     setSelectedChip,
     setWheelType,
     setDeleteModeTarget,
+    setFundError, // Expose to allow manual clearing
     executeSpin,
     resolveResult,
     startNewRound,

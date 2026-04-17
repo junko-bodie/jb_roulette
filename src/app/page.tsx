@@ -91,7 +91,7 @@ export default function Home() {
 
         <div className={styles.headerCenter}>
           <span className={styles.logoText}>JUNKO BODIE</span>
-          <span className={styles.logoSub}>Roulette Royale</span>
+          <span className={styles.logoSub}>Roulette</span>
         </div>
 
         <div className={styles.headerActions}>
@@ -198,20 +198,13 @@ export default function Home() {
             </svg>
             <span className={styles.quickBtnLabel}>Settings</span>
           </div>
-
-          <div className={styles.quickBtn}>
-            <svg viewBox="0 0 24 24" className={styles.quickBtnIcon} fill="currentColor">
-              <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" />
-            </svg>
-            <span className={styles.quickBtnLabel}>Stats</span>
-          </div>
         </motion.div>
       </main>
 
       {/* Coming Soon Modal */}
       <AnimatePresence>
         {showComingSoon && (
-          <div 
+          <div
             style={{
               position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)'
             }}
@@ -231,7 +224,7 @@ export default function Home() {
               </div>
               <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px', letterSpacing: '0.05em' }}>{showComingSoon}</h3>
               <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, marginBottom: '24px' }}>This feature is currently under high-stakes development. Stay tuned for the next major tournament update.</p>
-              <button 
+              <button
                 onClick={() => setShowComingSoon(null)}
                 style={{ background: '#c9a44c', color: '#111', border: 'none', padding: '12px 32px', borderRadius: '12px', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', cursor: 'pointer', letterSpacing: '0.1em' }}
               >
@@ -245,7 +238,7 @@ export default function Home() {
       {/* Footer */}
       <div className={styles.footer}>
         <div className={styles.footerDot} />
-        <span className={styles.footerText}>Junko Bodie</span>
+        <span className={styles.footerText}>Junko Bodie Roulette</span>
         <div className={styles.footerDot} />
       </div>
 
