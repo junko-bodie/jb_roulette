@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     // Ensure profile exists
-    const profile = await ensureUserProfile(user);
+    const profile = await ensureUserProfile(user) as any;
 
     return NextResponse.json({
       name: profile.name,

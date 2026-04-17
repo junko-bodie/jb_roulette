@@ -40,6 +40,7 @@ export async function ensureUserProfile(supabaseUser: {
                 supabaseUser.user_metadata?.picture || 
                 '/avatars/default.png',
     balance: 1000.00,
+    starting_balance: 1000,
     is_sound_enabled: true,
     is_timer_enabled: true,
     is_popup_enabled: true,
