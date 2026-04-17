@@ -18,7 +18,7 @@ import ProfileModal from '@/components/ui/ProfileModal';
 import { useRouter } from 'next/navigation';
 
 export default function GamePage() {
-  const { user, isLoading: authLoading, userProfile, isSoundEnabled } = useGame();
+  const { user, isLoading: authLoading, userProfile, isSoundEnabled, isPopupEnabled } = useGame();
   const router = useRouter();
   const game = useGameState();
 
@@ -48,30 +48,38 @@ export default function GamePage() {
     }, 100);
   }, [game]);
 
-  const handleSpinComplete = useCallback(() => {
-    setIsSpinningWheel(false);
-    game.resolveResult();
-    setShowResult(true);
-  }, [game]);
-
-  // Trigger win celebration
-  useEffect(() => {
-    if (game.lastPayout && game.lastPayout.totalWon > 0) {
-      setShowWinCelebration(true);
-    }
-  }, [game.lastPayout]);
-
   const handleDismissResult = useCallback(() => {
     setShowResult(false);
     game.startNewRound();
   }, [game]);
+
+  const handleSpinComplete = useCallback(() => {
+    setIsSpinningWheel(false);
+    game.resolveResult();
+
+    if (isPopupEnabled) {
+      setShowResult(true);
+    } else {
+      // If popup disabled, just wait 0.8s and start new round
+      setTimeout(() => {
+        handleDismissResult();
+      }, 1000);
+    }
+  }, [game, isPopupEnabled, handleDismissResult]);
+
+  // Trigger win celebration
+  useEffect(() => {
+    if (game.lastPayout && game.lastPayout.totalWon > 0 && isPopupEnabled) {
+      setShowWinCelebration(true);
+    }
+  }, [game.lastPayout, isPopupEnabled]);
 
   // Automatically dismiss result after 2 seconds
   useEffect(() => {
     if (showResult) {
       const timer = setTimeout(() => {
         handleDismissResult();
-      }, 1500);
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [showResult, handleDismissResult]);
@@ -79,7 +87,7 @@ export default function GamePage() {
   const handleTimeout = useCallback(() => {
     // 1. Lock bets immediately
     game.setPhase('LOCKED');
-    
+
     // Play lock sound
     if (isSoundEnabled) {
       import('@/lib/audioEngine').then(({ soundEngine }) => {
@@ -229,7 +237,7 @@ export default function GamePage() {
           padding: '8px 16px',
         }}
       >
-        {/* Left: Chip Selection Tray + Player Info */}
+        {/* Left: Chip Selection Tray */}
         <div className="flex items-center gap-3">
           <div className="max-w-[400px]">
             <ChipTray
@@ -239,17 +247,6 @@ export default function GamePage() {
               totalBet={game.totalBet}
               disabled={isSpinningWheel}
             />
-          </div>
-
-          {/* Player Info */}
-          <div className="hidden sm:flex items-center gap-2 px-4 border-x border-white/5 mobile-player-info">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c9a44c] to-[#8b6b22] border-2 border-white/10 flex items-center justify-center shadow-lg overflow-hidden">
-              <img src={userProfile.avatar} alt="avatar" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-[#c9a44c] uppercase tracking-widest">{userProfile.name}</span>
-              <span className="text-[9px] text-white/40">Tier: High Roller</span>
-            </div>
           </div>
         </div>
 

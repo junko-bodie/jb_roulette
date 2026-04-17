@@ -42,6 +42,7 @@ export async function ensureUserProfile(supabaseUser: {
     balance: 1000.00,
     is_sound_enabled: true,
     is_timer_enabled: true,
+    is_popup_enabled: true,
     tier: 'High Roller',
     provider: supabaseUser.user_metadata?.iss ? 'google' : 
               supabaseUser.is_anonymous ? 'guest' : 'credentials',

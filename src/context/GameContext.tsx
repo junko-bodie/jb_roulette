@@ -16,10 +16,14 @@ interface GameContextType {
   setIsSoundEnabled: (value: boolean) => void;
   isTimerEnabled: boolean;
   setIsTimerEnabled: (value: boolean) => void;
+  isPopupEnabled: boolean;
+  setIsPopupEnabled: (value: boolean) => void;
   isTournamentMode: boolean;
   setIsTournamentMode: (value: boolean) => void;
   userProfile: UserProfile;
   setUserProfile: (profile: UserProfile) => void;
+  startingBalance: number;
+  setStartingBalance: (value: number) => void;
   user: User | null;
   isLoading: boolean;
 }
@@ -33,7 +37,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [balance, setBalance] = useState(1000);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [isTimerEnabled, setIsTimerEnabled] = useState(true);
+  const [isPopupEnabled, setIsPopupEnabled] = useState(true);
   const [isTournamentMode, setIsTournamentMode] = useState(false);
+  const [startingBalance, setStartingBalance] = useState(1000);
   const [userProfile, setUserProfile] = useState<UserProfile>({
     name: 'Player',
     avatar: '/avatars/default.png',
@@ -78,6 +84,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
             setBalance(Number(data.balance) || 1000);
             setIsSoundEnabled(data.is_sound_enabled ?? true);
             setIsTimerEnabled(data.is_timer_enabled ?? true);
+            setIsPopupEnabled(data.is_popup_enabled ?? true);
+            setStartingBalance(data.starting_balance ?? 1000);
             setUserProfile({
               name: data.name || user.user_metadata?.full_name || 'Player',
               avatar: data.avatar_url || user.user_metadata?.avatar_url || '/avatars/default.png',
@@ -97,6 +105,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           setBalance(parsed.balance ?? 1000);
           setIsSoundEnabled(parsed.isSoundEnabled ?? true);
           setIsTimerEnabled(parsed.isTimerEnabled ?? true);
+          setIsPopupEnabled(parsed.isPopupEnabled ?? true);
+          setStartingBalance(parsed.startingBalance ?? 1000);
           setUserProfile(parsed.userProfile ?? { name: 'Player', avatar: '/avatars/default.png' });
         } catch (e) {
           console.error('Failed to parse settings', e);
@@ -112,6 +122,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       balance,
       isSoundEnabled,
       isTimerEnabled: isTournamentMode ? true : isTimerEnabled,
+      isPopupEnabled,
+      startingBalance,
       userProfile,
     };
     
@@ -126,14 +138,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           avatar_url: userProfile.avatar,
           is_sound_enabled: isSoundEnabled,
           is_timer_enabled: isTimerEnabled,
+          is_popup_enabled: isPopupEnabled,
+          starting_balance: startingBalance,
         }),
       }).catch(e => console.error('Failed to save DB profile', e));
       
-      fetch('/api/user/balance', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: balance, action: 'set' }),
-      }).catch(e => console.error('Failed to sync DB balance', e));
+      if (balance !== undefined) {
+        fetch('/api/user/balance', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: balance, action: 'set' }),
+        }).catch(e => console.error('Failed to sync DB balance', e));
+      }
     }
 
     import('@/lib/audioEngine').then(({ soundEngine }) => {
@@ -150,8 +166,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setIsSoundEnabled,
         isTimerEnabled: isTournamentMode ? true : isTimerEnabled,
         setIsTimerEnabled,
+        isPopupEnabled,
+        setIsPopupEnabled,
         isTournamentMode,
         setIsTournamentMode,
+        startingBalance,
+        setStartingBalance,
         userProfile,
         setUserProfile,
         user,

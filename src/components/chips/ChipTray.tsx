@@ -11,6 +11,7 @@ import { motion, type Variants } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Chip from './Chip';
 import { CHIP_DENOMINATIONS, COLORS } from '@/styles/theme';
+import { soundEngine } from '@/lib/audioEngine';
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
@@ -107,9 +108,10 @@ export default function ChipTray({
               isSelected={isSelected}
               size={chipSize}
               onClick={() => {
-                // Allow selection at any time when Not Spinning, 
-                // even if balance is low (placement is blocked elsewhere)
-                if (!disabled) onSelectChip(chip.value);
+                if (!disabled) {
+                  soundEngine?.playThump();
+                  onSelectChip(chip.value);
+                }
               }}
             />
           </motion.div>

@@ -68,7 +68,7 @@ export default function ResultDisplay({
 }: ResultDisplayProps) {
   useEffect(() => {
     if (visible && result) {
-      const timer = setTimeout(onDismiss, 5000);
+      const timer = setTimeout(onDismiss, 2000);
       return () => clearTimeout(timer);
     }
   }, [visible, result, onDismiss]);

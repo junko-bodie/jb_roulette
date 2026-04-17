@@ -76,6 +76,13 @@ class AudioEngine {
           volume: 0.8,
           preload: true,
         }),
+        thump: new Howl({
+          src: ['/sounds/universfield-new-notification-026-380249.mp3'], // Local notification sound
+          volume: 0.8,
+          preload: true,
+          onload: () => console.log('AudioEngine: Thump sound loaded'),
+          onloaderror: (id, err) => console.error('AudioEngine: Thump load error:', err),
+        }),
       };
     }
   }
@@ -114,6 +121,11 @@ class AudioEngine {
 
   playLockSound() {
     if (this.enabled && this.sounds.lock) this.sounds.lock.play();
+  }
+
+  playThump() {
+    console.log('AudioEngine: Playing thump...');
+    if (this.enabled && this.sounds.thump) this.sounds.thump.play();
   }
 
   playRebetSound() {

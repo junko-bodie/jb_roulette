@@ -24,7 +24,7 @@ export default function WinCelebration({ show, onComplete }: WinCelebrationProps
 
       const timer = setTimeout(() => {
         onComplete();
-      }, 2000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [show, onComplete]);
@@ -47,15 +47,15 @@ export default function WinCelebration({ show, onComplete }: WinCelebrationProps
             <motion.div
               key={p.id}
               initial={{ scale: 0, x: 0, y: 0, opacity: 1 }}
-              animate={{ 
-                x: `${p.x}vw`, 
-                y: `${p.y}vh`, 
+              animate={{
+                x: `${p.x}vw`,
+                y: `${p.y}vh`,
                 scale: [0, 2.5, 1], // Increased scale
                 opacity: [1, 1, 0],
                 rotate: 360
               }}
-              transition={{ 
-                duration: 1.5 + Math.random(), 
+              transition={{
+                duration: 1.5 + Math.random(),
                 delay: p.delay,
                 ease: "easeOut"
               }}
@@ -69,8 +69,8 @@ export default function WinCelebration({ show, onComplete }: WinCelebrationProps
           {/* WIN Text */}
           <motion.div
             initial={{ opacity: 0, y: 100, scale: 0.5 }} // Start lower
-            animate={{ 
-              opacity: [0, 1, 1, 0], 
+            animate={{
+              opacity: [0, 1, 1, 0],
               y: [120, 150, 180, 200], // Move it further down to avoid the center circle
               scale: [0.5, 1.5, 1.5, 1.2] // 50% bigger
             }}

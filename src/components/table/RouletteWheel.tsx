@@ -24,7 +24,7 @@ const TWO_PI = Math.PI * 2;
 // ─── Physics constants ────────────────────────────────────────────────────────
 const BALL_ORBIT_START = 0.88;  // fraction of wheel radius
 const BALL_ORBIT_END = 0.50;  // fraction where ball drops deep into pocket
-const SPIN_DURATION = 6000;  // ms total spin
+const SPIN_DURATION = 4000;  // ms total spin
 const BALL_SETTLE_AT = 0.68;  // fraction into spin when ball starts dropping (earlier start for more drama)
 
 function easeOutQuad(t: number) { return 1 - (1 - t) * (1 - t); }

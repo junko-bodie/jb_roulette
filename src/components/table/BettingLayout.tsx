@@ -142,7 +142,7 @@ function NumberCell({
       setIsLongPress(false);
       // Start long press timer
       longPressTimerRef.current = setTimeout(() => {
-        const betId = `straight-${num}`;
+        const betId = `straight-${getDisplayNumber(num)}`;
         console.log('Long press on', betId, '- clearing zone');
         setIsLongPress(true);
         onClearZone?.(betId);
@@ -159,7 +159,7 @@ function NumberCell({
 
     // If it didn't reach long press duration, do a single pop (OR CLEAR IF IN DELETE MODE)
     if (deleteMode && !isLongPress && bet) {
-      const betId = `straight-${num}`;
+      const betId = `straight-${getDisplayNumber(num)}`;
       console.log('Delete mode tap on', betId, '- clearing entire zone');
       onClearZone?.(betId);
     }

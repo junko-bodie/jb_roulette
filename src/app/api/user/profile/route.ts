@@ -17,6 +17,8 @@ export async function GET() {
       balance: profile.balance,
       is_sound_enabled: profile.is_sound_enabled,
       is_timer_enabled: profile.is_timer_enabled,
+      is_popup_enabled: profile.is_popup_enabled,
+      starting_balance: profile.starting_balance,
       avatar_url: profile.avatar_url,
       tier: profile.tier,
     });
@@ -39,7 +41,7 @@ export async function PATCH(req: Request) {
     // Ensure profile exists first
     await ensureUserProfile(user);
 
-    const { name, avatar_url, is_sound_enabled, is_timer_enabled } = await req.json();
+    const { name, avatar_url, is_sound_enabled, is_timer_enabled, is_popup_enabled, starting_balance } = await req.json();
     const db = await getDb();
 
     const updateFields: Record<string, any> = { updated_at: new Date() };
@@ -47,6 +49,8 @@ export async function PATCH(req: Request) {
     if (avatar_url !== undefined) updateFields.avatar_url = avatar_url;
     if (is_sound_enabled !== undefined) updateFields.is_sound_enabled = is_sound_enabled;
     if (is_timer_enabled !== undefined) updateFields.is_timer_enabled = is_timer_enabled;
+    if (is_popup_enabled !== undefined) updateFields.is_popup_enabled = is_popup_enabled;
+    if (starting_balance !== undefined) updateFields.starting_balance = starting_balance;
 
     await db.collection('user_profiles').updateOne(
       { supabase_id: user.id },
