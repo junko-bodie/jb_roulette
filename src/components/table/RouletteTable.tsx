@@ -160,7 +160,10 @@ export default function RouletteTable({
             ref={wheelRef}
             className="relative flex justify-center items-center flex-1 mobile-wheel-section"
             initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={isMobile 
+              ? { opacity: 1, scale: 1, y: 0 } 
+              : { opacity: 1, scale: 1, y: -25 }
+            }
           >
             <RouletteWheel
               wheelType={wheelType}
@@ -172,37 +175,38 @@ export default function RouletteTable({
 
             {/* Wheel type toggle — overlaid at bottom center of wheel */}
             <div
-              className="absolute flex items-center gap-1 text-[10px] z-30"
+              className="absolute flex items-center gap-2 text-[13px] z-30"
               style={{
                 fontFamily: 'var(--font-inter)',
-                bottom: '-20px',
+                bottom: '-40px',
                 left: '50%',
                 transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.6)',
-                borderRadius: '12px',
-                padding: '3px 8px',
-                backdropFilter: 'blur(6px)',
-                border: '1px solid rgba(201, 164, 76, 0.3)'
+                background: 'rgba(0,0,0,0.75)',
+                borderRadius: '9999px',
+                padding: '5px 10px',
+                backdropFilter: 'blur(8px)',
+                border: '1.5px solid rgba(201, 164, 76, 0.4)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
               }}
             >
               <button
                 onClick={() => setWheelType('american')}
-                className="px-3 py-1 rounded-full transition-all duration-300 cursor-pointer"
+                className="px-6 py-2 rounded-full transition-all duration-300 cursor-pointer"
                 style={{
-                  background: wheelType === 'american' ? '#c9a84c40' : 'transparent',
+                  background: wheelType === 'american' ? '#c9a84c60' : 'transparent',
                   color: wheelType === 'american' ? '#f4fbfb' : '#c2d7d580',
-                  fontWeight: wheelType === 'american' ? 'bold' : 'normal',
+                  fontWeight: 'bold',
                 }}
               >
                 American
               </button>
               <button
                 onClick={() => setWheelType('european')}
-                className="px-3 py-1 rounded-full transition-all duration-300 cursor-pointer"
+                className="px-6 py-2 rounded-full transition-all duration-300 cursor-pointer"
                 style={{
-                  background: wheelType === 'european' ? '#c9a84c40' : 'transparent',
+                  background: wheelType === 'european' ? '#c9a84c60' : 'transparent',
                   color: wheelType === 'european' ? '#f4fbfb' : '#c2d7d580',
-                  fontWeight: wheelType === 'european' ? 'bold' : 'normal',
+                  fontWeight: 'bold',
                 }}
               >
                 European
@@ -227,27 +231,30 @@ export default function RouletteTable({
                 style={{
                   fontFamily: "'Bodoni Moda', serif",
                   fontStyle: 'italic',
-                  color: '#f0e6c8',
-                  textShadow: '0 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(201,164,76,0.15)',
-                  letterSpacing: '0.2em',
-                  fontWeight: 400,
+                  fontWeight: 900,
+                  letterSpacing: '0.15em',
+                  background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  display: 'inline-block',
                 }}
               >
-                Junko Bodie
+                JUNKO BODIE
               </h1>
               <div className="flex items-center gap-2 -mt-0.5">
-                <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" />
+                <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
                 <span
-                  className="text-[10px] uppercase tracking-[0.3em]"
+                  className="text-[9px] uppercase tracking-[0.4em]"
                   style={{
-                    color: '#c9a44c',
+                    color: 'rgba(201, 164, 76, 0.5)',
                     fontFamily: "'Bodoni Moda', serif",
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
                 >
                   Roulette
                 </span>
-                <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" />
+                <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
               </div>
             </div>
 
@@ -299,8 +306,8 @@ export default function RouletteTable({
 
             {/* ═══ BUTTONS — directly below betting grid ═══ */}
             <div
-              className="flex items-center justify-end gap-3 mt-1.5 w-full pr-10"
-              style={{ transform: 'scaleX(0.877) scaleY(0.645)' }}
+              className="flex items-center justify-end gap-3 mt-2 w-full pr-8"
+              style={{ transform: 'scaleX(0.78) scaleY(0.645)' }}
             >
               {/* Timer UI - only show if betting and timer enabled */}
               <div className="flex flex-col items-center justify-center mr-4">
@@ -341,15 +348,15 @@ export default function RouletteTable({
                 className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                 style={{
                   fontFamily: 'var(--font-inter)',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
+                  fontSize: '10px',
+                  fontWeight: 800,
+                  letterSpacing: '0.12em',
                   textTransform: 'uppercase' as const,
                   color: '#d4d0c4',
                   background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
-                  border: '1.5px solid #5ea896',
-                  borderRadius: '3px',
-                  padding: '5px 10px',
+                  border: '2px solid #5ea896',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
                   lineHeight: 1,
                 }}
               >
@@ -363,15 +370,15 @@ export default function RouletteTable({
                 className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                 style={{
                   fontFamily: 'var(--font-inter)',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
+                  fontSize: '10px',
+                  fontWeight: 800,
+                  letterSpacing: '0.12em',
                   textTransform: 'uppercase' as const,
                   color: '#d4d0c4',
                   background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
-                  border: '1.5px solid #5ea896',
-                  borderRadius: '3px',
-                  padding: '5px 10px',
+                  border: '2px solid #5ea896',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
                   lineHeight: 1,
                 }}
               >
@@ -385,24 +392,24 @@ export default function RouletteTable({
                 className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                 style={{
                   fontFamily: 'var(--font-inter)',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
+                  fontSize: '10px',
+                  fontWeight: 800,
+                  letterSpacing: '0.12em',
                   textTransform: 'uppercase' as const,
                   color: '#d4d0c4',
                   background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
-                  border: '1.5px solid #5ea896',
-                  borderRadius: '3px',
-                  padding: '3px 8px',
+                  border: '2px solid #5ea896',
+                  borderRadius: '6px',
+                  padding: '5px 10px',
                   lineHeight: 1,
                   display: 'flex',
                   flexDirection: 'column' as const,
                   alignItems: 'center',
-                  gap: '1px',
+                  gap: '2px',
                 }}
               >
                 <span>Clear</span>
-                <span style={{ fontSize: '6px', opacity: 0.6, letterSpacing: '0.05em' }}>LAST BET</span>
+                <span style={{ fontSize: '7px', opacity: 0.6, letterSpacing: '0.05em' }}>LAST BET</span>
               </button>
 
               {/* SPIN — dark green oval with thick gold border */}
@@ -421,19 +428,19 @@ export default function RouletteTable({
                   color: spinEnabled ? '#ffffff' : '#444',
                   fontFamily: "'Bodoni Moda', serif",
                   fontStyle: 'italic',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  letterSpacing: '0.18em',
+                  fontWeight: 800,
+                  fontSize: '1.1rem',
+                  letterSpacing: '0.2em',
                   textTransform: 'uppercase' as const,
-                  padding: '10px 38px',
+                  padding: '10px 34px',
                   borderRadius: '9999px',
-                  borderWidth: spinEnabled ? '3.5px' : '2px',
+                  borderWidth: spinEnabled ? '4px' : '2px',
                   borderStyle: 'solid',
                   borderColor: spinEnabled ? '#c9a44c' : '#333',
                   boxShadow: spinEnabled
-                    ? `0 0 0 2px #1a0f09, 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.3), 0 0 20px rgba(201, 168, 76, 0.2)`
+                    ? `0 0 0 2px #1a0f09, 0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -3px 0 rgba(0,0,0,0.4), 0 0 30px rgba(201, 168, 76, 0.3)`
                     : 'none',
-                  textShadow: spinEnabled ? '0 1px 3px rgba(0,0,0,0.5)' : 'none',
+                  textShadow: spinEnabled ? '0 2px 4px rgba(0,0,0,0.6)' : 'none',
                 } as React.CSSProperties}
               >
                 {/* Shimmer overlay */}

@@ -50,7 +50,7 @@ export default function BettingControlButtons({
         disabled={!canDouble}
         whileHover={canDouble ? { scale: 1.12 } : {}}
         whileTap={canDouble ? { scale: 0.9 } : {}}
-        className="relative w-10 h-10 rounded-full font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+        className="relative w-12 h-12 rounded-full font-black text-xs uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
         title="Double all bets"
         style={{
           background: canDouble
@@ -58,15 +58,15 @@ export default function BettingControlButtons({
             : 'linear-gradient(135deg, #8b7355, #6b5345)',
           color: canDouble ? '#000' : '#999',
           boxShadow: canDouble
-            ? `0 0 12px ${COLORS.gold}80, inset 0 1px 0 rgba(255,255,255,0.3)`
+            ? `0 6px 15px rgba(0,0,0,0.5), 0 0 15px ${COLORS.gold}80, inset 0 2px 0 rgba(255,255,255,0.4)`
             : 'inset 0 1px 0 rgba(0,0,0,0.3)',
-          border: `2px solid ${canDouble ? COLORS.gold : '#555'}`,
+          border: `3px solid ${canDouble ? COLORS.gold : '#555'}`,
         } as React.CSSProperties}
       >
         2X
         {canDouble && (
           <span className="absolute inset-0 rounded-full" style={{
-            boxShadow: `inset 0 0 15px ${COLORS.gold}40`,
+            boxShadow: `inset 0 0 18px ${COLORS.gold}50`,
           }} />
         )}
       </motion.button>
@@ -77,7 +77,7 @@ export default function BettingControlButtons({
         disabled={!canDelete}
         whileHover={canDelete ? { scale: 1.12 } : {}}
         whileTap={canDelete ? { scale: 0.9 } : {}}
-        className="relative w-10 h-10 rounded-full font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+        className="relative w-12 h-12 rounded-full font-black text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
         title="Toggle delete mode (tap to remove chip, long press to clear zone)"
         style={{
           background: deleteMode
@@ -85,9 +85,9 @@ export default function BettingControlButtons({
             : `linear-gradient(135deg, ${COLORS.gold}cc, #b8943f)`,
           color: deleteMode ? '#fff' : '#1a0f09',
           boxShadow: deleteMode
-            ? `0 0 15px #ff4444cc, inset 0 1px 0 rgba(255,255,255,0.2)`
-            : `0 0 8px ${COLORS.gold}40, inset 0 1px 0 rgba(255,255,255,0.3)`,
-          border: `2px solid ${deleteMode ? '#ff6666' : COLORS.gold}`,
+            ? `0 6px 15px rgba(255,0,0,0.3), 0 0 18px #ff4444cc, inset 0 2px 0 rgba(255,255,255,0.3)`
+            : `0 4px 12px rgba(0,0,0,0.4), 0 0 10px ${COLORS.gold}40, inset 0 2px 0 rgba(255,255,255,0.4)`,
+          border: `3px solid ${deleteMode ? '#ff6666' : COLORS.gold}`,
           cursor: 'pointer',
         } as React.CSSProperties}
       >
@@ -96,13 +96,13 @@ export default function BettingControlButtons({
           <motion.span
             className="absolute inset-0 rounded-full"
             style={{
-              boxShadow: `inset 0 0 20px #ff444466`,
+              boxShadow: `inset 0 0 25px #ff444477`,
             } as React.CSSProperties}
             animate={{
               boxShadow: [
-                `inset 0 0 25px #ff444466`,
-                `inset 0 0 35px #ff444488`,
-                `inset 0 0 25px #ff444466`,
+                `inset 0 0 25px #ff444477`,
+                `inset 0 0 40px #ff444499`,
+                `inset 0 0 25px #ff444477`,
               ],
             }}
             transition={{ duration: 2, repeat: Infinity }}

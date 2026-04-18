@@ -138,26 +138,6 @@ export default function Home() {
             </span>
           </motion.div>
 
-          {/* Live Mode */}
-          <motion.div
-            className={`${styles.playCard} ${styles.cardDisabled}`}
-            onClick={() => setShowComingSoon('Live Lobby')}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className={styles.soonBadge}>Coming Soon</div>
-            <div className={`${styles.playIconWrap} ${styles.iconLive}`}>
-              <svg viewBox="0 0 24 24" className={styles.playIconLive} fill="currentColor">
-                <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
-              </svg>
-            </div>
-            <span className={styles.playLabel}>Live Table</span>
-            <span className={styles.playDesc}>
-              Play with other rollers in real-time.<br />Global leaderboard and table chat.
-            </span>
-          </motion.div>
-
           {/* Tournament Mode */}
           <motion.div
             className={`${styles.playCard} ${styles.cardDisabled}`}

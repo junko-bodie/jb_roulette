@@ -24,7 +24,7 @@ export default function WinCelebration({ show, onComplete }: WinCelebrationProps
 
       const timer = setTimeout(() => {
         onComplete();
-      }, 1500);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [show, onComplete]);

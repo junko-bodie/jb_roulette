@@ -229,8 +229,9 @@
 }
 
 .gameGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(280px, 1fr));
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 24px;
   width: 100%;
   max-width: 1100px;
@@ -239,6 +240,7 @@
 /* ── Play Card (Solo) ── */
 .playCard {
   width: 100%;
+  max-width: 400px;
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
   border-radius: 24px;
