@@ -82,8 +82,6 @@ function NumberCell({
   phase,
   style = {},
   isHovered = false,
-  hoveredComboBets = [],
-  comboBetsOnNumber = [],
   onNumberHover,
   onNumberHoverEnd,
   deleteMode = false,
@@ -99,8 +97,6 @@ function NumberCell({
   phase: string;
   style?: React.CSSProperties;
   isHovered?: boolean;
-  hoveredComboBets?: PlacedBet[];
-  comboBetsOnNumber?: PlacedBet[];
   onNumberHover?: (num: number) => void;
   onNumberHoverEnd?: () => void;
   deleteMode?: boolean;
@@ -183,9 +179,6 @@ function NumberCell({
     }
   };
 
-  // Combine: own straight bet tooltip + combo bet tooltips from DropZone hover + combo bets from number hover
-  const showComboTooltips = isHovered && hoveredComboBets.length > 0;
-
   return (
     <motion.button
       onClick={deleteMode ? undefined : handlePlace}
@@ -208,14 +201,13 @@ function NumberCell({
         cursor: deleteMode && bet ? 'grab' : 'pointer',
         ...style,
       } as React.CSSProperties}
-      whileHover={
-        disabled || deleteMode
-          ? {}
-          : {
-            borderColor: COLORS.gold,
-            boxShadow: `inset 0 0 12px rgba(201, 168, 76, 0.25)`,
-          }
-      }
+      variants={{
+        hover: {
+          borderColor: COLORS.gold,
+          boxShadow: `inset 0 0 12px rgba(201, 168, 76, 0.25)`,
+        }
+      }}
+      whileHover={disabled || deleteMode ? {} : "hover"}
       animate={
         isWinner
           ? {
@@ -241,35 +233,21 @@ function NumberCell({
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
       {getDisplayNumber(num)}
-      {/* Straight bet chip + tooltip */}
       {bet && (
         <>
           <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} />
-          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity -top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-0.5 px-1.5 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
+          <motion.div
+            variants={{
+              hover: { opacity: 1, transition: { duration: 0.2 } }
+            }}
+            initial={{ opacity: 0 }}
+            className="absolute -top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none"
+          >
             ${bet.amount.toLocaleString()}
-          </div>
+          </motion.div>
         </>
       )}
-      {/* Combo bet tooltips shown when DropZone is hovered */}
-      {showComboTooltips && (
-        <div className="absolute -top-1 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 z-50 pointer-events-none">
-          {hoveredComboBets.map((cb) => (
-            <div key={cb.betId} className="bg-black/90 text-[#c9a44c] text-[10px] font-bold py-0.5 px-1.5 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap">
-              ${cb.amount.toLocaleString()}
-            </div>
-          ))}
-        </div>
-      )}
-      {/* Combo bet tooltips shown when hovering this number cell directly */}
-      {!showComboTooltips && comboBetsOnNumber.length > 0 && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex flex-col gap-0.5 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-          {comboBetsOnNumber.map((cb) => (
-            <div key={cb.betId} className="bg-black/90 text-[#c9a44c] text-[10px] font-bold py-0.5 px-1.5 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap">
-              {cb.betId.split('-').slice(0, 1)[0]}: ${cb.amount.toLocaleString()}
-            </div>
-          ))}
-        </div>
-      )}
+
     </motion.button>
   );
 }
@@ -375,7 +353,7 @@ function DropZone({
   }, []);
 
   return (
-    <div
+    <motion.div
       className="absolute z-20"
       style={{
         left: x,
@@ -383,8 +361,9 @@ function DropZone({
         width,
         height,
         transform: 'translate(-50%, -50%)',
-        pointerEvents: 'auto', // Because parent has pointer-events: none
+        pointerEvents: 'auto',
       }}
+      whileHover="hover"
     >
       <motion.button
         className="w-full h-full rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity group"
@@ -406,12 +385,18 @@ function DropZone({
         whileHover={disabled ? {} : { scale: 1.2 }}
       />
       {bet && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none group">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} />
           {/* Tooltip */}
-          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50">
+          <motion.div
+            variants={{
+              hover: { opacity: 1, transition: { duration: 0.2 } }
+            }}
+            initial={{ opacity: 0 }}
+            className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50"
+          >
             ${bet.amount.toLocaleString()}
-          </div>
+          </motion.div>
         </div>
       )}
       {isWinner && (
@@ -421,7 +406,7 @@ function DropZone({
           transition={{ duration: 1, repeat: 3 }}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -554,14 +539,13 @@ function OutsideBetCell({
         transition: 'background 0.15s ease, color 0.15s ease',
         ...style,
       } as React.CSSProperties}
-      whileHover={
-        disabled
-          ? {}
-          : {
-            borderColor: COLORS.gold,
-            boxShadow: `inset 0 0 12px rgba(201, 168, 76, 0.25)`,
-          }
-      }
+      variants={{
+        hover: {
+          borderColor: COLORS.gold,
+          boxShadow: `inset 0 0 12px rgba(201, 168, 76, 0.25)`,
+        }
+      }}
+      whileHover={disabled ? {} : "hover"}
       animate={
         isWinner
           ? {
@@ -581,9 +565,15 @@ function OutsideBetCell({
         <>
           <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} />
           {/* Tooltip */}
-          <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity bottom-full mb-1 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none">
+          <motion.div
+            variants={{
+              hover: { opacity: 1, transition: { duration: 0.2 } }
+            }}
+            initial={{ opacity: 0 }}
+            className="absolute bottom-full mb-1 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none"
+          >
             ${bet.amount.toLocaleString()}
-          </div>
+          </motion.div>
         </>
       )}
     </motion.button>
@@ -644,28 +634,6 @@ export default function BettingLayout({
     setSelfHoveredNumber(null);
   }, []);
 
-  // Build a map: number -> list of placed combo bets covering that number
-  const comboBetsByNumber = useMemo(() => {
-    const map = new Map<number, PlacedBet[]>();
-    bets.forEach((bet, betId) => {
-      // Only combo bets (not straight, not outside)
-      if (betId.startsWith('split-') || betId.startsWith('corner-') || betId.startsWith('street-') || betId.startsWith('sixline-') || betId.startsWith('trio-') || betId.startsWith('basket-')) {
-        const def = BET_MAP.get(betId);
-        if (def) {
-          for (const n of def.numbers) {
-            if (!map.has(n)) map.set(n, []);
-            map.get(n)!.push(bet);
-          }
-        }
-      }
-    });
-    return map;
-  }, [bets]);
-
-  // Get the hovered combo bet as a PlacedBet (for DropZone hover)
-  const hoveredComboBet = hoveredBetId ? bets.get(hoveredBetId) : undefined;
-  const hoveredComboBets = hoveredComboBet ? [hoveredComboBet] : [];
-
   return (
     <div className="flex flex-col items-center w-full mx-auto p-1">
       {/* SECTION 1: Top Part (Zeros, Numbers, Columns) */}
@@ -685,8 +653,6 @@ export default function BettingLayout({
             phase={phase}
             style={{ borderWidth: '0 1px 1px 0' }}
             isHovered={hoveredNumbers.includes(0)}
-            hoveredComboBets={hoveredNumbers.includes(0) ? hoveredComboBets : []}
-            comboBetsOnNumber={comboBetsByNumber.get(0) || []}
             onNumberHover={handleNumberHover}
             onNumberHoverEnd={handleNumberHoverEnd}
             deleteMode={deleteMode}
@@ -707,8 +673,6 @@ export default function BettingLayout({
               phase={phase}
               style={{ borderWidth: '0 1px 1px 0' }}
               isHovered={hoveredNumbers.includes(37)}
-              hoveredComboBets={hoveredNumbers.includes(37) ? hoveredComboBets : []}
-              comboBetsOnNumber={comboBetsByNumber.get(37) || []}
               onNumberHover={handleNumberHover}
               onNumberHoverEnd={handleNumberHoverEnd}
             />
@@ -753,8 +717,6 @@ export default function BettingLayout({
                     phase={phase}
                     style={{ borderWidth: '0 1px 1px 0' }}
                     isHovered={hoveredNumbers.includes(num)}
-                    hoveredComboBets={hoveredNumbers.includes(num) ? hoveredComboBets : []}
-                    comboBetsOnNumber={comboBetsByNumber.get(num) || []}
                     onNumberHover={handleNumberHover}
                     onNumberHoverEnd={handleNumberHoverEnd}
                     deleteMode={deleteMode}
