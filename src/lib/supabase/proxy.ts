@@ -34,15 +34,24 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Redirect unauthenticated users to login (except for auth routes & static assets)
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/api/auth') &&
-    !request.nextUrl.pathname.startsWith('/api/db')
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+  if (!user) {
+    const isApiRoute = request.nextUrl.pathname.startsWith('/api/');
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
+                        request.nextUrl.pathname.startsWith('/api/auth');
+    const isDatabaseRoute = request.nextUrl.pathname.startsWith('/api/db');
+
+    if (!isAuthRoute && !isDatabaseRoute) {
+      if (isApiRoute) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

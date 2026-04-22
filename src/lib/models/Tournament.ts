@@ -11,6 +11,7 @@ export interface TournamentPlayer {
   eliminated_round: number | null;
   final_position: number | null;
   points_earned: number | null;
+  pending_bets?: any[];
 }
 
 export interface Tournament {

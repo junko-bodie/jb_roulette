@@ -20,14 +20,33 @@ export async function POST(
       return NextResponse.json({ error: 'Tournament not found or not completed' }, { status: 404 });
     }
 
-    // 2. Find real player
-    const realPlayerEntry = tournament.players.find((p: any) => !p.is_bot);
-    if (!realPlayerEntry) {
-      return NextResponse.json({ success: true, message: 'No real player in this tournament' });
+    // 2. Find the calling user session
+    const { getUser } = await import('@/lib/auth');
+    const user = await getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const realPlayerEntry = tournament.players?.find((p: any) => 
+      p.is_bot === false && 
+      p.player_id && 
+      // Link via profile lookup (in create/route.ts p.player_id is profile._id)
+      // but we need to match the specific player in this tournament session
+      p.status === "active" || p.status === "eliminated"
+    );
+
+    // Filter to find THIS specific player in the players list
+    const myProfile = await db.collection('user_profiles').findOne({ supabase_id: user.id });
+    if (!myProfile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+
+    const playerEntry = tournament.players?.find((p: any) => 
+      p.player_id.toString() === myProfile._id.toString()
+    );
+
+    if (!playerEntry) {
+      return NextResponse.json({ error: 'You were not a participant in this tournament' }, { status: 403 });
     }
 
-    const playerId = realPlayerEntry.player_id;
-    const finalPosition = realPlayerEntry.final_position;
+    const playerId = playerEntry.player_id;
+    const finalPosition = playerEntry.final_position;
 
     // 3. Calculate points
     const basePoints = TOURNAMENT_POINTS[finalPosition] || 0;

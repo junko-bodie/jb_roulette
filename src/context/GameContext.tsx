@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 export interface UserProfile {
+  id?: string;
   name: string;
   avatar: string;
   annual_championship_qualified?: boolean;
@@ -88,6 +89,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
             setIsPopupEnabled(data.is_popup_enabled ?? true);
             setStartingBalance(data.starting_balance ?? 1000);
             setUserProfile({
+              id: data._id,
               name: data.name || user.user_metadata?.full_name || 'Player',
               avatar: data.avatar_url || user.user_metadata?.avatar_url || '/avatars/default.png',
             });

@@ -14,11 +14,15 @@ export async function GET(
       _id: new ObjectId(id) 
     });
 
-    if (!tournament) {
-      return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(tournament);
+    const activeRound = await db.collection('rounds').findOne({ 
+      tournament_id: new ObjectId(id),
+      status: "active"
+    }, { sort: { created_at: -1 } });
+    
+    return NextResponse.json({
+      ...tournament,
+      active_round: activeRound
+    });
   } catch (error: any) {
     console.error('Fetch tournament error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

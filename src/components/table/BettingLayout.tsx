@@ -602,7 +602,7 @@ export default function BettingLayout({
   const isBetWinner = useCallback(
     (betId: string): boolean => {
       if (!showWinHighlight || !payoutResult) return false;
-      return payoutResult.outcomes.some((o) => o.betId === betId && o.isWin);
+      return payoutResult.outcomes?.some((o) => o.betId === betId && o.isWin) || false;
     },
     [showWinHighlight, payoutResult]
   );

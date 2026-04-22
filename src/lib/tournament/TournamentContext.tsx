@@ -1,12 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Tournament, TournamentPlayer } from '@/lib/models/Tournament';
 import { generateBotBets } from './botBetting';
 import { PlacedBet } from '../bets';
 import { calculatePayouts } from '../payouts';
 import { SpinResult } from '../rng';
+import { useGame } from '@/context/GameContext';
 
 export type TournamentPhase = 
   | "betting" 
@@ -37,12 +38,17 @@ interface TournamentContextType {
   timeRemaining: number;
   setPhase: (phase: TournamentPhase) => void;
   submitBets: (bets: any) => void;
+  completeSpin: () => void;
   lastSpinResult: any;
   lastPlayerPayout: any;
+  allSpinBets: any[];
+  botBets: Record<string, PlacedBet[]>;
   eliminatedPlayer: any;
   declareWinner: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
+  lobbyTimeRemaining: number;
+  syncMyBets: (bets: any[]) => Promise<void>;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(undefined);
@@ -52,18 +58,24 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const id = params?.id as string;
   
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const { userProfile } = useGame();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const [phase, setPhase] = useState<TournamentPhase>("betting");
   const [currentRound, setCurrentRound] = useState(1);
   const [currentSpin, setCurrentSpin] = useState(1);
-  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [timeRemaining, setTimeRemaining] = useState<number>(30);
   const [botBets, setBotBets] = useState<Record<string, PlacedBet[]>>({});
   const [roundId, setRoundId] = useState<string | null>(null);
   const [lastSpinResult, setLastSpinResult] = useState<any>(null);
+  const [allSpinBets, setAllSpinBets] = useState<any[]>([]);
+  const [pendingSpinData, setPendingSpinData] = useState<any>(null);
   const [lastPlayerPayout, setLastPlayerPayout] = useState<any>(null);
   const [eliminatedPlayer, setEliminatedPlayer] = useState<any>(null);
+  const [lobbyTimeRemaining, setLobbyTimeRemaining] = useState<number>(60);
+  const [currentRoundData, setCurrentRoundData] = useState<any>(null);
+  const startTriggeredRef = useRef(false);
 
   const totalSpins = 20;
 
@@ -75,39 +87,113 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       if (!res.ok) throw new Error('Failed to start round');
       const data = await res.json();
       setRoundId(data._id);
+      setCurrentRoundData(data);
       setCurrentSpin(data.spins_completed + 1);
     } catch (e) {
       console.error('Error starting round:', e);
     }
   }, [id]);
 
-  // Initial load and recovery
-  useEffect(() => {
-    async function loadTournament() {
-      if (!id) return;
+  // ════════════ TOURNAMENT LOADING & LOBBY POLLING ════════════
+  const loadTournament = useCallback(async () => {
+    if (!id) return;
+    try {
+      const res = await fetch(`/api/tournament/${id}`);
+      if (!res.ok) throw new Error('Tournament not found');
+      const data = await res.json();
       
-      try {
-        setIsLoading(true);
-        const res = await fetch(`/api/tournament/${id}`);
-        if (!res.ok) throw new Error('Tournament not found');
-        
-        const data = await res.json();
-        setTournament(data);
-        setCurrentRound(data.current_round || 1);
-        
-        setPhase("betting");
-        setTimeRemaining(30);
-        
-        setError(null);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+      setTournament(data);
+      setCurrentRound(data.current_round || 1);
+      
+      // Calculate remaining lobby time based on created_at
+      if (data.status === 'waiting' && data.created_at) {
+        const created = new Date(data.created_at).getTime();
+        const now = new Date().getTime();
+        const elapsed = Math.floor((now - created) / 1000);
+        setLobbyTimeRemaining(Math.max(0, 60 - elapsed));
       }
+      
+      setError(null);
+      
+      // SYNC: Update round data and timer based on server-provided betting_ends_at
+      if (data.active_round) {
+        setCurrentRoundData(data.active_round);
+        setRoundId(data.active_round._id);
+        setCurrentSpin(data.active_round.spins_completed + 1);
+        
+        if (data.active_round.betting_ends_at) {
+          const end = new Date(data.active_round.betting_ends_at).getTime();
+          const now = Date.now();
+          const diff = Math.max(0, Math.floor((end - now) / 1000));
+          setTimeRemaining(diff);
+          
+          if (diff === 0 && phase === "betting") {
+            setPhase("locked");
+          }
+        }
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
+  }, [id, phase]);
 
+  useEffect(() => {
     loadTournament();
-  }, [id]);
+  }, [loadTournament]);
+
+  // Poll for tournament state while waiting or active
+  useEffect(() => {
+    if (!tournament || (tournament.status !== 'waiting' && tournament.status !== 'active')) return;
+
+    const pollInterval = setInterval(() => {
+      loadTournament();
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [tournament?.status, loadTournament]);
+
+  // Matchmaking countdown timer
+  useEffect(() => {
+    if (!tournament || tournament.status !== 'waiting') return;
+
+    const timer = setInterval(() => {
+      setLobbyTimeRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [tournament?.status]);
+
+  // Automatically start tournament when lobby is full or time's up
+  useEffect(() => {
+    if (!id || !tournament || tournament.status !== 'waiting' || startTriggeredRef.current) return;
+
+    const shouldStart = lobbyTimeRemaining <= 0 || (tournament.players?.length || 0) >= 6;
+
+    if (shouldStart) {
+      startTriggeredRef.current = true;
+      const startTournament = async () => {
+        try {
+          const res = await fetch(`/api/tournament/${id}/start`, { method: 'POST' });
+          if (res.ok) {
+            const data = await res.json();
+            setTournament(data);
+          }
+        } catch (e) {
+          console.error('Failed to start tournament:', e);
+          startTriggeredRef.current = false; // Allow retry on next trigger
+        }
+      };
+      startTournament();
+    }
+  }, [id, tournament, lobbyTimeRemaining]);
 
   // Elimination logic
   const runElimination = useCallback(async () => {
@@ -124,7 +210,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       // Update local tournament state
       setTournament(prev => {
         if (!prev) return null;
-        const updatedPlayers = prev.players.map(p => {
+        const updatedPlayers = prev.players?.map(p => {
           if (p.player_id.toString() === data.eliminatedPlayer.player_id.toString()) {
             return {
               ...p,
@@ -173,21 +259,21 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
 
   // Derived state
   const activePlayers = useMemo(() => 
-    tournament?.players.filter(p => p.status === "active") || []
+    tournament?.players?.filter(p => p.status === "active") || []
   , [tournament]);
 
   const eliminatedPlayers = useMemo(() => 
-    tournament?.players.filter(p => p.status === "eliminated") || []
+    tournament?.players?.filter(p => p.status === "eliminated") || []
   , [tournament]);
 
   const scores = useMemo(() => {
     if (!tournament) return [];
     
-    const active = tournament.players
+    const active = (tournament.players || [])
       .filter(p => p.status === "active")
       .sort((a, b) => b.current_chips - a.current_chips);
       
-    const eliminated = tournament.players
+    const eliminated = (tournament.players || [])
       .filter(p => p.status === "eliminated")
       .sort((a, b) => (a.final_position || 10) - (b.final_position || 10)); // Higher position first? or lower? 
       // Pos 6 is Round 1. Pos 5 is Round 2. 
@@ -220,7 +306,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
           ...prev,
           status: "completed",
           winner_id: data.winner.player_id,
-          players: prev.players.map(p => {
+          players: prev.players?.map(p => {
              const standing = data.standings.find((s: any) => s.player_id.toString() === p.player_id.toString());
              if (standing) {
                return {
@@ -241,73 +327,161 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     }
   }, [id]);
 
+  // Track generated bets to avoid double-triggering when dependencies change
+  const generatedRef = useRef<string>("");
+
+  // Generate Bot bets gracefully staggered over the betting phase
+  useEffect(() => {
+    if (phase === "betting" && tournament) {
+      const key = `${currentRound}-${currentSpin}`;
+      if (generatedRef.current === key) return;
+      generatedRef.current = key;
+
+      setAllSpinBets([]);
+      setBotBets({});
+      
+      const activeBots = tournament.players.filter((p: TournamentPlayer) => p.is_bot && p.status === "active");
+      const timeouts: NodeJS.Timeout[] = [];
+      
+      activeBots.forEach((p: TournamentPlayer) => {
+        const fullBets = generateBotBets(p);
+        const playerId = p.player_id.toString();
+        
+        fullBets.forEach((bet) => {
+          // Delay bet placement between 1s and 25s into the 30s period
+          const delay = Math.floor(Math.random() * 24000) + 1000;
+          const timerId = setTimeout(() => {
+             setBotBets(prev => {
+                const current = prev[playerId] || [];
+                return {
+                  ...prev,
+                  [playerId]: [...current, bet]
+                };
+             });
+          }, delay);
+          timeouts.push(timerId);
+        });
+      });
+
+      return () => {
+        timeouts.forEach(clearTimeout);
+      };
+    }
+  }, [phase, currentSpin, tournament, currentRound]);
+
   const submitBets = useCallback(async (bets: any) => {
     if (!id || !roundId) return;
     
     setPhase("locked");
     
     try {
+      console.log(`[Tournament] Submitting bets for tournament ${id}, round ${roundId}, spin ${currentSpin}`, {
+        player_bets: bets,
+        bot_bets: botBets
+      });
+      
       const res = await fetch(`/api/tournament/${id}/spin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           player_bets: bets,
+          bot_bets: botBets,
           round_id: roundId,
           spin_number: currentSpin
         }),
       });
 
-      if (!res.ok) throw new Error('Spin failed');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error('[Tournament] Spin API Error:', errorData);
+        throw new Error(errorData.error || `Spin failed with status ${res.status}`);
+      }
       const data = await res.json();
       
-      setPhase("spinning");
-      
-      // Simulate spin delay
-      setTimeout(() => {
-        setPhase("result");
-        setLastSpinResult(data.result);
-        
-        // Extract real player payout info
-        const realPlayerResult = data.player_results.find((pr: any) => !pr.is_bot);
-        if (realPlayerResult) {
-          const totalWagered = realPlayerResult.bets_placed.reduce((a: number, b: any) => a + b.amount, 0);
-          setLastPlayerPayout({
-            netResult: realPlayerResult.net_change,
-            totalWagered: totalWagered,
-            totalReturned: realPlayerResult.net_change + totalWagered
-          });
-        }
-        
-        // Update local chip counts from API result
-        setTournament(prev => {
-          if (!prev) return null;
-          const updatedPlayers = prev.players.map(p => ({
-            ...p,
-            current_chips: data.chip_updates[p.player_id.toString()] ?? p.current_chips
-          }));
-          return { ...prev, players: updatedPlayers };
-        });
+      // Combine all bets from the server to display during spin phase
+      const combinedBets: any[] = [];
+      data.player_results?.forEach((pr: any) => {
+         pr.bets_placed?.forEach((b: any) => combinedBets.push(b));
+      });
 
-        setTimeout(() => {
-          if (currentSpin >= 20) {
-            if (currentRound >= 5) {
-              declareWinner();
-            } else {
-              runElimination();
-            }
-          } else {
-            setCurrentSpin(prev => prev + 1);
-            setPhase("betting");
-            setTimeRemaining(30);
-          }
-        }, 5000);
-      }, 3000);
+      setAllSpinBets(combinedBets);
+      setLastSpinResult(data.result);
+      setPendingSpinData(data);
+      setPhase("spinning");
     } catch (error) {
       console.error('Error submitting bets:', error);
       setPhase("betting");
       alert('Spin failed. Please try again.');
     }
-  }, [id, roundId, currentSpin]);
+  }, [id, roundId, currentSpin, botBets]);
+
+  const syncMyBets = useCallback(async (bets: any[]) => {
+    if (!id || !tournament || !userProfile.id) return;
+    
+    // Find the specific player record for THIS user
+    const player = tournament.players.find(p => p.player_id.toString() === userProfile.id);
+    if (!player) return;
+
+    try {
+      await fetch(`/api/tournament/${id}/bets/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          player_id: player.player_id,
+          bets: bets
+        })
+      });
+    } catch (e) {
+      console.error('[Tournament] Failed to sync bets:', e);
+    }
+  }, [id, tournament, userProfile.id]);
+
+  const completeSpin = useCallback(() => {
+    if (!pendingSpinData) return;
+    
+    setPhase("result");
+    const data = pendingSpinData;
+    
+    // Extract THIS player's result
+    const myResult = userProfile.id ? 
+      data.player_results.find((pr: any) => pr.player_id.toString() === userProfile.id) : 
+      data.player_results.find((pr: any) => !pr.is_bot);
+
+    if (myResult) {
+      const totalWagered = myResult.bets_placed.reduce((a: number, b: any) => a + b.amount, 0);
+      setLastPlayerPayout({
+        netResult: myResult.net_change,
+        totalWagered: totalWagered,
+        totalReturned: myResult.net_change + totalWagered
+      });
+    }
+    
+    // Update local chip counts from API result
+    setTournament(prev => {
+      if (!prev) return null;
+      const updatedPlayers = prev.players.map(p => ({
+        ...p,
+        current_chips: data.chip_updates[p.player_id.toString()] ?? p.current_chips
+      }));
+      return { ...prev, players: updatedPlayers };
+    });
+
+    setTimeout(() => {
+      if (currentSpin >= 5) {
+        if (currentRound >= 5) {
+          declareWinner();
+        } else {
+          runElimination();
+        }
+      } else {
+        setCurrentSpin(prev => prev + 1);
+        setPhase("betting");
+        setTimeRemaining(30);
+      }
+    }, 5000);
+
+    setPendingSpinData(null);
+  }, [pendingSpinData, currentSpin, currentRound, declareWinner]);
 
   // Sync state to DB after important changes
   useEffect(() => {
@@ -336,23 +510,30 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     syncData();
   }, [tournament, id, phase, currentRound]);
 
-  // Betting timer logic
+  // Betting timer logic - synchronized with server timestamp
   useEffect(() => {
-    if (phase !== "betting" || timeRemaining <= 0) return;
+    if (phase !== "betting" || !currentRoundData?.betting_ends_at) {
+      // If we are in betting phase but no server data yet, 
+      // we can optionally show a fallback or just wait for the sync
+      return;
+    }
 
     const timer = setInterval(() => {
-      setTimeRemaining(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setPhase("locked");
-          return 0;
-        }
-        return prev - 1;
-      });
+      const end = new Date(currentRoundData.betting_ends_at).getTime();
+      const now = Date.now();
+      const diff = Math.max(0, Math.floor((end - now) / 1000));
+      
+      setTimeRemaining(diff);
+      
+      if (diff <= 0) {
+        clearInterval(timer);
+        // Only lock if we are strictly in betting phase and time is up
+        setPhase("locked");
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [phase, timeRemaining]);
+  }, [phase, currentRoundData?.betting_ends_at]);
 
   const value = {
     tournament,
@@ -366,12 +547,17 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     timeRemaining,
     setPhase,
     submitBets,
+    completeSpin,
     lastSpinResult,
     lastPlayerPayout,
+    allSpinBets,
+    botBets,
     eliminatedPlayer,
     declareWinner,
     isLoading,
-    error
+    error,
+    lobbyTimeRemaining,
+    syncMyBets
   };
 
   return (

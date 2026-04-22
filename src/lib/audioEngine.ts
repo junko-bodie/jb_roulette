@@ -20,7 +20,7 @@ class AudioEngine {
     if (typeof window !== 'undefined') {
       this.sounds = {
         chip: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'],
+          src: ['https://cdn.pixabay.com/audio/2022/03/15/audio_73130c2537.mp3'], // Quality chip/click
           volume: 0.3,
         }),
         spin: new Howl({
@@ -41,17 +41,17 @@ class AudioEngine {
         }),
         // Advanced betting UI sounds
         click: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'],
+          src: ['https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a73430.mp3'],
           volume: 0.35,
           preload: true,
         }),
         drip: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2547/2547-preview.mp3'],
+          src: ['https://cdn.pixabay.com/audio/2021/08/04/audio_3430a91176.mp3'],
           volume: 0.3,
           preload: true,
         }),
         whoosh: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2548/2548-preview.mp3'],
+          src: ['https://cdn.pixabay.com/audio/2022/03/10/audio_c2ed7516d7.mp3'],
           volume: 0.4,
           preload: true,
         }),
@@ -72,19 +72,21 @@ class AudioEngine {
           preload: true,
         }),
         lock: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3'], // Heavy click/lock
+          src: ['https://cdn.pixabay.com/audio/2022/03/15/audio_65cf68d067.mp3'], 
           volume: 0.8,
           preload: true,
         }),
         thump: new Howl({
-          src: ['/sounds/universfield-new-notification-026-380249.mp3'], // Local notification sound
+          src: ['/sounds/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3'], // Reliable local file as fallback
           volume: 0.8,
           preload: true,
           onload: () => console.log('AudioEngine: Thump sound loaded'),
-          onloaderror: (id, err) => console.error('AudioEngine: Thump load error:', err),
+          onloaderror: (id, err) => {
+            console.error('AudioEngine: Thump load error:', err);
+          },
         }),
         denied: new Howl({
-          src: ['https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'], // Error/denied sound
+          src: ['https://cdn.pixabay.com/audio/2022/03/10/audio_55a2979603.mp3'], 
           volume: 0.5,
           preload: true,
         }),

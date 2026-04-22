@@ -32,6 +32,7 @@ export async function POST(
         .map((p: any) => p.player_id),
       eliminated_player_id: null,
       created_at: new Date(),
+      betting_ends_at: new Date(Date.now() + 30000), // 30 second betting window
       completed_at: null
     };
 

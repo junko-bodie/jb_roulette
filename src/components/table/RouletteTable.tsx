@@ -43,6 +43,7 @@ interface RouletteTableProps {
   onPopLastChip?: (betId: string) => void;
   onClearZone?: (betId: string) => void;
   onTimeout?: () => void;
+  tournamentMode?: boolean;
 }
 
 export default function RouletteTable({
@@ -72,6 +73,7 @@ export default function RouletteTable({
   onPopLastChip,
   onClearZone,
   onTimeout,
+  tournamentMode = false,
 }: RouletteTableProps) {
   const [isMobile, setIsMobile] = useState(false);
   const { isSoundEnabled, isTimerEnabled } = useGame();
@@ -116,10 +118,10 @@ export default function RouletteTable({
   const spinEnabled = canBet && hasBets;
 
   return (
-    <div className="mx-auto w-full max-w-[1500px]">
+    <div className="mx-auto w-full max-w-[1500px] h-full">
       {/* THE FOAM BUFFER — Unified for both wheel and table */}
       <div
-        className="relative p-3 sm:p-5 md:p-6 rounded-[40px] shadow-[0_30px_80px_rgba(0,0,0,0.9)] w-full overflow-hidden mobile-foam-compact"
+        className="relative p-3 sm:p-5 md:p-6 rounded-[40px] shadow-[0_30px_80px_rgba(0,0,0,0.9)] w-full h-full overflow-hidden mobile-foam-compact"
         style={{
           background: '#2d1a10', // Rich leather brown
           backgroundImage: `
@@ -133,6 +135,8 @@ export default function RouletteTable({
             0 25px 50px rgba(0,0,0,1)
           `,
           transformStyle: 'preserve-3d',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         {/* Inner seam line */}
@@ -146,13 +150,14 @@ export default function RouletteTable({
 
         {/* The green felt area — Unified horizontal row */}
         <div
-          className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-3 md:gap-4 lg:gap-6 mobile-felt-stack"
+          className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full"
           style={{
             background: 'rgba(10, 35, 29, 1)', // Dark casino green
             borderColor: '#11352e',
             padding: '1rem 1.5rem 1rem 0.5rem',
             zIndex: 2,
             boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)',
+            flex: 1
           }}
         >
           {/* Wheel Section (Left) */}
@@ -174,6 +179,7 @@ export default function RouletteTable({
             />
 
             {/* Wheel type toggle — overlaid at bottom center of wheel */}
+            {!tournamentMode && (
             <div
               className="absolute flex items-center gap-2 text-[13px] z-30"
               style={{
@@ -212,6 +218,7 @@ export default function RouletteTable({
                 European
               </button>
             </div>
+            )}
           </motion.div>
 
           {/* Table Section (Right) */}
@@ -220,11 +227,12 @@ export default function RouletteTable({
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
             animate={isMobile
               ? { opacity: 1, x: 0, scale: 1 }
-              : { opacity: 1, x: 0.5, scaleX: 1.1, scaleY: 1.55 }
+              : { opacity: 1, x: 0.5, scaleX: 1.12, scaleY: 1.7 } // Slightly reduced from 1.15/1.85
             }
             transition={{ duration: 0.5 }}
           >
-            {/* Junko Bodie Title — above the betting grid */}
+            {/* Junko Bodie Title — above the betting grid (hidden in tournament mode) */}
+            {!tournamentMode && (
             <div className="flex flex-col items-center mb-0.5 -mt-2" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
               <h1
                 className="text-2xl md:text-3xl tracking-wider"
@@ -257,6 +265,7 @@ export default function RouletteTable({
                 <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
               </div>
             </div>
+            )}
 
             {/* Betting Grid Section with Blur & Overlay */}
             <div className="w-full relative">
@@ -304,7 +313,8 @@ export default function RouletteTable({
               </AnimatePresence>
             </div>
 
-            {/* ═══ BUTTONS — directly below betting grid ═══ */}
+            {/* ═══ BUTTONS — directly below betting grid (hidden in tournament mode) ═══ */}
+            {!tournamentMode && (
             <div
               className="flex items-center justify-end gap-3 mt-2 w-full pr-8"
               style={{ transform: 'scaleX(0.78) scaleY(0.645)' }}
@@ -461,6 +471,7 @@ export default function RouletteTable({
                 </span>
               </motion.button>
             </div>
+            )}
           </motion.div>
         </div>
       </div>

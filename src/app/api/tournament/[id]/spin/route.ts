@@ -1,0 +1,214 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '@/lib/db/mongodb';
+import { ObjectId } from 'mongodb';
+import { generateBotBets } from '@/lib/tournament/botBetting';
+import { calculatePayouts } from '@/lib/payouts';
+import { AMERICAN_WHEEL_ORDER, EUROPEAN_WHEEL_ORDER, getDisplayNumber, getNumberColor } from '@/lib/rng';
+
+/**
+ * Server-side version of spinWheel to ensure fairness and consistency in tournament.
+ */
+function getSpinResult(wheelType: 'american' | 'european' = 'american') {
+  const pockets = wheelType === 'american' ? AMERICAN_WHEEL_ORDER : EUROPEAN_WHEEL_ORDER;
+  const totalPockets = pockets.length;
+  
+  // Use crypto for random number generation
+  const randomIndex = Math.floor(Math.random() * totalPockets);
+  const number = pockets[randomIndex];
+
+  return {
+    number,
+    displayNumber: getDisplayNumber(number),
+    color: getNumberColor(number),
+    // Helper fields for easier payout logic if needed
+    parity: number === 0 || number === 37 ? 'none' : (number % 2 === 0 ? 'even' : 'odd'),
+    dozen: number === 0 || number === 37 ? 'none' : (number <= 12 ? '1st' : number <= 24 ? '2nd' : '3rd'),
+    column: number === 0 || number === 37 ? 'none' : (number % 3 === 1 ? '1st' : number % 3 === 2 ? '2nd' : '3rd'),
+    half: number === 0 || number === 37 ? 'none' : (number <= 18 ? '1-18' : '19-36')
+  };
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid tournament ID format' }, { status: 400 });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      console.error('[Spin API] JSON parse error');
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const { player_bets, bot_bets, round_id, spin_number } = body;
+    
+    console.log(`[Spin API] Tournament: ${id}, Round: ${round_id}, Spin: ${spin_number}`);
+    
+    if (typeof spin_number !== 'number') {
+      return NextResponse.json({ error: 'spin_number must be a number' }, { status: 400 });
+    }
+
+    if (!round_id || !ObjectId.isValid(round_id)) {
+      console.error('[Spin API] Missing or invalid round_id');
+      return NextResponse.json({ error: 'Valid round_id is required' }, { status: 400 });
+    }
+
+    const db = await getDb();
+    
+    // 1. Fetch current tournament state
+    const tournament = await db.collection('tournaments').findOne({ 
+      _id: new ObjectId(id) 
+    });
+
+    if (!tournament) {
+      console.error(`[Spin API] Tournament not found: ${id}`);
+      return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
+    }
+
+    // 1.1 Check for idempotency: Has this spin already been processed?
+    const existingSpin = await db.collection('spins').findOne({
+      tournament_id: new ObjectId(id),
+      round_id: new ObjectId(round_id),
+      spin_number: spin_number
+    });
+
+    if (existingSpin) {
+      console.log(`[Spin API] Returning existing result for spin ${spin_number}`);
+      // Re-map chip updates from the existing spin results
+      const chipUpdates: Record<string, number> = {};
+      existingSpin.player_results.forEach((pr: any) => {
+        chipUpdates[pr.player_id.toString()] = pr.chips_after;
+      });
+
+      return NextResponse.json({
+        success: true,
+        result: existingSpin.result,
+        player_results: existingSpin.player_results,
+        chip_updates: chipUpdates
+      });
+    }
+
+    // 2. Filter active players
+    const activePlayers = (tournament.players || []).filter((p: any) => p.status === "active");
+    console.log(`[Spin API] Processing ${activePlayers.length} active players: ${activePlayers.map((p: any) => p.username).join(', ')}`);
+
+    // 3. Get spin result
+    const result = getSpinResult(tournament.wheel_type || 'american'); 
+    console.log(`[Spin API] Spin Result: ${result.displayNumber}`);
+
+    // 4. Calculate payouts for all players
+    const chipUpdates: Record<string, number> = {};
+    const playerResults: any[] = [];
+
+    activePlayers.forEach((player: any) => {
+      // Ensure we have a string ID for the map
+      const pidStr = player.player_id.toString();
+      
+      let bets = [];
+      if (player.is_bot) {
+        bets = bot_bets?.[pidStr] || generateBotBets(player);
+      } else {
+        bets = player_bets || [];
+      }
+
+      const payout = calculatePayouts(bets, result as any);
+      const newChips = player.current_chips + payout.netResult;
+      
+      chipUpdates[pidStr] = newChips;
+
+      playerResults.push({
+        player_id: player.player_id,
+        username: player.username,
+        is_bot: player.is_bot,
+        bets_placed: bets,
+        chips_before: player.current_chips,
+        chips_after: newChips,
+        net_change: payout.netResult,
+        won: payout.totalWon
+      });
+    });
+
+    // 5. Create spin document
+    const spinDoc = {
+      tournament_id: new ObjectId(id),
+      round_id: new ObjectId(round_id),
+      spin_number,
+      result,
+      player_results: playerResults,
+      created_at: new Date()
+    };
+    
+    console.log('[Spin API] Inserting spin record...');
+    await db.collection('spins').insertOne(spinDoc);
+
+    // 6. Update round document (increment spins_completed and set next betting deadline)
+    console.log('[Spin API] Updating round counter and setting next deadline...');
+    const nextBettingEndsAt = spin_number < 5 ? new Date(Date.now() + 45000) : null;
+    
+    await db.collection('rounds').updateOne(
+      { _id: new ObjectId(round_id) },
+      { 
+        $inc: { spins_completed: 1 },
+        $set: { betting_ends_at: nextBettingEndsAt }
+      }
+    );
+
+    // 7. Sync chip counts to tournament document
+    console.log('[Spin API] Syncing chips to tournament...');
+    const updateOps = Object.entries(chipUpdates).map(([playerId, chips]) => {
+      // Safety: the playerId should be a valid ObjectId hex
+      if (!ObjectId.isValid(playerId)) {
+        console.warn(`[Spin API] Skipping invalid playerId: ${playerId}`);
+        return null;
+      }
+
+      return {
+        updateOne: {
+          filter: { 
+            _id: new ObjectId(id), 
+            "players.player_id": new ObjectId(playerId) 
+          },
+          update: { 
+            $set: { "players.$.current_chips": chips } 
+          }
+        }
+      };
+    }).filter(Boolean);
+
+    if (updateOps.length > 0) {
+      console.log(`[Spin API] Executing bulk write for ${updateOps.length} updates`);
+      try {
+        await db.collection('tournaments').bulkWrite(updateOps as any);
+        
+        // Also clear ALL pending_bet placeholders for all players
+        await db.collection('tournaments').updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { "players.$[].pending_bets": [] } }
+        );
+      } catch (bulkError: any) {
+        console.error('[Spin API] Bulk write failed:', bulkError);
+        throw new Error(`Failed to sync chips: ${bulkError.message}`);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      result,
+      player_results: playerResults,
+      chip_updates: chipUpdates
+    });
+  } catch (error: any) {
+    console.error('Tournament spin error:', error);
+    return NextResponse.json({ 
+      error: error.message || 'Internal Server Error',
+      details: error.toString()
+    }, { status: 500 });
+  }
+}

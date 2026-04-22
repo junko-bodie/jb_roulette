@@ -84,62 +84,55 @@ export default function TournamentLobby() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className={styles.title}>Tournament Lobby</h1>
-          <p className={styles.subtitle}>Waiting for players to join. High-stakes competition awaits.</p>
+          <div style={{ color: '#c9a44c', fontWeight: 900, letterSpacing: '0.4em', fontSize: '12px', textTransform: 'uppercase', marginBottom: '16px', textAlign: 'center' }}>
+            The Arena Awaits
+          </div>
+          <h1 className={styles.title} style={{ textAlign: 'center', fontSize: '48px', marginBottom: '16px' }}>
+            Elite Tournament
+          </h1>
+          <p className={styles.subtitle} style={{ textAlign: 'center', maxWidth: '500px', margin: '0 auto 40px', lineHeight: 1.6 }}>
+            Join the global arena and compete against real players. Winners take all. 
+            Search for opponents or challenge the house.
+          </p>
 
-          <div className={styles.slotsGrid}>
-            {/* Slot 1: Real Player */}
-            <motion.div 
-              className={`${styles.slot} ${styles.slotActive}`}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Avatar type={userProfile.avatar} size="md" />
-              <div className={styles.slotInfo}>
-                <span className={styles.playerName}>{userProfile.name}</span>
-                <span className={styles.playerBalance}>$2,000.00</span>
-              </div>
-              <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#c9a44c', fontWeight: 800 }}>YOU</span>
-            </motion.div>
-
-            {/* Slots 2-6: Bots */}
-            {bots.map((bot, index) => (
-              <motion.div 
-                key={index} 
-                className={styles.slot}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + index * 0.05 }}
-              >
-                <Avatar type={bot.avatar} size="md" />
-                <div className={styles.slotInfo}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span className={styles.playerName}>{bot.username}</span>
-                    <span className={styles.botBadge}>BOT</span>
-                  </div>
-                  <span className={styles.playerBalance}>$2,000.00</span>
-                </div>
-              </motion.div>
-            ))}
+          <div style={{ 
+            background: 'rgba(201,164,76,0.05)', 
+            border: '1px solid rgba(201,164,76,0.2)', 
+            borderRadius: '20px', 
+            padding: '32px',
+            marginBottom: '40px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '20px'
+          }}>
+            <Avatar type={userProfile.avatar} size="lg" />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ color: '#fff', fontSize: '20px', fontWeight: 900 }}>{userProfile.name}</div>
+              <div style={{ color: '#c9a44c', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em' }}>READY FOR COMPETITION</div>
+            </div>
           </div>
 
-          <div className={styles.slotFooter}>
+          <div className={styles.slotFooter} style={{ display: 'flex', justifyContent: 'center' }}>
             <button 
               className={styles.startButton}
               onClick={handleStartTournament}
               disabled={isCreating}
+              style={{ width: '100%', maxWidth: '300px' }}
             >
               {isCreating ? (
                 <>
                   <span className={styles.loadingSpinner}></span>
-                  Creating Tournament...
+                  FINDING LOBBY...
                 </>
               ) : (
-                'Start Tournament'
+                'JOIN TOURNAMENT'
               )}
             </button>
           </div>
+          <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
+             ENTRY FEE: FREE • STARTING STACK: $2,000
+          </p>
         </motion.div>
       </main>
 

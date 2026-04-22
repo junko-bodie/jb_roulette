@@ -56,11 +56,11 @@ export default function Scoreboard() {
   const spinsRemaining = totalSpins - (currentSpin - 1);
 
   return (
-    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 w-80 pointer-events-none">
+    <div className="sticky top-4 self-start z-40 w-72">
       <motion.div
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="bg-[#0a0a0a]/90 border border-gold/30 rounded-[2.5rem] p-6 backdrop-blur-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] pointer-events-auto overflow-hidden relative"
+        className="bg-[#0a0a0a]/90 border border-gold/30 rounded-[2.5rem] p-6 backdrop-blur-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden relative"
       >
         {/* Animated accent glow */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-gold/10 rounded-full blur-[80px] pointer-events-none" />
