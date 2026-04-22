@@ -69,6 +69,28 @@ export default function Home() {
       </div>
       <div className={styles.bgGrid} />
 
+      <div className={styles.bgGrid} />
+
+      {/* Annual Championship Banner */}
+      {userProfile?.annual_championship_qualified && (
+        <div style={{
+          background: '#c9a44c',
+          color: '#111',
+          padding: '12px',
+          textAlign: 'center',
+          fontWeight: 900,
+          fontSize: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.2em',
+          width: '100%',
+          position: 'relative',
+          zIndex: 100,
+          boxShadow: '0 0 30px rgba(201,164,76,0.4)'
+        }}>
+          🏆 You have qualified for the Junko Bodie Annual Championship 🏆
+        </div>
+      )}
+
       {/* Header */}
       <header className={styles.header}>
         <div
@@ -138,15 +160,13 @@ export default function Home() {
             </span>
           </motion.div>
 
-          {/* Tournament Mode */}
           <motion.div
-            className={`${styles.playCard} ${styles.cardDisabled}`}
-            onClick={() => setShowComingSoon('Tournaments')}
+            className={styles.playCard}
+            onClick={() => router.push('/tournament')}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className={styles.soonBadge}>Coming Soon</div>
             <div className={`${styles.playIconWrap} ${styles.iconTournament}`}>
               <svg viewBox="0 0 24 24" className={styles.playIconTournament} fill="currentColor">
                 <path d="M18 2H6c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 12.9V18H9v2h6v-2h-2v-5.1a5.01 5.01 0 003.61-2.96C19.08 6.63 21 4.55 21 2V2c0-1.1-.9-2-2-2h-1zm-6 8c-1.65 0-3-1.35-3-3V4h6v3c0 1.65-1.35 3-3 3z" />

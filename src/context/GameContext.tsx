@@ -4,9 +4,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-interface UserProfile {
+export interface UserProfile {
   name: string;
   avatar: string;
+  annual_championship_qualified?: boolean;
 }
 
 interface GameContextType {
