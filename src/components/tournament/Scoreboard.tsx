@@ -6,7 +6,7 @@ import { useTournament } from '@/lib/tournament/useTournament';
 import { ChevronUp, ChevronDown, User, Bot, Skull } from 'lucide-react';
 
 export default function Scoreboard() {
-  const { scores, currentSpin, phase, totalSpins } = useTournament();
+  const { scores, currentSpin, currentRound, phase, totalSpins } = useTournament();
   const [prevRanks, setPrevRanks] = useState<Record<string, number>>({});
   const [movement, setMovement] = useState<Record<string, 'up' | 'down' | null>>({});
 
@@ -56,24 +56,24 @@ export default function Scoreboard() {
   const spinsRemaining = totalSpins - (currentSpin - 1);
 
   return (
-    <div className="sticky top-4 self-start z-40 w-72">
+    <div className="sticky top-4 self-start z-40 w-80">
       <motion.div
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="bg-[#0a0a0a]/90 border border-gold/30 rounded-[2.5rem] p-6 backdrop-blur-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden relative"
+        className="bg-[#0a0a0a]/90 border border-gold/30 rounded-3xl p-6 backdrop-blur-2xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden relative"
       >
         {/* Animated accent glow */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-gold/10 rounded-full blur-[80px] pointer-events-none" />
 
-        <div className="flex items-center justify-between mb-8 relative z-10 px-2">
+        <div className="flex items-center justify-between mb-6 relative z-10 px-4 mt-2">
           <div className="flex flex-col">
-            <h2 className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-1">Tournament</h2>
-            <h3 className="text-xl font-black text-white uppercase tracking-tighter">Live Ranking</h3>
+            <h2 className="text-[10px] font-black text-gold uppercase tracking-[0.3em] leading-none mb-1.5">Round {currentRound}/5</h2>
+            <h3 className="text-lg font-black text-white uppercase tracking-tighter leading-none">Live Ranking</h3>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1">Spin Progress</span>
-            <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg">
-              <span className="text-xs font-black text-white tabular-nums">{spinsRemaining}/{totalSpins}</span>
+            <span className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1.5 leading-none">Spin</span>
+            <div className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
+              <span className="text-xs font-black text-white tabular-nums leading-none">{currentSpin}/5</span>
             </div>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function Scoreboard() {
                     x: 0,
                     scale: isMe ? 1.02 : 1
                   }}
-                  className={`group relative flex items-center justify-between p-4 rounded-2xl border transition-all duration-500 ${
+                  className={`group relative flex items-center justify-between p-4 rounded-xl border transition-all duration-500 ${
                     isMe 
                       ? 'bg-gradient-to-r from-gold/20 to-gold/5 border-gold/40 shadow-[0_0_25px_rgba(201,164,76,0.15)] ring-1 ring-gold/20' 
                       : isEliminated
@@ -105,14 +105,14 @@ export default function Scoreboard() {
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                    <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center transition-colors ${
                       isMe ? 'bg-gold text-black shadow-[0_0_15px_rgba(201,164,76,0.4)]' : 
                       isEliminated ? 'bg-white/10 text-white/40' : 'bg-white/5 text-white/60'
                     }`}>
                       {isEliminated ? (
                         <Skull className="w-4 h-4" />
                       ) : (
-                        <span className="text-xs font-black tabular-nums">
+                        <span className="text-xs font-black tabular-nums leading-none">
                           {s.rank}
                         </span>
                       )}
@@ -167,7 +167,7 @@ export default function Scoreboard() {
 
         {/* Dynamic tracking status */}
         <div className="mt-8 pt-5 border-t border-white/5">
-           <div className="flex items-center justify-between px-2">
+           <div className="flex items-center justify-between px-4">
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <div className="w-2 h-2 rounded-full bg-green-500" />

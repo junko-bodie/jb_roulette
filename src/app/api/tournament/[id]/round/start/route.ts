@@ -20,6 +20,12 @@ export async function POST(
       return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
     }
 
+    // Clear any leftover pending bets from previous rounds to ensure a clean start
+    await db.collection('tournaments').updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { "players.$[].pending_bets": [] } }
+    );
+
     const roundNumber = tournament.current_round || 1;
 
     // Check if an active round already exists for this tournament
@@ -54,7 +60,8 @@ export async function POST(
         .map((p: any) => p.player_id),
       eliminated_player_id: null,
       created_at: now,
-      betting_ends_at: new Date(now.getTime() + 30000), // Exactly 30 second betting window
+      last_spin_completed_at: now, // Anchor for Spin 1 bot bets
+      betting_ends_at: new Date(now.getTime() + 50000), // Standard 50s rhythm (30s bet + 20s spin/result)
       completed_at: null,
       bot_bets: allBotBets
     };

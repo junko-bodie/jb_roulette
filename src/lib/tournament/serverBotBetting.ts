@@ -3,7 +3,7 @@ import { ALL_OUTSIDE_BETS, ALL_STRAIGHT_BETS, ALL_SPLIT_BETS, ALL_CORNER_BETS } 
 
 const CHIP_VALUES = [1, 5, 25, 100, 500, 1000];
 
-export function generateServerBotBets(bot: TournamentPlayer) {
+export function generateServerBotBets(bot: TournamentPlayer, spinNumber: number = 1) {
   const bets: any[] = [];
   const currentChips = bot.current_chips;
 
@@ -47,8 +47,14 @@ export function generateServerBotBets(bot: TournamentPlayer) {
 
     if (betAmount > 0) {
       if (!bets.find(b => b.betId === (randomDef as any).id)) {
-        // Assign a reveal delay between 1 and 25 seconds
-        const revealDelayMs = Math.floor(Math.random() * 24000) + 1000;
+        // Spin 1: Immediate betting (30s window). Start reveal at 1s.
+        // Spins 2-5: Post-animation betting (50s window, animation is ~22s). Start reveal at 23s.
+        let revealAt = 0;
+        if (spinNumber === 1) {
+          revealAt = 1000 + Math.floor(Math.random() * 25000); // 1-26s
+        } else {
+          revealAt = 23000 + Math.floor(Math.random() * 25000); // 23-48s
+        }
 
         bets.push({
           player_id: bot.player_id,
@@ -56,7 +62,7 @@ export function generateServerBotBets(bot: TournamentPlayer) {
           betId: (randomDef as any).id,
           amount: betAmount,
           chips: [betAmount],
-          reveal_at_ms: revealDelayMs
+          reveal_at_ms: revealAt
         });
         totalWagered += betAmount;
       }
@@ -69,10 +75,11 @@ export function generateServerBotBets(bot: TournamentPlayer) {
 export function generateAllRoundBotBets(bot: TournamentPlayer) {
   const allBets: any[] = [];
   for (let spin = 1; spin <= 5; spin++) {
-    const spinBets = generateServerBotBets(bot);
+    const spinBets = generateServerBotBets(bot, spin);
     spinBets.forEach(b => {
       allBets.push({ ...b, spin_number: spin });
     });
   }
   return allBets;
 }
+ 

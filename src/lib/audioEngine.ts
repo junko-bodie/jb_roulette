@@ -77,18 +77,19 @@ class AudioEngine {
           preload: true,
         }),
         thump: new Howl({
-          src: ['/sounds/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3'], // Reliable local file as fallback
+          src: ['/sounds/skyscraper_seven-click-buttons-ui-menu-sounds-effects-button-7-203601.mp3'],
           volume: 0.8,
           preload: true,
           onload: () => console.log('AudioEngine: Thump sound loaded'),
           onloaderror: (id, err) => {
-            console.error('AudioEngine: Thump load error:', err);
+            console.warn('AudioEngine: Thump load error:', err);
           },
         }),
         denied: new Howl({
           src: ['https://cdn.pixabay.com/audio/2022/03/10/audio_55a2979603.mp3'], 
           volume: 0.5,
           preload: true,
+          onloaderror: (id, err) => console.warn('AudioEngine: Denied sound load error (likely network)'),
         }),
       };
     }

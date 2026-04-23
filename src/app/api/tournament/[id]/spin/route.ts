@@ -123,7 +123,6 @@ export async function POST(
       let bets = [];
       if (player.is_bot) {
         // Fetch pre-generated bot bets for THIS spin from the round document
-        const pidStr = player.player_id.toString();
         bets = (round.bot_bets || [])
           .filter((b: any) => b.player_id.toString() === pidStr && b.spin_number === spin_number)
           .map((b: any) => ({
@@ -132,7 +131,19 @@ export async function POST(
             chips: b.chips
           }));
       } else {
-        bets = player_bets || [];
+        // Find bets for this specific real player if provided in the payload
+        // player_bets can be an array of { player_id, bets }
+        if (Array.isArray(player_bets)) {
+          const pData = player_bets.find((pb: any) => pb.player_id?.toString() === pidStr);
+          bets = pData ? pData.bets : [];
+          
+          // Fallback: If it's a flat array and there's only one player who could have sent it
+          if (bets.length === 0 && player_bets.length > 0 && !player_bets[0].player_id) {
+             bets = player_bets;
+          }
+        } else {
+          bets = [];
+        }
       }
 
       const payout = calculatePayouts(bets, result as any);
@@ -167,13 +178,17 @@ export async function POST(
 
     // 6. Update round document (increment spins_completed and set next betting deadline)
     console.log('[Spin API] Updating round counter and setting next deadline...');
-    const nextBettingEndsAt = spin_number < 5 ? new Date(Date.now() + 45000) : null;
+    // Total cycle: 10s (Spinning) + 10s (Result) + 30s (Betting) = 50s
+    const nextBettingEndsAt = spin_number < 5 ? new Date(Date.now() + 50000) : null;
     
     await db.collection('rounds').updateOne(
       { _id: new ObjectId(round_id) },
       { 
         $inc: { spins_completed: 1 },
-        $set: { betting_ends_at: nextBettingEndsAt }
+        $set: { 
+          betting_ends_at: nextBettingEndsAt,
+          last_spin_completed_at: nextBettingEndsAt ? new Date() : null
+        }
       }
     );
 
@@ -204,11 +219,13 @@ export async function POST(
       try {
         await db.collection('tournaments').bulkWrite(updateOps as any);
         
+        /* 
         // Also clear ALL pending_bet placeholders for all players
         await db.collection('tournaments').updateOne(
           { _id: new ObjectId(id) },
           { $set: { "players.$[].pending_bets": [] } }
         );
+        */
       } catch (bulkError: any) {
         console.error('[Spin API] Bulk write failed:', bulkError);
         throw new Error(`Failed to sync chips: ${bulkError.message}`);

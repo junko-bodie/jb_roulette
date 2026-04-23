@@ -29,12 +29,14 @@ export default function TournamentPage() {
     allSpinBets,
     botBets,
     lobbyTimeRemaining,
-    syncMyBets
+    syncMyBets,
+    bets,
+    setBets,
+    totalBet
   } = useTournament();
   const { userProfile } = useGame();
 
   const [selectedChip, setSelectedChip] = useState(10);
-  const [bets, setBets] = useState<Map<string, any>>(new Map());
   const [deleteMode, setDeleteMode] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
@@ -45,11 +47,9 @@ export default function TournamentPage() {
       setShowResult(true);
     } else if (phase === "betting") {
       setShowResult(false);
-      setBets(new Map()); // Clear local bets for next spin
     }
   }, [phase]);
 
-  const totalBet = Array.from(bets.values()).reduce((sum, bet) => sum + bet.amount, 0);
   
   const player = useMemo(() => {
     if (!userProfile?.id || !tournament) return tournament?.players?.find(p => !p.is_bot);
@@ -59,21 +59,6 @@ export default function TournamentPage() {
   const myChips = player?.current_chips || 0;
 
   const lastSubmittedSpinRef = useRef<number>(-1);
-
-  const handleTimeout = useCallback(() => {
-    // Only auto-submit if we haven't submitted for this spin yet
-    if (phase === "locked" && currentSpin !== lastSubmittedSpinRef.current) {
-      lastSubmittedSpinRef.current = currentSpin;
-      const formattedBets = Array.from(bets.values());
-      submitBets(formattedBets);
-    }
-  }, [phase, currentSpin, bets, submitBets]);
-
-  useEffect(() => {
-    if (timeRemaining === 0 && phase === "locked") {
-      handleTimeout();
-    }
-  }, [timeRemaining, phase, handleTimeout]);
 
   // Sync bets to server for other players to see
   useEffect(() => {
@@ -90,8 +75,8 @@ export default function TournamentPage() {
   }, [phase, bets, syncMyBets]);
 
   const displayBets = useMemo(() => {
-    // During spinning or result phase, we know all final bets from server
-    if (phase === "spinning" || phase === "result") {
+    // Only use server-finalized bets if they are actually available
+    if ((phase === "spinning" || phase === "result") && allSpinBets.length > 0) {
       const merged = new Map<string, PlacedBet>();
       allSpinBets.forEach((b: any) => {
         const existing = merged.get(b.betId);
@@ -112,33 +97,36 @@ export default function TournamentPage() {
       return merged;
     }
 
-    // During betting phase, merge human bets with context bot bets
+    // Fallback: If we are in spinning but server bets aren't in yet,
+    // we continue showing the pending bets plus local bets
     const merged = new Map<string, PlacedBet>(bets);
-    if (botBets) {
-      Object.values(botBets).forEach((botBetArray) => {
-        botBetArray.forEach((b: PlacedBet) => {
-          const existing = merged.get(b.betId);
-          if (existing) {
-            merged.set(b.betId, {
-              betId: b.betId,
-              amount: existing.amount + b.amount,
-              chips: [...existing.chips, ...(b.chips || [b.amount])]
-            });
-          } else {
-            merged.set(b.betId, {
-              betId: b.betId,
-              amount: b.amount,
-              chips: b.chips || [b.amount]
-            });
-          }
-        });
+    
+    // Add bot bets from context
+    if (botBets && Array.isArray(botBets)) {
+      botBets.forEach((b: PlacedBet) => {
+        const existing = merged.get(b.betId);
+        if (existing) {
+          merged.set(b.betId, {
+            betId: b.betId,
+            amount: existing.amount + b.amount,
+            chips: [...existing.chips, ...(b.chips || [b.amount])]
+          });
+        } else {
+          merged.set(b.betId, {
+            betId: b.betId,
+            amount: b.amount,
+            chips: b.chips || [b.amount]
+          });
+        }
       });
     }
 
     // Include other real players' pending bets
     tournament?.players?.forEach(p => {
-      // Only show other players' bets (we show our own from the 'bets' state)
-      const isMe = userProfile?.id ? p.player_id.toString() === userProfile.id : !p.is_bot;
+      const isMe = userProfile?.id 
+        ? p.player_id?.toString() === userProfile.id 
+        : (p.username === userProfile.name && !p.is_bot);
+        
       if (!isMe && p.pending_bets) {
         p.pending_bets.forEach((b: any) => {
           const existing = merged.get(b.betId);
@@ -160,7 +148,7 @@ export default function TournamentPage() {
     });
 
     return merged;
-  }, [phase, allSpinBets, bets, botBets, tournament?.players, userProfile?.id]);
+  }, [phase, allSpinBets, bets, botBets, tournament?.players, userProfile?.id, userProfile.name]);
 
   const handlePlaceBet = (betId: string) => {
     if (phase !== "betting") return;
@@ -219,7 +207,8 @@ export default function TournamentPage() {
     }
   }
 
-  const isUrgent = timeRemaining <= 10;
+  const displayTime = Math.min(30, timeRemaining);
+  const isUrgent = displayTime <= 5;
 
   // ════════════ MATCHMAKING LOBBY OVERLAY ════════════
   if (tournament.status === 'waiting') {
@@ -390,7 +379,7 @@ export default function TournamentPage() {
               color: isUrgent ? '#ef4444' : '#c9a44c',
               fontVariantNumeric: 'tabular-nums',
             }}>
-              {timeRemaining}
+              {phase === 'betting' ? displayTime : '--'}
             </span>
           </div>
           <div style={{
@@ -445,7 +434,7 @@ export default function TournamentPage() {
             lastPayout={lastPlayerPayout}
             phase={phase === "betting" ? "BETTING" : phase === "locked" ? "LOCKED" : "RESULT"}
             setWheelType={() => { }}
-            onSpin={() => handleTimeout()}
+            onSpin={() => submitBets(Array.from(bets.values()))}
             onRebet={() => { }}
             onClearBets={() => setBets(new Map())}
             onClearLastBet={() => { }}
@@ -457,7 +446,7 @@ export default function TournamentPage() {
             deleteMode={deleteMode}
             onPopLastChip={() => { }}
             onClearZone={() => { }}
-            onTimeout={handleTimeout}
+            onTimeout={() => {}} // Controlled by context now
             tournamentMode={true}
           />
         </div>
@@ -536,7 +525,7 @@ export default function TournamentPage() {
 
           {/* Place Bets button */}
           <button
-            onClick={handleTimeout}
+            onClick={() => submitBets(Array.from(bets.values()))}
             disabled={phase !== "betting"}
             style={{
               padding: '10px 28px',

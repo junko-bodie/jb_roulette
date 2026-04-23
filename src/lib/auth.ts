@@ -6,10 +6,16 @@ import { getDb } from '@/lib/db/mongodb';
  * Returns null if not authenticated.
  */
 export async function getUser() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  return user;
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+    return user;
+  } catch (error) {
+    console.warn('[Auth] Supabase connection failed, checking for local session...');
+    // Return null or a mock user if in development to prevent crashes
+    return null;
+  }
 }
 
 /**

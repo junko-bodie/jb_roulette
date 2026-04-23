@@ -10,13 +10,34 @@ export async function POST(
     const { id, roundId } = await params;
     const db = await getDb();
     
-    // 1. Fetch current tournament
+    // 1. Fetch current tournament and round
     const tournament = await db.collection('tournaments').findOne({ 
       _id: new ObjectId(id) 
     });
 
-    if (!tournament) {
-      return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
+    const activeRound = await db.collection('rounds').findOne({ 
+      _id: new ObjectId(roundId) 
+    });
+
+    if (!tournament || !activeRound) {
+      return NextResponse.json({ error: 'Tournament or Round not found' }, { status: 404 });
+    }
+
+    // IDEMPOTENCY: If round is already completed, return existing data
+    if (activeRound.status === "completed") {
+      const eliminatedPlayer = tournament.players.find((p: any) => p.player_id.toString() === activeRound.eliminated_player_id?.toString());
+      return NextResponse.json({
+        success: true,
+        eliminatedPlayer: eliminatedPlayer ? {
+          player_id: eliminatedPlayer.player_id,
+          username: eliminatedPlayer.username,
+          is_bot: eliminatedPlayer.is_bot,
+          final_chips: eliminatedPlayer.current_chips,
+          position: eliminatedPlayer.final_position
+        } : null,
+        nextRound: tournament.current_round,
+        alreadyCompleted: true
+      });
     }
 
     const currentRound = tournament.current_round || 1;
