@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db/mongodb';
 import { ObjectId } from 'mongodb';
-import { generateBotBets } from '@/lib/tournament/botBetting';
 import { calculatePayouts } from '@/lib/payouts';
 import { AMERICAN_WHEEL_ORDER, EUROPEAN_WHEEL_ORDER, getDisplayNumber, getNumberColor } from '@/lib/rng';
 
@@ -72,6 +71,16 @@ export async function POST(
       return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
     }
 
+    // 1.2 Fetch current round to get consistent bot bets
+    const round = await db.collection('rounds').findOne({ 
+      _id: new ObjectId(round_id) 
+    });
+
+    if (!round) {
+      console.error(`[Spin API] Round not found: ${round_id}`);
+      return NextResponse.json({ error: 'Round not found' }, { status: 404 });
+    }
+
     // 1.1 Check for idempotency: Has this spin already been processed?
     const existingSpin = await db.collection('spins').findOne({
       tournament_id: new ObjectId(id),
@@ -113,7 +122,15 @@ export async function POST(
       
       let bets = [];
       if (player.is_bot) {
-        bets = bot_bets?.[pidStr] || generateBotBets(player);
+        // Fetch pre-generated bot bets for THIS spin from the round document
+        const pidStr = player.player_id.toString();
+        bets = (round.bot_bets || [])
+          .filter((b: any) => b.player_id.toString() === pidStr && b.spin_number === spin_number)
+          .map((b: any) => ({
+            betId: b.betId,
+            amount: b.amount,
+            chips: b.chips
+          }));
       } else {
         bets = player_bets || [];
       }

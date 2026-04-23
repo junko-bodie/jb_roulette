@@ -3,6 +3,7 @@ import { getDb } from '@/lib/db/mongodb';
 import { getUser } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 import { TournamentPlayer } from '@/lib/models/Tournament';
+import { generateAllRoundBotBets } from '@/lib/tournament/serverBotBetting';
 
 export async function POST(
   req: Request,
@@ -71,11 +72,49 @@ export async function POST(
       );
     }
 
+    // 4. Automatically create the first round
+    const tournamentForRound = await db.collection('tournaments').findOne({ _id: new ObjectId(id) });
+    if (tournamentForRound) {
+       // Generate bot bets for all 5 spins of this round
+       const activeBots = tournamentForRound.players.filter((p: any) => p.is_bot && p.status === "active");
+       const allBotBets: any[] = [];
+       activeBots.forEach((bot: any) => {
+         const bets = generateAllRoundBotBets(bot);
+         allBotBets.push(...bets);
+       });
+
+       const now = new Date();
+       const round = {
+         tournament_id: new ObjectId(id),
+         round_number: 1,
+         status: "active",
+         spins_completed: 0,
+         players_remaining: tournamentForRound.players
+           .filter((p: any) => p.status === "active")
+           .map((p: any) => p.player_id),
+         eliminated_player_id: null,
+         created_at: now,
+         betting_ends_at: new Date(now.getTime() + 30000), // Exactly 30 second betting window
+         completed_at: null,
+         bot_bets: allBotBets
+       };
+       await db.collection('rounds').insertOne(round as any);
+       console.log(`[Tournament Start] Created first round with ${allBotBets.length} bot bets for tournament ${id}`);
+    }
+
     const updatedTournament = await db.collection('tournaments').findOne({ 
       _id: new ObjectId(id) 
     });
 
-    return NextResponse.json(updatedTournament);
+    const activeRound = await db.collection('rounds').findOne({
+      tournament_id: new ObjectId(id),
+      status: "active"
+    }, { sort: { created_at: -1 } });
+
+    return NextResponse.json({
+      ...updatedTournament,
+      active_round: activeRound
+    });
   } catch (error: any) {
     console.error('Tournament start error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Tournament, TournamentPlayer } from '@/lib/models/Tournament';
-import { generateBotBets } from './botBetting';
 import { PlacedBet } from '../bets';
 import { calculatePayouts } from '../payouts';
 import { SpinResult } from '../rng';
@@ -149,7 +148,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
 
     const pollInterval = setInterval(() => {
       loadTournament();
-    }, 2000);
+    }, 1000); // More aggressive polling for better sync
 
     return () => clearInterval(pollInterval);
   }, [tournament?.status, loadTournament]);
@@ -185,6 +184,20 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
           if (res.ok) {
             const data = await res.json();
             setTournament(data);
+            
+            // If the server already created the first round, set it immediately
+            if (data.active_round) {
+              setCurrentRoundData(data.active_round);
+              setRoundId(data.active_round._id);
+              setCurrentSpin(data.active_round.spins_completed + 1);
+              
+              if (data.active_round.betting_ends_at) {
+                const end = new Date(data.active_round.betting_ends_at).getTime();
+                const now = Date.now();
+                const diff = Math.max(0, Math.floor((end - now) / 1000));
+                setTimeRemaining(diff);
+              }
+            }
           }
         } catch (e) {
           console.error('Failed to start tournament:', e);
@@ -330,44 +343,52 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   // Track generated bets to avoid double-triggering when dependencies change
   const generatedRef = useRef<string>("");
 
-  // Generate Bot bets gracefully staggered over the betting phase
+  // Reveal Bot bets based on server-provided reveal_at_ms
   useEffect(() => {
-    if (phase === "betting" && tournament) {
+    if (phase === "betting" && currentRoundData?.bot_bets) {
       const key = `${currentRound}-${currentSpin}`;
       if (generatedRef.current === key) return;
-      generatedRef.current = key;
-
+      // Note: We don't mark as generated immediately if we want to allow re-syncs,
+      // but let's use a ref to track which specific bets we've already scheduled.
+      
       setAllSpinBets([]);
       setBotBets({});
       
-      const activeBots = tournament.players.filter((p: TournamentPlayer) => p.is_bot && p.status === "active");
+      const sessionBotBets = (currentRoundData.bot_bets || [])
+        .filter((b: any) => b.spin_number === currentSpin);
       const timeouts: NodeJS.Timeout[] = [];
       
-      activeBots.forEach((p: TournamentPlayer) => {
-        const fullBets = generateBotBets(p);
-        const playerId = p.player_id.toString();
+      sessionBotBets.forEach((bet: any) => {
+        const revealTime = new Date(currentRoundData.created_at).getTime() + (bet.reveal_at_ms || 0);
+        const now = Date.now();
+        const delay = Math.max(0, revealTime - now);
         
-        fullBets.forEach((bet) => {
-          // Delay bet placement between 1s and 25s into the 30s period
-          const delay = Math.floor(Math.random() * 24000) + 1000;
-          const timerId = setTimeout(() => {
-             setBotBets(prev => {
-                const current = prev[playerId] || [];
-                return {
-                  ...prev,
-                  [playerId]: [...current, bet]
-                };
-             });
-          }, delay);
-          timeouts.push(timerId);
-        });
+        const timerId = setTimeout(() => {
+          setBotBets(prev => {
+            const playerId = bet.player_id.toString();
+            const current = prev[playerId] || [];
+            // Avoid duplicates
+            if (current.find(b => b.betId === bet.betId)) return prev;
+            return {
+              ...prev,
+              [playerId]: [...current, {
+                betId: bet.betId,
+                amount: bet.amount,
+                chips: bet.chips
+              }]
+            };
+          });
+        }, delay);
+        timeouts.push(timerId);
       });
+
+      generatedRef.current = key;
 
       return () => {
         timeouts.forEach(clearTimeout);
       };
     }
-  }, [phase, currentSpin, tournament, currentRound]);
+  }, [phase, currentSpin, currentRound, currentRoundData]);
 
   const submitBets = useCallback(async (bets: any) => {
     if (!id || !roundId) return;

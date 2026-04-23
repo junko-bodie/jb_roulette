@@ -84,7 +84,7 @@ export default function TournamentPage() {
 
     const syncInterval = setInterval(() => {
       syncMyBets(Array.from(bets.values()));
-    }, 2500); // Increased frequency for better sync
+    }, 1000); // 1s sync frequency for real-time visibility
 
     return () => clearInterval(syncInterval);
   }, [phase, bets, syncMyBets]);
