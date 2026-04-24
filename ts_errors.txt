@@ -1,0 +1,8 @@
+src/app/lobby/page.tsx(108,80): error TS2322: Type '{ children: Element; viewBox: string; width: string; height: string; fill: string; title: string; }' is not assignable to type 'SVGProps<SVGSVGElement>'.
+  Property 'title' does not exist on type 'SVGProps<SVGSVGElement>'.
+src/lib/tournament/rewards.ts(94,11): error TS2322: Type '{ rankings: { player_id: ObjectId; username: any; points: any; tournaments_played: any; tournaments_won: any; rank: number; }; }' is not assignable to type 'PushOperator<Document>'.
+  Type '{ rankings: { player_id: ObjectId; username: any; points: any; tournaments_played: any; tournaments_won: any; rank: number; }; }' is not assignable to type 'NotAcceptedFields<Document, readonly any[]>'.
+    Property 'rankings' is incompatible with index signature.
+      Type '{ player_id: ObjectId; username: any; points: any; tournaments_played: any; tournaments_won: any; rank: number; }' is not assignable to type 'undefined'.
+src/lib/tournament/rewards.ts(111,40): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/lib/tournament/rewards.ts(111,43): error TS7006: Parameter 'b' implicitly has an 'any' type.

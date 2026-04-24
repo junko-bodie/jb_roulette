@@ -101,13 +101,13 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
               rank: 0
             }
           }
-        }
+        } as any
       );
     }
   }
 
   return {
     winner,
-    standings: playersWithPoints.sort((a, b) => a.position - b.position)
+    standings: playersWithPoints.sort((a: any, b: any) => a.position - b.position)
   };
 }
