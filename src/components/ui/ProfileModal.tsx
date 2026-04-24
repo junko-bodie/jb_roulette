@@ -181,6 +181,51 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   className="hidden"
                 />
               </div>
+              <div className={styles.field}>
+                <label className={styles.label}>Junko Bodie Status</label>
+                <div className="bg-black/40 rounded-2xl p-4 border border-white/5 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-white/40 uppercase tracking-widest font-black">Season Points</span>
+                      <div className="text-xl font-black text-[#c9a44c]">{userProfile.season?.points || 0}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-white/40 uppercase tracking-widest font-black">Season Rank</span>
+                      <div className="text-xl font-black text-white">{userProfile.season?.rank ? `#${userProfile.season.rank}` : 'Unranked'}</div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/5">
+                    <span className="text-[10px] text-white/40 uppercase tracking-widest font-black block mb-2">Tournament History</span>
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-white/60">Played: <span className="text-white font-bold">{userProfile.stats?.tournaments_played || 0}</span></div>
+                      <div className="text-xs text-white/60">Won: <span className="text-[#c9a44c] font-bold">{userProfile.stats?.tournaments_won || 0}</span></div>
+                      <div className="text-xs text-white/60">Best: <span className="text-white font-bold">{userProfile.stats?.best_finish ? `#${userProfile.stats.best_finish}` : '-'}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/5">
+                    <span className="text-[10px] text-white/40 uppercase tracking-widest font-black block mb-2">Earned Badges</span>
+                    <div className="flex gap-3">
+                      <BadgeIcon 
+                        active={userProfile.badges?.champion} 
+                        type="champion" 
+                        label="Tournament Winner" 
+                      />
+                      <BadgeIcon 
+                        active={userProfile.badges?.elite_status} 
+                        type="elite" 
+                        label="Elite Status" 
+                      />
+                      <BadgeIcon 
+                        active={userProfile.badges?.all_time_champion} 
+                        type="all_time" 
+                        label="All-Time Champion" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className={styles.footer}>
@@ -197,6 +242,28 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         </div>
       )}
     </AnimatePresence>
+  );
+}
+
+function BadgeIcon({ active, type, label }: { active?: boolean; type: string; label: string }) {
+  const getIcon = () => {
+    switch (type) {
+      case 'champion': return <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" /></svg>;
+      case 'elite': return <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" /></svg>;
+      case 'all_time': return <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-2h2v2zm0-4h-2V7.5h2v5z" /></svg>;
+      default: return null;
+    }
+  };
+
+  return (
+    <div 
+      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${active ? 'bg-[#c9a44c]/20 text-[#c9a44c] border border-[#c9a44c]/30' : 'bg-white/5 text-white/10 border border-transparent'}`}
+      title={label}
+    >
+      <div className="w-5 h-5">
+        {getIcon()}
+      </div>
+    </div>
   );
 }
 

@@ -34,7 +34,7 @@ export default function GamePage() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      router.push('/');
     }
   }, [authLoading, user, router]);
 
@@ -165,7 +165,7 @@ export default function GamePage() {
       >
         <div className="flex items-center gap-4">
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => window.location.href = '/lobby'}
             className="text-[#c9a44c] hover:text-white transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

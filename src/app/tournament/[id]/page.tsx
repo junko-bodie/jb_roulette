@@ -150,28 +150,47 @@ export default function TournamentPage() {
     return merged;
   }, [phase, allSpinBets, bets, botBets, tournament?.players, userProfile?.id, userProfile.name]);
 
-  const handlePlaceBet = (betId: string) => {
+  const handlePlaceBet = useCallback((betId: string) => {
     if (phase !== "betting") return;
-    if (deleteMode) {
-      const newBets = new Map(bets);
-      newBets.delete(betId);
-      setBets(newBets);
-      return;
-    }
-    if (myChips < totalBet + selectedChip) return;
+    
+    setBets(prev => {
+      if (deleteMode) {
+        const newBets = new Map(prev);
+        newBets.delete(betId);
+        return newBets;
+      }
 
-    const newBets = new Map(bets);
-    const currentBetObj = newBets.get(betId);
-    const currentAmount = currentBetObj ? currentBetObj.amount : 0;
-    const currentChips = currentBetObj ? currentBetObj.chips : [];
+      if (myChips < totalBet + selectedChip) return prev;
 
-    newBets.set(betId, {
-      betId,
-      amount: currentAmount + selectedChip,
-      chips: [...currentChips, selectedChip]
+      const newBets = new Map(prev);
+      const currentBetObj = newBets.get(betId);
+      const currentAmount = currentBetObj ? currentBetObj.amount : 0;
+      const currentChips = currentBetObj ? currentBetObj.chips : [];
+
+      newBets.set(betId, {
+        betId,
+        amount: currentAmount + selectedChip,
+        chips: [...currentChips, selectedChip]
+      });
+      return newBets;
     });
-    setBets(newBets);
-  };
+  }, [phase, deleteMode, myChips, totalBet, selectedChip, setBets]);
+
+  const handleRemoveBet = useCallback((betId: string) => {
+    setBets(prev => {
+      const newBets = new Map(prev);
+      newBets.delete(betId);
+      return newBets;
+    });
+  }, [setBets]);
+
+  const handleClearBets = useCallback(() => {
+    setBets(new Map());
+  }, [setBets]);
+
+  const handleSubmitBets = useCallback(() => {
+    submitBets(Array.from(bets.values()));
+  }, [submitBets, bets]);
 
   if (!tournament) {
     return (
@@ -425,18 +444,14 @@ export default function TournamentPage() {
             wheelRef={wheelRef}
             bets={displayBets as any}
             onPlaceBet={handlePlaceBet}
-            onRemoveBet={(betId) => {
-              const newBets = new Map(bets);
-              newBets.delete(betId);
-              setBets(newBets);
-            }}
+            onRemoveBet={handleRemoveBet}
             isBettingDisabled={phase !== "betting"}
             lastPayout={lastPlayerPayout}
             phase={phase === "betting" ? "BETTING" : phase === "locked" ? "LOCKED" : "RESULT"}
             setWheelType={() => { }}
-            onSpin={() => submitBets(Array.from(bets.values()))}
+            onSpin={handleSubmitBets}
             onRebet={() => { }}
-            onClearBets={() => setBets(new Map())}
+            onClearBets={handleClearBets}
             onClearLastBet={() => { }}
             hasLastSpin={false}
             balance={myChips}
@@ -504,7 +519,7 @@ export default function TournamentPage() {
           {/* Clear Bets button */}
           {bets.size > 0 && phase === 'betting' && (
             <button
-              onClick={() => setBets(new Map())}
+              onClick={handleClearBets}
               style={{
                 padding: '8px 16px',
                 borderRadius: '10px',
@@ -525,7 +540,7 @@ export default function TournamentPage() {
 
           {/* Place Bets button */}
           <button
-            onClick={() => submitBets(Array.from(bets.values()))}
+            onClick={handleSubmitBets}
             disabled={phase !== "betting"}
             style={{
               padding: '10px 28px',
@@ -542,7 +557,7 @@ export default function TournamentPage() {
               transition: 'all 0.2s',
             }}
           >
-            {phase === "betting" ? "Place Bets" : phase.toUpperCase()}
+            {phase === "betting" ? "Place Bets" : phase === "locked" ? "Bet has been placed waiting for others" : phase.toUpperCase()}
           </button>
         </div>
       </footer>

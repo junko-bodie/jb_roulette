@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useGame } from '@/context/GameContext';
+import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/ui/Avatar';
 import styles from './tournament.module.css';
 
 export default function TournamentLobby() {
-  const { user, userProfile, isLoading: isGameLoading } = useGame();
+  const { user, userProfile, isLoading: isGameLoading, setUserProfile } = useGame();
   const router = useRouter();
+  const supabase = createClient();
   const [isCreating, setIsCreating] = useState(false);
   const [bots, setBots] = useState<{ username: string; avatar: string }[]>([]);
 
@@ -24,7 +26,7 @@ export default function TournamentLobby() {
 
   useEffect(() => {
     if (!isGameLoading && !user) {
-      router.push('/login');
+      router.push('/');
     }
   }, [isGameLoading, user, router]);
 
@@ -62,6 +64,16 @@ export default function TournamentLobby() {
     );
   }
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem('local_guest_session');
+      window.location.href = '/';
+    } catch (e) {
+      window.location.href = '/';
+    }
+  };
+
   return (
     <div className={styles.page}>
       <div className={styles.bgAccents}>
@@ -75,6 +87,16 @@ export default function TournamentLobby() {
         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontWeight: 600, letterSpacing: '0.1em' }}>
           TOURNAMENT SYSTEM v1.0
         </div>
+        <button 
+          onClick={handleSignOut}
+          style={{ 
+            background: 'none', border: '1px solid rgba(255,100,100,0.3)', color: '#ff6b6b', 
+            padding: '6px 12px', borderRadius: '8px', fontSize: '10px', cursor: 'pointer',
+            textTransform: 'uppercase', letterSpacing: '0.1em', marginLeft: 'auto'
+          }}
+        >
+          Sign Out
+        </button>
       </header>
 
       <main className={styles.main}>

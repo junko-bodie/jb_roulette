@@ -1,6 +1,4 @@
-'use client';
-
-import { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import RouletteWheel from './RouletteWheel';
 import BettingLayout from './BettingLayout';
@@ -9,7 +7,6 @@ import { type WheelType, type SpinResult } from '@/lib/rng';
 import { type PlacedBet } from '@/lib/bets';
 import { type PayoutResult } from '@/lib/payouts';
 import { soundEngine } from '@/lib/audioEngine';
-import type React from 'react';
 
 import { useGame } from '@/context/GameContext';
 import BetTimer from '@/components/ui/BetTimer';
@@ -46,7 +43,7 @@ interface RouletteTableProps {
   tournamentMode?: boolean;
 }
 
-export default function RouletteTable({
+const RouletteTable = memo(function RouletteTable({
   wheelType,
   currentResult,
   isSpinning,
@@ -121,42 +118,40 @@ export default function RouletteTable({
     <div className="mx-auto w-full max-w-[1500px] h-full">
       {/* THE FOAM BUFFER — Unified for both wheel and table */}
       <div
-        className="relative p-3 sm:p-5 md:p-6 rounded-[40px] shadow-[0_30px_80px_rgba(0,0,0,0.9)] w-full h-full overflow-hidden mobile-foam-compact"
+        className="relative p-3 sm:p-5 md:p-6 rounded-[50px] shadow-[0_40px_100px_rgba(0,0,0,1)] w-full h-full overflow-hidden"
         style={{
-          background: '#2d1a10', // Rich leather brown
-          backgroundImage: `
-            linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%, rgba(0,0,0,0.3) 100%),
-            radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 80%)
-          `,
-          border: '5px solid #1a0f09',
+          background: '#0a0a0a', // Modern charcoal leather
+          border: '8px solid #050505',
           boxShadow: `
-            inset 0 15px 30px rgba(255,255,255,0.08), 
-            inset 0 -15px 30px rgba(0,0,0,0.8),
-            0 25px 50px rgba(0,0,0,1)
+            inset 0 2px 5px rgba(255,255,255,0.05),
+            inset 0 -10px 20px rgba(0,0,0,0.8),
+            0 30px 60px rgba(0,0,0,1)
           `,
           transformStyle: 'preserve-3d',
           display: 'flex',
           flexDirection: 'column'
         }}
       >
-        {/* Inner seam line */}
+        {/* Brushed Gold Inner Frame */}
         <div
-          className="absolute inset-[16px] rounded-[24px] border-2 border-black/30 pointer-events-none"
+          className="absolute inset-[14px] rounded-[38px] border-[3px] border-[#c9a44c]/30 pointer-events-none"
           style={{
             zIndex: 1,
-            boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8)'
+            boxShadow: 'inset 0 0 15px rgba(201, 164, 76, 0.2), 0 0 10px rgba(0,0,0,0.5)'
           }}
         />
 
-        {/* The green felt area — Unified horizontal row */}
+        {/* The green felt area — VIP Emerald Edition */}
         <div
-          className="relative rounded-2xl border-4 overflow-hidden flex flex-row items-center justify-start gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full"
+          className="relative rounded-[32px] border-b-4 border-black/40 overflow-hidden flex flex-row items-center justify-start gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full"
           style={{
-            background: 'rgba(10, 35, 29, 1)', // Dark casino green
-            borderColor: '#11352e',
-            padding: '1rem 1.5rem 1rem 0.5rem',
+            background: 'radial-gradient(circle at 50% 50%, #0d2e23 0%, #051410 100%)', 
+            padding: '1.2rem 1.8rem 1.2rem 0.8rem',
             zIndex: 2,
-            boxShadow: 'inset 0 0 40px rgba(0,0,0,0.5)',
+            boxShadow: `
+              inset 0 0 80px rgba(0,0,0,0.8),
+              inset 0 10px 30px rgba(0,0,0,0.5)
+            `,
             flex: 1
           }}
         >
@@ -477,4 +472,6 @@ export default function RouletteTable({
       </div>
     </div>
   );
-}
+});
+
+export default RouletteTable;

@@ -50,7 +50,22 @@ export async function ensureUserProfile(supabaseUser: {
     is_sound_enabled: true,
     is_timer_enabled: true,
     is_popup_enabled: true,
-    tier: 'High Roller',
+    stats: {
+      tournaments_played: 0,
+      tournaments_won: 0,
+      best_finish: 0,
+    },
+    badges: {
+      champion: false,
+      elite_status: false,
+      all_time_champion: false,
+    },
+    season: {
+      year: new Date().getFullYear(),
+      points: 0,
+      rank: 0,
+    },
+    annual_championship_qualified: false,
     provider: supabaseUser.user_metadata?.iss ? 'google' : 
               supabaseUser.is_anonymous ? 'guest' : 'credentials',
     created_at: new Date(),

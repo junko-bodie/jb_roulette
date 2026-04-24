@@ -11,6 +11,6 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  // Redirect to home after successful auth
-  return NextResponse.redirect(`${origin}/`);
+  // Redirect to lobby after successful auth
+  return NextResponse.redirect(`${origin}/lobby`);
 }

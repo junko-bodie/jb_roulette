@@ -24,9 +24,17 @@ export interface Player {
   username: string;
   email: string;
   avatar_url: string;
+  balance: number;
+  starting_balance: number;
+  is_sound_enabled: boolean;
+  is_timer_enabled: boolean;
+  is_popup_enabled: boolean;
   created_at: Date;
+  updated_at: Date;
   stats: PlayerStats;
   badges: PlayerBadges;
   season: SeasonInfo;
   annual_championship_qualified: boolean;
+  provider: 'google' | 'guest' | 'credentials';
 }
+

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db/mongodb';
 import { ObjectId } from 'mongodb';
+import { awardTournamentRewards } from '@/lib/tournament/rewards';
 
 export async function POST(
   request: NextRequest,
@@ -71,39 +72,12 @@ export async function POST(
       );
     }
 
-    // 4. Points calculation (Example logic)
-    // Points = (Rank bonus) + (Chips / 10)
-    const playersWithPoints = tournament.players.map((p: any) => {
-      const position = p.player_id.toString() === winner.player_id.toString() ? 1 : 
-                       (runnerUp && p.player_id.toString() === runnerUp.player_id.toString()) ? 2 : 
-                       (p.final_position || 6);
-      
-      const rankBonus = (7 - position) * 250; // Pos 1: 1500, Pos 2: 1250... Pos 6: 250
-      const chipBonus = Math.floor(p.current_chips / 10);
-      const totalPoints = rankBonus + chipBonus;
-      
-      return {
-        player_id: p.player_id,
-        username: p.username,
-        is_bot: p.is_bot,
-        position,
-        total_points: totalPoints,
-        final_chips: p.current_chips
-      };
-    });
-
-    // Sort standings by final position
-    const standings = playersWithPoints.sort((a: any, b: any) => a.position - b.position);
+    const results = await awardTournamentRewards(id);
 
     return NextResponse.json({
       success: true,
-      winner: {
-        player_id: winner.player_id,
-        username: winner.username,
-        is_bot: winner.is_bot,
-        chips: winner.current_chips
-      },
-      standings
+      winner: results?.winner,
+      standings: results?.standings
     });
 
   } catch (error: any) {

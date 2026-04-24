@@ -7,8 +7,8 @@ interface EliminationScreenProps {
   player: {
     username: string;
     is_bot: boolean;
-    final_chips: number;
-    position: number;
+    current_chips: number;
+    final_position: number;
   } | null;
   visible: boolean;
 }
@@ -51,14 +51,14 @@ export default function EliminationScreen({ player, visible }: EliminationScreen
 
             <div className="flex flex-col items-center gap-4">
               <div className="text-xl text-white/60 font-bold uppercase tracking-widest">
-                Final Position: <span className="text-white text-2xl">#{player.position}</span>
+                Final Position: <span className="text-white text-2xl">#{player.final_position || '?'}</span>
               </div>
               <div className="text-xl text-white/60 font-bold uppercase tracking-widest">
-                Final Chips: <span className="text-white text-2xl">${player.final_chips.toLocaleString()}</span>
+                Final Chips: <span className="text-white text-2xl">${(player.current_chips || 0).toLocaleString()}</span>
               </div>
             </div>
 
-            {isRealUser && (
+            {isRealUser ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -66,6 +66,15 @@ export default function EliminationScreen({ player, visible }: EliminationScreen
                 className="mt-12 text-gold animate-pulse text-sm font-bold uppercase tracking-widest"
               >
                 Generating Tournament Summary...
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="mt-12 text-white/40 animate-pulse text-sm font-bold uppercase tracking-widest"
+              >
+                Preparing Next Round...
               </motion.div>
             )}
           </motion.div>

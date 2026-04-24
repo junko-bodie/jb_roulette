@@ -1,6 +1,7 @@
 export type WheelType = 'american' | 'european';
 
 export interface SpinResult {
+  id: string;
   number: number;
   /** Display label — e.g. "00" for double-zero, "17" for normal */
   displayNumber: string;
@@ -104,6 +105,7 @@ export async function spinWheel(wheelType: WheelType = 'american'): Promise<Spin
   const number = pockets[index];
 
   return {
+    id: Math.random().toString(36).substring(2, 11),
     number,
     displayNumber: getDisplayNumber(number),
     color: getNumberColor(number),

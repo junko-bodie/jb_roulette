@@ -11,6 +11,7 @@ export interface TournamentPlayer {
   eliminated_round: number | null;
   final_position: number | null;
   points_earned: number | null;
+  has_champion_badge?: boolean;
   pending_bets?: any[];
 }
 

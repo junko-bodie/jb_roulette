@@ -20,7 +20,10 @@ export async function GET() {
       is_popup_enabled: profile.is_popup_enabled,
       starting_balance: profile.starting_balance,
       avatar_url: profile.avatar_url,
-      tier: profile.tier,
+      stats: profile.stats,
+      badges: profile.badges,
+      season: profile.season,
+      annual_championship_qualified: profile.annual_championship_qualified,
     });
   } catch (error: any) {
     console.error('Profile fetch error:', error);

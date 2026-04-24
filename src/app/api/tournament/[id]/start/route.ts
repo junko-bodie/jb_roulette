@@ -19,7 +19,7 @@ export async function POST(
     console.log(`Activating tournament: ${id}`);
     const db = await getDb();
 
-    // 1. Fetch tournament
+    // 1. Fetch tournament and user profile
     const tournament = await db.collection('tournaments').findOne({ 
       _id: new ObjectId(id) 
     });
@@ -28,12 +28,24 @@ export async function POST(
       return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
     }
 
+    const profile = await db.collection('user_profiles').findOne({ supabase_id: user.id });
+    const hasChampionBadge = profile?.badges?.champion || false;
+
     if (tournament.status !== 'waiting') {
       return NextResponse.json({ 
         message: 'Tournament already started or completed',
         tournament 
       });
     }
+
+    // Update real player's badge status in the tournament players list
+    await db.collection('tournaments').updateOne(
+      { 
+        _id: new ObjectId(id),
+        "players.player_id": profile?._id || new ObjectId(user.id) // Fallback if ID is different
+      },
+      { $set: { "players.$.has_champion_badge": hasChampionBadge } }
+    );
 
     // 2. Fill remaining spots with bots
     const currentPlayers = tournament.players || [];
@@ -42,6 +54,9 @@ export async function POST(
     if (neededBots > 0) {
       const bots: TournamentPlayer[] = Array.from({ length: neededBots }).map(() => {
         const botId = Math.floor(1000 + Math.random() * 9000);
+        // Randomly give bots a crown to make the competition feel "elite" (1 in 10 bots)
+        const botHasChampionBadge = Math.random() < 0.1;
+
         return {
           player_id: new ObjectId(),
           username: `Bot_${botId}`,
@@ -52,7 +67,8 @@ export async function POST(
           status: "active",
           eliminated_round: null,
           final_position: null,
-          points_earned: null
+          points_earned: null,
+          has_champion_badge: botHasChampionBadge
         };
       });
 

@@ -68,6 +68,7 @@ export default function ResultDisplay({
 }: ResultDisplayProps) {
   useEffect(() => {
     if (visible && result) {
+      // Synchronized with server RESULT_DURATION (2s)
       const timer = setTimeout(onDismiss, 2000);
       return () => clearTimeout(timer);
     }
@@ -80,76 +81,77 @@ export default function ResultDisplay({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
           className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' } as React.CSSProperties}
+          style={{ 
+            background: 'rgba(0,0,0,0.92)', 
+            willChange: 'opacity',
+            transform: 'translateZ(0)'
+          } as React.CSSProperties}
           onClick={onDismiss}
         >
           <motion.div
-            className="flex flex-col items-center gap-8" // Increased gap from 5 to 8
+            className="flex flex-col items-center gap-12" 
+            style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Outer glow ring */}
             <motion.div
-              initial={{ scale: 0, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
               className="relative"
             >
-              {/* Glow pulse behind the ball */}
+              {/* Simplified Glow pulse */}
               <motion.div
-                className="absolute inset-[-30px] rounded-full" // Increased inset from -20 to -30
+                className="absolute inset-[-40px] rounded-full" 
                 style={{
                   background: result.color === 'red'
-                    ? 'radial-gradient(circle, rgba(192,57,43,0.4), transparent 70%)'
+                    ? 'radial-gradient(circle, rgba(192,57,43,0.3), transparent 80%)'
                     : result.color === 'green'
-                    ? 'radial-gradient(circle, rgba(39,174,96,0.4), transparent 70%)'
-                    : 'radial-gradient(circle, rgba(201,168,76,0.3), transparent 70%)',
+                    ? 'radial-gradient(circle, rgba(39,174,96,0.3), transparent 80%)'
+                    : 'radial-gradient(circle, rgba(201,168,76,0.25), transparent 80%)',
                 } as React.CSSProperties}
                 animate={{
-                  scale: [1, 1.4, 1], // Increased pulse scale
-                  opacity: [0.6, 0.3, 0.6],
+                  scale: [1, 1.1, 1], 
+                  opacity: [0.4, 0.7, 0.4],
                 }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
               />
 
               {/* Number ball */}
               <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
+                initial={{ scale: 0.4, rotate: -45, y: 40 }}
+                animate={{ scale: 1, rotate: 0, y: 0 }}
                 transition={{
-                  duration: 0.8,
-                  ease: [0.16, 1, 0.3, 1],
-                  delay: 0.1,
+                  duration: 0.9,
+                  ease: [0.2, 0.8, 0.2, 1],
+                  delay: 0.05,
                 }}
-                className="relative w-64 h-64 rounded-full flex items-center justify-center" 
+                className="relative w-72 h-72 rounded-full flex items-center justify-center" 
                 style={{
                   background: getResultBg(result.color),
-                  border: `6px solid ${COLORS.gold}`, 
+                  border: `8px solid ${COLORS.gold}`, 
                   boxShadow: `
-                    0 0 80px rgba(201, 168, 76, 0.5),
-                    0 0 140px rgba(201, 168, 76, 0.3),
-                    inset 0 -10px 20px rgba(0,0,0,0.5),
-                    inset 0 10px 20px rgba(255,255,255,0.2)
+                    0 0 100px rgba(201, 168, 76, 0.4),
+                    inset 0 -12px 24px rgba(0,0,0,0.6),
+                    inset 0 12px 24px rgba(255,255,255,0.2)
                   `,
+                  willChange: 'transform',
+                  transform: 'translateZ(0)'
                 } as React.CSSProperties}
               >
                 <motion.span
-                  initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.4, duration: 0.6, type: 'spring', bounce: 0.5 }}
+                  initial={{ opacity: 0, scale: 0.5, filter: 'blur(10px)' }}
+                  animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                  transition={{ delay: 0.2, duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
                   className="font-black text-white leading-none" 
                   style={{
                     fontFamily: '"Cinzel Decorative", "Georgia", serif',
                     fontWeight: 900,
-                    fontSize: result.displayNumber.length > 2 ? '80px' : result.displayNumber.length > 1 ? '110px' : '120px',
+                    fontSize: result.displayNumber.length > 2 ? '90px' : result.displayNumber.length > 1 ? '120px' : '140px',
                     letterSpacing: result.displayNumber.length > 1 ? '0.02em' : '0.05em',
-                    textShadow: `
-                      0 8px 16px rgba(0,0,0,0.8),
-                      0 2px 4px rgba(255,255,255,0.4),
-                      0 0 40px rgba(255,255,255,0.3),
-                      0 0 60px rgba(201,168,76,0.2)
-                    `,
+                    textShadow: '0 10px 20px rgba(0,0,0,0.8), 0 0 40px rgba(255,255,255,0.2)',
                   } as React.CSSProperties}
                 >
                   {result.displayNumber}
@@ -157,26 +159,25 @@ export default function ResultDisplay({
               </motion.div>
             </motion.div>
 
-            {/* Removing property tags as requested */}
-
             {/* Payout summary */}
             {payout && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: 0.9, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="text-center"
-              >
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: 0.4, duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+                 className="text-center"
+                 style={{ willChange: 'transform, opacity' }}
+               >
                 {payout.netResult > 0 ? (
-                  <p className="text-5xl font-bold" style={{ color: COLORS.gold, fontFamily: 'var(--font-playfair)' }}>
+                  <p className="text-6xl font-bold tracking-tight" style={{ color: COLORS.gold, fontFamily: 'var(--font-playfair)' }}>
                     +$<AnimatedCounter value={payout.netResult} duration={1500} />
                   </p>
                 ) : payout.netResult === 0 && payout.totalReturned > 0 ? (
-                  <p className="text-2xl" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-playfair)' }}>
-                    Push — Bet Returned
+                  <p className="text-2xl font-medium tracking-wide uppercase" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-playfair)' }}>
+                    Push — Returned
                   </p>
                 ) : (
-                  <p className="text-4xl font-bold" style={{ color: '#e74c3c', fontFamily: 'var(--font-playfair)' }}>
+                  <p className="text-5xl font-bold tracking-tight" style={{ color: '#ff4d4d', fontFamily: 'var(--font-playfair)' }}>
                     -$<AnimatedCounter value={payout.totalWagered} duration={800} />
                   </p>
                 )}
@@ -186,12 +187,12 @@ export default function ResultDisplay({
             {/* Tap to continue */}
             <motion.p
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.35 }}
-              transition={{ delay: 2, duration: 0.8 }}
-              className="text-sm text-white mt-8" // Slightly larger and more margin
+              animate={{ opacity: 0.4 }}
+              transition={{ delay: 1.5, duration: 1 }}
+              className="text-xs uppercase tracking-[0.3em] font-bold text-white mt-4" 
               style={{ fontFamily: 'var(--font-inter)' } as React.CSSProperties}
             >
-              Tap anywhere to continue
+              Tap anywhere
             </motion.p>
           </motion.div>
         </motion.div>

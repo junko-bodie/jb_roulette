@@ -9,6 +9,21 @@ export interface UserProfile {
   name: string;
   avatar: string;
   annual_championship_qualified?: boolean;
+  stats?: {
+    tournaments_played: number;
+    tournaments_won: number;
+    best_finish: number;
+  };
+  badges?: {
+    champion: boolean;
+    elite_status: boolean;
+    all_time_champion: boolean;
+  };
+  season?: {
+    year: number;
+    points: number;
+    rank: number;
+  };
 }
 
 interface GameContextType {
@@ -58,7 +73,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
     // Get initial session
     supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
+      if (!user && typeof window !== 'undefined' && localStorage.getItem('local_guest_session')) {
+        // Mock user for offline/bypassed guest mode
+        setUser({ id: 'guest-' + Math.random().toString(36).substring(2, 6), email: 'guest@local' } as User);
+      } else {
+        setUser(user);
+      }
       setIsLoading(false);
     });
 
@@ -92,6 +112,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
               id: data._id,
               name: data.name || user.user_metadata?.full_name || 'Player',
               avatar: data.avatar_url || user.user_metadata?.avatar_url || '/avatars/default.png',
+              stats: data.stats,
+              badges: data.badges,
+              season: data.season,
+              annual_championship_qualified: data.annual_championship_qualified,
             });
             return;
           }
