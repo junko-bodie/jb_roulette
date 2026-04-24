@@ -8,9 +8,10 @@ interface ChipStackProps {
   phase?: string;
   className?: string;
   deleteMode?: boolean;
+  isMine?: boolean;
 }
 
-export default function ChipStack({ chips, phase, className = '', deleteMode = false }: ChipStackProps) {
+export default function ChipStack({ chips, phase, className = '', deleteMode = false, isMine = true }: ChipStackProps) {
   if (chips.length === 0) return null;
 
   // Show last 4 chips visually in the stack
@@ -20,7 +21,7 @@ export default function ChipStack({ chips, phase, className = '', deleteMode = f
   return (
     <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[25px] h-[25px] pointer-events-none ${className}`}>
       {/* Royale Roulette Style Delete Badge */}
-      {deleteMode && (
+      {deleteMode && isMine && (
         <motion.div
           initial={{ scale: 0, rotate: -45 }}
           animate={{ scale: 1, rotate: 0 }}

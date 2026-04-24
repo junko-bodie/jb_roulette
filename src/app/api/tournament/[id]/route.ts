@@ -8,7 +8,7 @@ import { awardTournamentRewards } from '@/lib/tournament/rewards';
 
 // Phase timing constants (ms)
 const SPINNING_DURATION = 5000;  // 5s wheel animation
-const RESULT_DURATION   = 2000;  // 2s result screen (as requested)
+const RESULT_DURATION   = 2000;  // 2s result screen
 const BETTING_DURATION  = 30000; // 30s betting window
 const ELIMINATION_DURATION = 6000; // 6s elimination show
 // Full cycle per spin: SPINNING + RESULT + BETTING = 50s
@@ -54,7 +54,7 @@ export async function GET(
     // ──────────────────────────────────────────────────────────────
     if (tournament.status === 'waiting' && tournament.created_at) {
       const created = new Date(tournament.created_at).getTime();
-      if (now > created + 10000) {
+      if (now > created + 30000) {
         console.log(`[Watchdog] Auto-activating tournament ${id}`);
 
         // Fill remaining spots with bots

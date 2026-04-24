@@ -12,6 +12,8 @@ import WinnerScreen from './components/WinnerScreen';
 import Scoreboard from '@/components/tournament/Scoreboard';
 import Avatar from '@/components/ui/Avatar';
 import { useGame } from '@/context/GameContext';
+import Toast from '@/components/ui/Toast';
+import { soundEngine } from '@/lib/audioEngine';
 
 export default function TournamentPage() {
   const {
@@ -32,9 +34,36 @@ export default function TournamentPage() {
     syncMyBets,
     bets,
     setBets,
-    totalBet
+    totalBet,
+    dismissResult
   } = useTournament();
   const { userProfile } = useGame();
+  
+  const [fundError, setFundError] = useState<string | null>(null);
+
+  const triggerFundError = useCallback((message: string = 'Insufficient chips for this bet') => {
+    setFundError(message);
+    soundEngine?.playDeniedSound();
+  }, []);
+
+  const handleClearFundError = useCallback(() => setFundError(null), []);
+
+  const handleDismissResult = useCallback(() => {
+    setShowResult(false);
+    dismissResult();
+  }, [dismissResult]);
+
+  const [isStarting, setIsStarting] = useState(false);
+  const hasStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (tournament?.status === 'active' && !hasStartedRef.current) {
+      setIsStarting(true);
+      hasStartedRef.current = true;
+      const timer = setTimeout(() => setIsStarting(false), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [tournament?.status]);
 
   const [selectedChip, setSelectedChip] = useState(10);
   const [deleteMode, setDeleteMode] = useState(false);
@@ -150,18 +179,27 @@ export default function TournamentPage() {
     return merged;
   }, [phase, allSpinBets, bets, botBets, tournament?.players, userProfile?.id, userProfile.name]);
 
+  const [betPlacementHistory, setBetPlacementHistory] = useState<{ betId: string; amount: number }[]>([]);
+  const [lastSpinBets, setLastSpinBets] = useState<Map<string, PlacedBet>>(new Map());
+
   const handlePlaceBet = useCallback((betId: string) => {
     if (phase !== "betting") return;
     
-    setBets(prev => {
-      if (deleteMode) {
+    if (deleteMode) {
+      setBets(prev => {
         const newBets = new Map(prev);
         newBets.delete(betId);
         return newBets;
-      }
+      });
+      return;
+    }
 
-      if (myChips < totalBet + selectedChip) return prev;
+    if (myChips < totalBet + selectedChip) {
+      triggerFundError();
+      return;
+    }
 
+    setBets(prev => {
       const newBets = new Map(prev);
       const currentBetObj = newBets.get(betId);
       const currentAmount = currentBetObj ? currentBetObj.amount : 0;
@@ -174,6 +212,9 @@ export default function TournamentPage() {
       });
       return newBets;
     });
+
+    // Track history for "Clear Last Bet"
+    setBetPlacementHistory(prevHistory => [...prevHistory, { betId, amount: selectedChip }]);
   }, [phase, deleteMode, myChips, totalBet, selectedChip, setBets]);
 
   const handleRemoveBet = useCallback((betId: string) => {
@@ -186,7 +227,131 @@ export default function TournamentPage() {
 
   const handleClearBets = useCallback(() => {
     setBets(new Map());
+    setBetPlacementHistory([]);
   }, [setBets]);
+
+  const handleClearLastBet = useCallback(() => {
+    if (phase !== 'betting' || betPlacementHistory.length === 0) return;
+
+    const nextHistory = [...betPlacementHistory];
+    const lastAction = nextHistory.pop();
+    if (!lastAction) return;
+
+    // Update history state independently
+    setBetPlacementHistory(nextHistory);
+
+    // Update bets state based on the popped action
+    setBets(currentBets => {
+      const nextBets = new Map(currentBets);
+      const existing = nextBets.get(lastAction.betId);
+      if (!existing) return currentBets;
+
+      const chips = [...existing.chips];
+      const lastChipIndex = chips.lastIndexOf(lastAction.amount);
+      if (lastChipIndex === -1) return currentBets;
+
+      chips.splice(lastChipIndex, 1);
+      const newAmount = existing.amount - lastAction.amount;
+
+      if (chips.length === 0) {
+        nextBets.delete(lastAction.betId);
+      } else {
+        nextBets.set(lastAction.betId, { ...existing, amount: newAmount, chips });
+      }
+      return nextBets;
+    });
+  }, [phase, betPlacementHistory, setBets]);
+
+  const handleDoubleAllBets = useCallback(() => {
+    if (phase !== "betting" || bets.size === 0) return false;
+    
+    if (myChips < totalBet * 2) {
+      triggerFundError();
+      return false;
+    }
+
+    setBets(prev => {
+      const newBets = new Map(prev);
+      newBets.forEach((bet, id) => {
+        newBets.set(id, {
+          ...bet,
+          amount: bet.amount * 2,
+          chips: [...bet.chips, ...bet.chips]
+        });
+      });
+      return newBets;
+    });
+
+    // Also double the amounts in history so clearLastBet stays in sync
+    setBetPlacementHistory(prev =>
+      prev.map(entry => ({ ...entry, amount: entry.amount * 2 }))
+    );
+
+    return true;
+  }, [phase, bets, myChips, totalBet, setBets]);
+
+  const handleRebet = useCallback(() => {
+    if (phase !== 'betting' || lastSpinBets.size === 0) return;
+
+    // Check if we have enough balance
+    const lastTotal = Array.from(lastSpinBets.values()).reduce((sum, b) => sum + b.amount, 0);
+    if (myChips < lastTotal) return;
+
+    const clonedBets = new Map(Array.from(lastSpinBets.entries()).map(([betId, bet]) => [
+      betId,
+      { ...bet, chips: [...bet.chips] }
+    ]));
+    
+    setBets(clonedBets);
+
+    // Reconstruct history roughly for clearLast
+    const newHistory: { betId: string; amount: number }[] = [];
+    clonedBets.forEach((bet, id) => {
+      bet.chips.forEach(c => newHistory.push({ betId: id, amount: c }));
+    });
+    setBetPlacementHistory(newHistory);
+  }, [phase, lastSpinBets, myChips, setBets]);
+
+  const handlePopLastChip = useCallback((betId: string) => {
+    setBets(prev => {
+      const newBets = new Map(prev);
+      const bet = newBets.get(betId);
+      if (!bet || bet.chips.length === 0) return prev;
+
+      const newChips = [...bet.chips];
+      newChips.pop();
+
+      if (newChips.length === 0) {
+        newBets.delete(betId);
+      } else {
+        newBets.set(betId, {
+          ...bet,
+          chips: newChips,
+          amount: newChips.reduce((a, b) => a + b, 0)
+        });
+      }
+      return newBets;
+    });
+  }, [setBets]);
+
+  const handleClearZone = useCallback((betId: string) => {
+    setBets(prev => {
+      const newBets = new Map(prev);
+      newBets.delete(betId);
+      return newBets;
+    });
+  }, [setBets]);
+
+  // Update lastSpinBets when transition to spinning
+  useEffect(() => {
+    if (phase === 'spinning' && bets.size > 0) {
+      const clonedBets = new Map(Array.from(bets.entries()).map(([betId, bet]) => [
+        betId,
+        { ...bet, chips: [...bet.chips] }
+      ]));
+      setLastSpinBets(clonedBets);
+    }
+  }, [phase, bets]);
 
   const handleSubmitBets = useCallback(() => {
     submitBets(Array.from(bets.values()));
@@ -227,7 +392,7 @@ export default function TournamentPage() {
   }
 
   const displayTime = Math.min(30, timeRemaining);
-  const isUrgent = displayTime <= 5;
+  const isUrgent = phase === 'betting' && displayTime > 0 && displayTime <= 5;
 
   // ════════════ MATCHMAKING LOBBY OVERLAY ════════════
   if (tournament.status === 'waiting') {
@@ -326,247 +491,369 @@ export default function TournamentPage() {
     );
   }
 
+  // ════════════ MATCH FOUND OVERLAY ════════════
+  if (isStarting && tournament) {
+    return (
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" 
+           style={{ background: 'radial-gradient(circle at center, #1a4d3c 0%, #050d0a 100%)' }}>
+        
+        {/* Animated Background Rays */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-[-100%] opacity-20"
+          style={{
+            background: 'conic-gradient(from 0deg, transparent 0deg, #c9a44c 20deg, transparent 40deg, #c9a44c 60deg, transparent 80deg)',
+            filter: 'blur(60px)'
+          }}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+          className="relative z-10 flex flex-col items-center text-center px-4"
+        >
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            className="text-[#c9a44c] font-black text-xs uppercase tracking-[0.5em] mb-4"
+          >
+            Matchmaking Complete
+          </motion.div>
+
+          <motion.h1
+            initial={{ scale: 0.8, filter: 'blur(10px)' }}
+            animate={{ scale: 1, filter: 'blur(0px)' }}
+            transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+            className="text-white font-black text-5xl md:text-7xl italic uppercase tracking-tighter mb-8"
+            style={{ textShadow: '0 0 50px rgba(201,164,76,0.6), 0 10px 20px rgba(0,0,0,0.5)' }}
+          >
+            Match Found!
+          </motion.h1>
+
+          {/* Competitors List */}
+          <div className="flex flex-wrap justify-center gap-6 mb-12">
+            {tournament.players.slice(0, 6).map((p, i) => (
+              <motion.div
+                key={p.player_id.toString()}
+                initial={{ opacity: 0, y: 15, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.4 + (i * 0.08), duration: 0.3 }}
+                className="flex flex-col items-center gap-2"
+              >
+                <div className="relative">
+                  <Avatar type={p.avatar_url || 'default'} size="lg" className="border-4 border-[#c9a44c]/60 shadow-2xl" />
+                  {p.player_id.toString() === userProfile?.id && (
+                    <div className="absolute -top-2 -right-2 bg-[#c9a44c] text-black text-[8px] font-black px-2 py-0.5 rounded-full uppercase">
+                      You
+                    </div>
+                  )}
+                </div>
+                <span className="text-white font-bold text-sm tracking-wide">
+                  {p.username}
+                </span>
+                <span className="text-[#c9a44c] text-[10px] font-black uppercase tracking-widest">
+                  ${p.current_chips.toLocaleString()}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5, duration: 0.4 }}
+            className="flex flex-col items-center gap-2"
+          >
+            <div className="h-px w-64 bg-gradient-to-r from-transparent via-[#c9a44c]/40 to-transparent" />
+            <span className="text-white/60 font-black text-sm uppercase tracking-[0.3em]">
+              Starting Round 1
+            </span>
+            <motion.div
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="text-[#c9a44c] font-bold text-xs"
+            >
+              Good Luck!
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      userSelect: 'none',
-      background: 'radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)',
-    }}>
+    <div 
+      className="flex flex-col h-screen w-full overflow-hidden select-none"
+      style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
+    >
 
       {/* ═══ TOP HEADER — TOURNAMENT INFO + TIMER ═══ */}
-      <header style={{
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '32px',
-        padding: '12px 24px',
-        background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
-        borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
-        zIndex: 10,
-      }}>
-        {/* Round & Spin Info */}
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{
-            fontSize: 'clamp(16px, 2.5vw, 28px)',
-            fontWeight: 900,
-            color: '#c9a44c',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            margin: 0,
-            lineHeight: 1,
-          }}>
-            Round {currentRound} of 5
-          </h1>
-          <div style={{
-            marginTop: '4px',
-            fontSize: 'clamp(11px, 1.5vw, 14px)',
-            fontWeight: 700,
-            color: 'rgba(255,255,255,0.5)',
-            letterSpacing: '0.15em',
-            textTransform: 'uppercase',
-          }}>
-            Spin {currentSpin} of 5
+      <header 
+        className="flex-shrink-0 flex items-center justify-between px-6 py-2 z-10"
+        style={{
+          background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
+          borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
+          minHeight: '60px',
+        }}
+      >
+        <div className="flex items-center gap-6">
+          <button
+            onClick={() => window.location.href = '/lobby'}
+            className="text-[#c9a44c] hover:text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          
+          <div className="flex flex-col">
+            <h1 className="text-[#c9a44c] font-black text-lg tracking-widest uppercase leading-none">
+              Round {currentRound} of 5
+            </h1>
+            <div className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
+              Spin {currentSpin} of 5
+            </div>
           </div>
         </div>
 
-        {/* Separator */}
-        <div style={{ width: '1px', height: '36px', background: 'rgba(201, 164, 76, 0.3)' }} />
-
-        {/* Timer */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '46px',
-            height: '46px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: `3px solid ${isUrgent ? '#ef4444' : '#c9a44c'}`,
-            background: 'rgba(0,0,0,0.7)',
-            boxShadow: isUrgent ? '0 0 20px rgba(239,68,68,0.4)' : '0 0 15px rgba(0,0,0,0.5)',
-            animation: isUrgent ? 'pulse 1s infinite' : 'none',
-          }}>
-            <span style={{
-              fontSize: '18px',
-              fontWeight: 900,
-              color: isUrgent ? '#ef4444' : '#c9a44c',
-              fontVariantNumeric: 'tabular-nums',
-            }}>
+        {/* Timer - Centered */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
+          <div className={`
+            w-12 h-12 rounded-full flex items-center justify-center border-2 
+            ${isUrgent ? 'border-red-500 bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-[#c9a44c] bg-black/60 shadow-xl'}
+            transition-all duration-300
+          `}>
+            <span className={`text-xl font-black tabular-nums ${isUrgent ? 'text-red-500' : 'text-[#c9a44c]'}`}>
               {phase === 'betting' ? displayTime : '--'}
             </span>
           </div>
-          <div style={{
-            fontSize: '9px',
-            fontWeight: 800,
-            color: 'rgba(255,255,255,0.4)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            lineHeight: 1.3,
-          }}>
-            {phase === 'betting' ? 'BETS\nOPEN' : phase.toUpperCase()}
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">
+              {phase === 'betting' ? 'BETS OPEN' : phase.toUpperCase()}
+            </span>
+            {isUrgent && <span className="text-[9px] font-black text-red-500 uppercase tracking-tighter mt-0.5">Closing soon!</span>}
           </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+           {/* Placeholder for symmetry or extra tournament stats if needed */}
+           <div className="hidden sm:flex flex-col items-end">
+              <span className="text-[12px] font-black text-white">{userProfile.name}</span>
+              <span className="text-[9px] text-[#c9a44c] uppercase font-bold tracking-tighter">Tournament Mode</span>
+           </div>
+           <Avatar type={userProfile.avatar} size="sm" className="border-2 border-[#c9a44c]/40" />
         </div>
       </header>
 
-      {/* ═══ MAIN GAME AREA — Grid: [Table] [Scoreboard] ═══ */}
-      <main style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'stretch',
-        justifyContent: 'center',
-        gap: '16px',
-        padding: '12px 16px',
-        overflow: 'hidden',
-      }}>
+      <main className="flex-1 min-h-0 relative px-2 py-0 overflow-hidden flex items-stretch justify-center gap-4">
 
         {/* Roulette Table — takes most of the space */}
-        <div style={{
-          flex: '1 1 0',
-          minWidth: 0,
-          maxWidth: '1100px',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start'
-        }}>
+        <div className="flex-1 min-w-0 max-w-[1200px] flex flex-col justify-center items-center">
           <RouletteTable
-            wheelType="american"
+            wheelType="european"
             currentResult={lastSpinResult}
             isSpinning={phase === "spinning"}
             onSpinComplete={completeSpin}
-            wheelSize={380}
-            wheelRef={wheelRef}
-            bets={displayBets as any}
+            wheelSize={420}
+            wheelRef={{ current: null }}
+            bets={displayBets}
+            myBets={bets}
             onPlaceBet={handlePlaceBet}
             onRemoveBet={handleRemoveBet}
             isBettingDisabled={phase !== "betting"}
             lastPayout={lastPlayerPayout}
-            phase={phase === "betting" ? "BETTING" : phase === "locked" ? "LOCKED" : "RESULT"}
+            phase={
+              phase === "betting" ? "BETTING" : 
+              phase === "spinning" ? "SPINNING" : 
+              phase === "locked" ? "LOCKED" : 
+              "RESULT"
+            }
             setWheelType={() => { }}
-            onSpin={handleSubmitBets}
-            onRebet={() => { }}
+            onSpin={() => { }}
+            onRebet={handleRebet}
             onClearBets={handleClearBets}
-            onClearLastBet={() => { }}
-            hasLastSpin={false}
+            onClearLastBet={handleClearLastBet}
+            hasLastSpin={lastSpinBets.size > 0}
             balance={myChips}
             totalBet={totalBet}
-            onDoubleAllBets={() => true}
-            onToggleDeleteMode={() => setDeleteMode(!deleteMode)}
+            onDoubleAllBets={handleDoubleAllBets}
             deleteMode={deleteMode}
-            onPopLastChip={() => { }}
-            onClearZone={() => { }}
-            onTimeout={() => {}} // Controlled by context now
+            onPopLastChip={handlePopLastChip}
+            onClearZone={handleClearZone}
+            onTimeout={() => { }}
             tournamentMode={true}
           />
         </div>
 
         {/* Scoreboard Sidebar */}
-        <div style={{ flexShrink: 0, paddingTop: '8px' }}>
+        <div className="flex-shrink-0 flex items-center py-4">
           <Scoreboard />
         </div>
       </main>
 
       {/* ═══ FOOTER — CHIP TRAY + CONTROLS ═══ */}
-      <footer style={{
-        flexShrink: 0,
-        width: '100%',
-        padding: '8px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
-        borderTop: '1px solid rgba(201, 164, 76, 0.3)',
-        zIndex: 10,
-      }}>
+      <footer 
+        className="flex-shrink-0 w-full px-6 py-2 flex items-center justify-between z-10"
+        style={{
+          background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
+          borderTop: '1px solid rgba(201, 164, 76, 0.3)',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.5)',
+        }}
+      >
 
-        <div style={{ flex: '1 1 auto', display: 'flex', maxWidth: '480px' }}>
-          <ChipTray
-            selectedChip={selectedChip}
-            onSelectChip={setSelectedChip}
-            balance={myChips}
-            totalBet={totalBet}
-            disabled={phase !== "betting"}
-          />
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          {/* Balance display */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <span style={{
-              fontSize: '9px',
-              textTransform: 'uppercase',
-              color: 'rgba(201, 164, 76, 0.5)',
-              fontWeight: 800,
-              letterSpacing: '0.15em',
-            }}>
-              Live Balance
-            </span>
-            <span style={{
-              fontSize: '18px',
-              fontWeight: 900,
-              color: '#fff',
-            }}>
+        <div className="flex items-center gap-3">
+          <div className="max-w-[400px]">
+            <ChipTray
+              selectedChip={selectedChip}
+              onSelectChip={setSelectedChip}
+              balance={myChips}
+              totalBet={totalBet}
+              disabled={phase !== "betting"}
+            />
+          </div>
+          
+          <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold leading-none">Balance</span>
+            <span className="text-sm font-black text-white mt-1">
               ${myChips.toLocaleString()}
             </span>
           </div>
+        </div>
 
-          {/* Clear Bets button */}
-          {bets.size > 0 && phase === 'betting' && (
-            <button
-              onClick={handleClearBets}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '10px',
-                fontWeight: 800,
-                fontSize: '11px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                background: 'rgba(255,255,255,0.05)',
-                color: 'rgba(255,255,255,0.5)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner">
+            <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold leading-none">Total Bet</span>
+            <span className="text-sm font-black text-white mt-1">
+              ${totalBet.toLocaleString()}
+            </span>
+          </div>
+
+          {/* Betting Controls: Rebet, Clear, Clear Last, 2X, Delete */}
+          <div className="flex items-center gap-2">
+            {/* UNDO (Clear Last Bet) */}
+            <motion.button
+              onClick={() => {
+                import('@/lib/audioEngine').then(({ soundEngine }) => {
+                  soundEngine?.playSwoosh();
+                });
+                handleClearLastBet();
               }}
+              disabled={phase !== "betting" || betPlacementHistory.length === 0}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                w-10 h-10 rounded-full flex flex-col items-center justify-center border-2 transition-all
+                ${(phase !== "betting" || betPlacementHistory.length === 0) 
+                  ? 'bg-white/5 border-white/10 text-white/20' 
+                  : 'bg-gradient-to-br from-[#3b2518] to-black border-[#c9a44c]/60 text-[#c9a44c] shadow-lg shadow-black/40'}
+              `}
+              title="Clear last bet"
             >
-              Clear
-            </button>
-          )}
+              <span className="text-[9px] font-black leading-none">UNDO</span>
+            </motion.button>
+
+            {/* CLEAR ALL */}
+            <motion.button
+              onClick={() => {
+                import('@/lib/audioEngine').then(({ soundEngine }) => {
+                  soundEngine?.playSwoosh();
+                });
+                handleClearBets();
+              }}
+              disabled={phase !== "betting" || bets.size === 0}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                px-3 h-10 rounded-xl flex items-center justify-center font-black text-[10px] border-2 transition-all
+                ${(phase !== "betting" || bets.size === 0) 
+                  ? 'bg-white/5 border-white/10 text-white/20' 
+                  : 'bg-gradient-to-br from-[#3b2518] to-black border-[#c9a44c]/60 text-[#c9a44c] shadow-lg shadow-black/40'}
+              `}
+              title="Clear all bets"
+            >
+              CLEAR
+            </motion.button>
+
+            <div className="w-px h-8 bg-white/10 mx-1" />
+
+            <motion.button
+              onClick={() => {
+                import('@/lib/audioEngine').then(({ soundEngine }) => {
+                  soundEngine?.play2XClick();
+                });
+                handleDoubleAllBets();
+              }}
+              disabled={phase !== "betting" || myChips < totalBet * 2 || totalBet === 0}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                w-10 h-10 rounded-full flex items-center justify-center font-black text-xs border-2 transition-all
+                ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0) 
+                  ? 'bg-white/5 border-white/10 text-white/20' 
+                  : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#555] text-black shadow-lg shadow-[#c9a44c]/20'}
+              `}
+              title="Double all bets"
+            >
+              2X
+            </motion.button>
+
+            <motion.button
+              onClick={() => {
+                import('@/lib/audioEngine').then(({ soundEngine }) => {
+                  soundEngine?.playSwoosh();
+                });
+                setDeleteMode(!deleteMode);
+              }}
+              disabled={phase !== "betting"}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                w-10 h-10 rounded-full flex items-center justify-center font-black text-lg border-2 transition-all
+                ${phase !== "betting" 
+                  ? 'bg-white/5 border-white/10 text-white/20' 
+                  : deleteMode 
+                    ? 'bg-red-500 border-red-400 text-white shadow-lg shadow-red-500/40' 
+                    : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#555] text-black shadow-lg shadow-[#c9a44c]/20'}
+              `}
+              title={deleteMode ? "Exit clear mode" : "Enter clear mode"}
+            >
+              ✕
+            </motion.button>
+          </div>
 
           {/* Place Bets button */}
           <button
             onClick={handleSubmitBets}
             disabled={phase !== "betting"}
-            style={{
-              padding: '10px 28px',
-              borderRadius: '12px',
-              fontWeight: 900,
-              fontSize: '12px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.15em',
-              background: phase === 'betting' ? '#c9a44c' : 'rgba(255,255,255,0.05)',
-              color: phase === 'betting' ? '#111' : 'rgba(255,255,255,0.2)',
-              border: phase === 'betting' ? 'none' : '1px solid rgba(255,255,255,0.1)',
-              cursor: phase === 'betting' ? 'pointer' : 'not-allowed',
-              boxShadow: phase === 'betting' ? '0 0 20px rgba(201,164,76,0.4)' : 'none',
-              transition: 'all 0.2s',
-            }}
+            className={`
+              px-6 py-2 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] transition-all
+              ${phase === 'betting' 
+                ? 'bg-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/40 hover:scale-105 active:scale-95' 
+                : 'bg-white/5 text-white/20 border border-white/10 cursor-not-allowed'}
+            `}
           >
-            {phase === "betting" ? "Place Bets" : phase === "locked" ? "Bet has been placed waiting for others" : phase.toUpperCase()}
+            {phase === "betting" ? "Place Bets" : "Bets Placed"}
           </button>
         </div>
       </footer>
 
       <ResultDisplay
         visible={showResult}
-        onDismiss={() => setShowResult(false)}
+        onDismiss={handleDismissResult}
         result={lastSpinResult}
         payout={lastPlayerPayout}
+      />
+
+      <Toast
+        message={fundError || ''}
+        isVisible={!!fundError}
+        onClose={handleClearFundError}
+        type="error"
+        duration={2500}
       />
 
       <EliminationScreen

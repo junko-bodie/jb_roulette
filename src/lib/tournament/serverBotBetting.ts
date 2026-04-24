@@ -9,63 +9,76 @@ export function generateServerBotBets(bot: TournamentPlayer, spinNumber: number 
 
   if (currentChips <= 0) return [];
 
-  const maxWager = currentChips < 100 ? 1 : Math.floor(currentChips * 0.1);
+  // Bots wager between 10% and 25% of their chips for a balanced feel
+  const wagerPercent = 0.1 + (Math.random() * 0.15);
+  const maxWager = Math.max(5, Math.floor(currentChips * wagerPercent));
   if (maxWager < 1) return [];
-
-  const numZones = Math.floor(Math.random() * 3) + 1;
+ 
+  // Target moderate number of zones (3 to 7)
+  const numZones = Math.floor(Math.random() * 5) + 3;
   let totalWagered = 0;
 
   for (let i = 0; i < numZones; i++) {
     const remainingAllowed = maxWager - totalWagered;
     if (remainingAllowed < 1) break;
 
-    const isOutside = Math.random() < 0.6;
+    const isOutside = Math.random() < 0.5; // 50/50 mix
     let pool;
 
     if (isOutside) {
       pool = ALL_OUTSIDE_BETS;
     } else {
       const subType = Math.random();
-      if (subType < 0.4) pool = ALL_STRAIGHT_BETS;
+      if (subType < 0.5) pool = ALL_STRAIGHT_BETS; // More straights
       else if (subType < 0.8) pool = ALL_SPLIT_BETS;
       else pool = ALL_CORNER_BETS;
     }
 
     const randomDef = pool[Math.floor(Math.random() * pool.length)];
-    const possibleChips = CHIP_VALUES.filter(v => v <= remainingAllowed);
-    let betAmount = 1;
+    const betId = (randomDef as any).id;
 
-    if (currentChips >= 100 && possibleChips.length > 0) {
-      betAmount = possibleChips[Math.floor(Math.random() * possibleChips.length)];
-    } else {
-      betAmount = 1;
-    }
+    // To prevent betting on same zone multiple times in one generation pass
+    if (bets.find(b => b.betId === betId)) continue;
 
-    if (totalWagered + betAmount > maxWager && currentChips >= 100) {
-      betAmount = remainingAllowed;
-    }
+    // Pick largest possible chips to reach a "bold" bet for this zone
+    // Bots will try to spend about 1/4 of their remaining allowance on each new zone
+    const targetForZone = Math.max(1, Math.floor(remainingAllowed / (numZones - i)));
+    let zoneAmount = 0;
+    const zoneChips: number[] = [];
 
-    if (betAmount > 0) {
-      if (!bets.find(b => b.betId === (randomDef as any).id)) {
-        // Spin 1: Immediate betting (30s window). Start reveal at 1s.
-        // Spins 2-5: Post-animation betting (50s window, animation is ~22s). Start reveal at 23s.
-        let revealAt = 0;
-        if (spinNumber === 1) {
-          revealAt = 1000 + Math.floor(Math.random() * 25000); // 1-26s
-        } else {
-          revealAt = 23000 + Math.floor(Math.random() * 25000); // 23-48s
+    while (zoneAmount < targetForZone) {
+      const possibleChars = CHIP_VALUES.filter(v => v <= (targetForZone - zoneAmount));
+      if (possibleChars.length === 0) {
+        // Just take the smallest 1 if we have room in total maxWager
+        if (totalWagered + zoneAmount < maxWager) {
+          zoneChips.push(1);
+          zoneAmount += 1;
         }
-
-        bets.push({
-          player_id: bot.player_id,
-          username: bot.username,
-          betId: (randomDef as any).id,
-          amount: betAmount,
-          chips: [betAmount],
-          reveal_at_ms: revealAt
-        });
-        totalWagered += betAmount;
+        break;
       }
+      const chip = possibleChars[possibleChars.length - 1]; // Pick largest available
+      zoneChips.push(chip);
+      zoneAmount += chip;
+    }
+
+    if (zoneAmount > 0) {
+      // Reveal timing
+      let revealAt = 0;
+      if (spinNumber === 1) {
+        revealAt = 200 + Math.floor(Math.random() * 18000); // 0.2-18s, very fast early activity
+      } else {
+        revealAt = 22000 + Math.floor(Math.random() * 20000); // 22-42s
+      }
+
+      bets.push({
+        player_id: bot.player_id,
+        username: bot.username,
+        betId: betId,
+        amount: zoneAmount,
+        chips: zoneChips,
+        reveal_at_ms: revealAt
+      });
+      totalWagered += zoneAmount;
     }
   }
 

@@ -41,6 +41,7 @@ interface RouletteTableProps {
   onClearZone?: (betId: string) => void;
   onTimeout?: () => void;
   tournamentMode?: boolean;
+  myBets?: Map<string, PlacedBet>;
 }
 
 const RouletteTable = memo(function RouletteTable({
@@ -71,6 +72,7 @@ const RouletteTable = memo(function RouletteTable({
   onClearZone,
   onTimeout,
   tournamentMode = false,
+  myBets,
 }: RouletteTableProps) {
   const [isMobile, setIsMobile] = useState(false);
   const { isSoundEnabled, isTimerEnabled } = useGame();
@@ -281,6 +283,7 @@ const RouletteTable = memo(function RouletteTable({
                   onPopLastChip={handlePopLastChip}
                   onClearZone={handleClearZone}
                   wheelType={wheelType}
+                  myBets={myBets}
                 />
               </div>
 

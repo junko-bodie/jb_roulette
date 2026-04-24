@@ -68,8 +68,8 @@ export default function ResultDisplay({
 }: ResultDisplayProps) {
   useEffect(() => {
     if (visible && result) {
-      // Synchronized with server RESULT_DURATION (2s)
-      const timer = setTimeout(onDismiss, 2000);
+      // Auto-dismiss after 1.5s
+      const timer = setTimeout(onDismiss, 1500);
       return () => clearTimeout(timer);
     }
   }, [visible, result, onDismiss]);
@@ -91,9 +91,9 @@ export default function ResultDisplay({
           onClick={onDismiss}
         >
           <motion.div
-            className="flex flex-col items-center gap-12" 
+            className="flex flex-col items-center gap-12 cursor-pointer" 
             style={{ willChange: 'transform, opacity', transform: 'translateZ(0)' }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={onDismiss}
           >
             {/* Outer glow ring */}
             <motion.div
