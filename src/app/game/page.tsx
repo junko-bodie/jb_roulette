@@ -14,6 +14,7 @@ import { useGameState } from '@/hooks/useGameState';
 import { useGame } from '@/context/GameContext';
 import SettingsModal from '@/components/ui/SettingsModal';
 import ProfileModal from '@/components/ui/ProfileModal';
+import { soundEngine } from '@/lib/audioEngine';
 import Toast from '@/components/ui/Toast';
 
 import { useRouter } from 'next/navigation';
@@ -76,12 +77,12 @@ export default function GamePage() {
     }
   }, [game.lastPayout, isPopupEnabled]);
 
-  // Automatically dismiss result after 2 seconds
+  // Automatically dismiss result after 4 seconds
   useEffect(() => {
     if (showResult) {
       const timer = setTimeout(() => {
         handleDismissResult();
-      }, 1000);
+      }, 3500);
       return () => clearTimeout(timer);
     }
   }, [showResult, handleDismissResult]);
@@ -187,24 +188,6 @@ export default function GamePage() {
             </svg>
           </button>
 
-          {/* User Profile */}
-          <div
-            onClick={() => setIsProfileOpen(true)}
-            className="flex items-center gap-3 px-6 py-1.5 rounded-full bg-black/60 border border-[#c9a44c]/30 hover:bg-black/80 hover:border-[#c9a44c]/60 transition-all cursor-pointer shadow-2xl backdrop-blur-xl group min-w-[160px] justify-end"
-          >
-            <div className="flex flex-col items-end hidden sm:flex">
-              <span className="text-[13px] font-black text-white leading-tight whitespace-nowrap group-hover:text-[#c9a44c] transition-colors tracking-tight">
-                {userProfile.name}
-              </span>
-              <span className="text-[9px] text-[#c9a44c]/90 uppercase tracking-[0.2em] font-black mt-0.5">Player</span>
-            </div>
-            <div className="relative flex-shrink-0">
-              <div className="w-10 h-10 rounded-full border-2 border-[#c9a44c]/50 overflow-hidden bg-black/40 shadow-inner group-hover:border-[#c9a44c] transition-all">
-                <img src={userProfile.avatar} alt="avatar" className="w-full h-full object-cover" />
-              </div>
-              <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-black rounded-full" />
-            </div>
-          </div>
         </div>
       </header>
 
@@ -267,6 +250,36 @@ export default function GamePage() {
               totalBet={game.totalBet}
               disabled={isSpinningWheel}
             />
+          </div>
+        </div>
+
+        <div 
+          onClick={() => {
+            soundEngine?.playClick();
+            setIsProfileOpen(true);
+          }}
+          className="hidden md:flex items-center gap-4 px-6 py-1.5 rounded-xl bg-black/30 border border-[#c9a44c]/20 backdrop-blur-sm self-center mx-auto hover:bg-black/50 hover:border-[#c9a44c]/50 transition-all cursor-pointer group active:scale-95"
+        >
+          <div className="relative">
+            <div className="w-10 h-10 rounded-full border border-[#c9a44c]/60 overflow-hidden bg-black/60 shadow-lg group-hover:border-[#c9a44c] transition-all">
+              <img 
+                src={userProfile?.avatar || '/avatars/default.png'} 
+                alt="avatar" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border border-black rounded-full shadow-sm" />
+          </div>
+          <div className="flex flex-col">
+            <span 
+              className="text-white font-bold text-base leading-tight tracking-tight shadow-black drop-shadow-md group-hover:text-[#c9a44c] transition-colors"
+              style={{ fontFamily: "'Bodoni Moda', serif", fontStyle: 'italic' }}
+            >
+              Hello {userProfile?.name}!
+            </span>
+            <span className="text-[8px] text-[#c9a44c] uppercase tracking-[0.3em] font-black leading-none mt-0.5">
+              VIP Roulette Member
+            </span>
           </div>
         </div>
 

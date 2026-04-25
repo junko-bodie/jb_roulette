@@ -20,8 +20,10 @@ class AudioEngine {
     if (typeof window !== 'undefined') {
       this.sounds = {
         chip: new Howl({
-          src: ['https://cdn.pixabay.com/audio/2022/03/15/audio_73130c2537.mp3'], // Quality chip/click
-          volume: 0.3,
+          src: ['/sounds/chip.mp3'],
+          volume: 0.35,
+          preload: true,
+          pool: 5,           // Allow multiple chips to overlap without cutting off
         }),
         spin: new Howl({
           src: ['/sounds/spin.mp3'],
@@ -41,8 +43,8 @@ class AudioEngine {
         }),
         // Advanced betting UI sounds
         click: new Howl({
-          src: ['https://cdn.pixabay.com/audio/2022/03/15/audio_c8c8a73430.mp3'],
-          volume: 0.35,
+          src: ['/sounds/click.mp3'],
+          volume: 0.4,
           preload: true,
         }),
         drip: new Howl({
@@ -72,8 +74,8 @@ class AudioEngine {
           preload: true,
         }),
         lock: new Howl({
-          src: ['https://cdn.pixabay.com/audio/2022/03/15/audio_65cf68d067.mp3'], 
-          volume: 0.8,
+          src: ['/sounds/lock.mp3'], 
+          volume: 0.6,
           preload: true,
         }),
         thump: new Howl({
@@ -86,10 +88,10 @@ class AudioEngine {
           },
         }),
         denied: new Howl({
-          src: ['https://cdn.pixabay.com/audio/2022/03/10/audio_55a2979603.mp3'], 
+          src: ['/sounds/denied.mp3'], 
           volume: 0.5,
           preload: true,
-          onloaderror: (id, err) => console.warn('AudioEngine: Denied sound load error (likely network)'),
+          onloaderror: (id, err) => console.warn('AudioEngine: Denied sound load error'),
         }),
       };
     }
@@ -117,6 +119,10 @@ class AudioEngine {
 
   play2XClick() {
     if (this.enabled && this.sounds.btn2X) this.sounds.btn2X.play();
+  }
+
+  playClick() {
+    if (this.enabled && this.sounds.click) this.sounds.click.play();
   }
 
   playSwoosh() {

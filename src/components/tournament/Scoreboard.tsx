@@ -107,23 +107,42 @@ export default function Scoreboard() {
                   animate={{ 
                     opacity: isEliminated ? 0.35 : 1,
                     scale: isMe ? 1.02 : 1,
-                    zIndex: isMe ? 20 : 10
+                    zIndex: isMe ? 20 : 10,
+                    // Pulse or flash when moving
+                    backgroundColor: m === 'up' 
+                      ? 'rgba(74, 222, 128, 0.15)'   // Green flash
+                      : m === 'down' 
+                      ? 'rgba(248, 113, 113, 0.15)'  // Red flash
+                      : isMe 
+                      ? 'rgba(201, 164, 76, 0.2)' 
+                      : 'rgba(255, 255, 255, 0.03)',
                   }}
-                  className={`group relative flex items-center justify-between p-4 rounded-3xl transition-all duration-500 ${
+                  transition={{
+                    layout: { type: 'spring', stiffness: 200, damping: 25 },
+                    backgroundColor: { duration: 0.8 }
+                  }}
+                  className={`group relative flex items-center justify-between p-4 rounded-3xl transition-all duration-500 border ${
                     isMe 
-                      ? 'bg-gradient-to-r from-[#c9a44c]/20 to-transparent border border-[#c9a44c]/40' 
+                      ? 'border-[#c9a44c]/40' 
                       : isEliminated
-                      ? 'bg-white/[0.01] border border-white/5 grayscale'
-                      : 'bg-white/[0.03] border border-white/5 hover:border-[#c9a44c]/30'
+                      ? 'border-white/5 grayscale'
+                      : m === 'up'
+                      ? 'border-green-400/50'
+                      : m === 'down'
+                      ? 'border-red-400/50'
+                      : 'border-white/5 hover:border-[#c9a44c]/30'
                   }`}
                 >
                   <div className="flex items-center gap-4">
                     {/* Rank Circle */}
-                    <div className={`w-9 h-9 flex-shrink-0 rounded-2xl flex items-center justify-center relative overflow-hidden ${
-                      isFirst ? 'bg-gradient-to-br from-[#fef1a6] via-[#c9a44c] to-[#a07a2d] shadow-lg' :
-                      isMe ? 'bg-white text-black' :
-                      isEliminated ? 'bg-white/5 text-white/20' : 'bg-white/10 text-white/60'
-                    }`}>
+                    <motion.div 
+                      layout
+                      className={`w-9 h-9 flex-shrink-0 rounded-2xl flex items-center justify-center relative overflow-hidden ${
+                        isFirst ? 'bg-gradient-to-br from-[#fef1a6] via-[#c9a44c] to-[#a07a2d] shadow-lg' :
+                        isMe ? 'bg-white text-black' :
+                        isEliminated ? 'bg-white/5 text-white/20' : 'bg-white/10 text-white/60'
+                      }`}
+                    >
                       {isEliminated ? (
                         <Skull className="w-4 h-4" />
                       ) : (
@@ -131,7 +150,7 @@ export default function Scoreboard() {
                           {s.rank}
                         </span>
                       )}
-                    </div>
+                    </motion.div>
                     
                     <div className="flex flex-col min-w-0">
                       <span className={`text-[14px] font-bold truncate ${isMe ? 'text-[#c9a44c]' : 'text-white/90'}`}>
@@ -148,13 +167,27 @@ export default function Scoreboard() {
 
                   <div className="flex items-center gap-3 pl-2">
                     <AnimatePresence>
-                      {m && !isEliminated && <RankMovement direction={m} />}
+                      {m && !isEliminated && (
+                        <motion.div
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          className="flex items-center"
+                        >
+                          <RankMovement direction={m} />
+                        </motion.div>
+                      )}
                     </AnimatePresence>
-                    <span className={`text-[17px] font-black tabular-nums ${
-                      isEliminated ? 'text-white/20' : isMe ? 'text-white' : 'text-white/80'
-                    }`} style={{ fontFamily: FONTS.primary }}>
+                    <motion.span 
+                      key={s.chips}
+                      initial={{ scale: 1 }}
+                      animate={{ scale: [1, 1.1, 1] }}
+                      className={`text-[17px] font-black tabular-nums ${
+                        isEliminated ? 'text-white/20' : isMe ? 'text-white' : 'text-white/80'
+                      }`} style={{ fontFamily: FONTS.primary }}
+                    >
                       ${s.chips.toLocaleString()}
-                    </span>
+                    </motion.span>
                   </div>
                 </motion.div>
               );

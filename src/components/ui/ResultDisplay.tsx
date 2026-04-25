@@ -68,8 +68,8 @@ export default function ResultDisplay({
 }: ResultDisplayProps) {
   useEffect(() => {
     if (visible && result) {
-      // Auto-dismiss after 1.5s
-      const timer = setTimeout(onDismiss, 1500);
+      // Auto-dismiss after 5s
+      const timer = setTimeout(onDismiss, 5000);
       return () => clearTimeout(timer);
     }
   }, [visible, result, onDismiss]);
@@ -165,22 +165,57 @@ export default function ResultDisplay({
                  initial={{ opacity: 0, y: 20 }}
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: 0.4, duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-                 className="text-center"
+                 className="flex flex-col items-center gap-4"
                  style={{ willChange: 'transform, opacity' }}
                >
-                {payout.netResult > 0 ? (
-                  <p className="text-6xl font-bold tracking-tight" style={{ color: COLORS.gold, fontFamily: 'var(--font-playfair)' }}>
-                    +$<AnimatedCounter value={payout.netResult} duration={1500} />
-                  </p>
-                ) : payout.netResult === 0 && payout.totalReturned > 0 ? (
-                  <p className="text-2xl font-medium tracking-wide uppercase" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-playfair)' }}>
-                    Push — Returned
-                  </p>
-                ) : (
-                  <p className="text-5xl font-bold tracking-tight" style={{ color: '#ff4d4d', fontFamily: 'var(--font-playfair)' }}>
-                    -$<AnimatedCounter value={payout.totalWagered} duration={800} />
-                  </p>
-                )}
+                {/* Glass Result Card */}
+                <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 min-w-[320px] flex flex-col gap-4 shadow-2xl">
+                  {/* Row: Total Won */}
+                  <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                    <span className="text-white/40 uppercase text-[10px] font-black tracking-widest">Total Won</span>
+                    <span className="text-xl font-bold text-white">
+                      $<AnimatedCounter value={payout.totalWon + (payout.totalReturned > payout.totalWon ? (payout.totalReturned - payout.totalWon) : 0)} duration={1000} />
+                    </span>
+                  </div>
+
+                  {/* Row: Total Bet */}
+                  <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                    <span className="text-white/40 uppercase text-[10px] font-black tracking-widest">Total Bet</span>
+                    <span className="text-xl font-bold text-white/80">
+                      $<AnimatedCounter value={payout.totalWagered} duration={800} />
+                    </span>
+                  </div>
+
+                  {/* Net Result Highlight */}
+                  <div className="flex flex-col items-center gap-1 pt-1">
+                    <span className="text-white/30 uppercase text-[9px] font-black tracking-widest mb-1">
+                      {payout.netResult >= 0 ? 'Net Profit' : 'Net Loss'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                       <span 
+                        className="text-5xl font-black tracking-tight" 
+                        style={{ 
+                          color: payout.netResult > 0 ? COLORS.gold : payout.netResult === 0 ? 'rgba(255,255,255,0.6)' : '#ff4d4d',
+                          fontFamily: 'var(--font-playfair)',
+                          textShadow: payout.netResult > 0 ? '0 0 30px rgba(201,168,76,0.3)' : 'none'
+                        }}
+                      >
+                        {payout.netResult > 0 ? '+' : payout.netResult < 0 ? '-' : ''}$<AnimatedCounter value={Math.abs(payout.netResult)} duration={1500} />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Motivational Tagline */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2 }}
+                  className="text-[10px] font-black tracking-[0.4em] uppercase"
+                  style={{ color: payout.netResult > 0 ? COLORS.gold : 'rgba(255,255,255,0.4)' }}
+                >
+                  {payout.netResult > 3000 ? 'Incredible Streak!' : payout.netResult > 0 ? 'Nice Win!' : payout.netResult === 0 ? 'Keep Going' : 'Try Again'}
+                </motion.div>
               </motion.div>
             )}
 

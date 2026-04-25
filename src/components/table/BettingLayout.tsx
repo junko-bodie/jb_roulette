@@ -650,7 +650,7 @@ const BettingLayout = memo(function BettingLayout({
         style={{ boxShadow: '0 0 30px rgba(0,0,0,0.5)' }}
       >
         {/* ZEROS BLOCK */}
-        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-l border-t border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
+        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-t border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
           <NumberCell
             num={0}
             bet={bets.get('straight-0')}
@@ -795,7 +795,7 @@ const BettingLayout = memo(function BettingLayout({
         </div>
 
         {/* COLUMNS BLOCK */}
-        <div className="grid grid-rows-3 gap-0 border-t border-r border-[#5ea896] rounded-tr-lg overflow-hidden bg-black/10">
+        <div className="grid grid-rows-3 gap-0 border-t border-[#5ea896] rounded-tr-lg overflow-hidden bg-black/10">
           {[
             { id: 'column-3rd', label: '2-1', nums: COLUMN_3RD },
             { id: 'column-2nd', label: '2-1', nums: COLUMN_2ND },
@@ -825,27 +825,65 @@ const BettingLayout = memo(function BettingLayout({
 
       {/* SECTION 2: Dozens */}
       <div className="grid grid-cols-[32px_1fr_32px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full bg-black/10">
-        <div className="border-l border-[#5ea896] bg-transparent" />
+        <div className="bg-transparent" />
         <div className="grid grid-cols-3 gap-0 border-l border-[#5ea896]">
           <OutsideBetCell label="1st 12" bet={bets.get('dozen-1st')} onPlace={() => onPlaceBet('dozen-1st')} onRemove={() => onRemoveBet('dozen-1st')} disabled={disabled} isWinner={isBetWinner('dozen-1st')} phase={phase} numbers={DOZEN_1ST} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-1st" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-1st') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} />
           <OutsideBetCell label="2nd 12" bet={bets.get('dozen-2nd')} onPlace={() => onPlaceBet('dozen-2nd')} onRemove={() => onRemoveBet('dozen-2nd')} disabled={disabled} isWinner={isBetWinner('dozen-2nd')} phase={phase} numbers={DOZEN_2ND} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-2nd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-2nd') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} />
           <OutsideBetCell label="3rd 12" bet={bets.get('dozen-3rd')} onPlace={() => onPlaceBet('dozen-3rd')} onRemove={() => onRemoveBet('dozen-3rd')} disabled={disabled} isWinner={isBetWinner('dozen-3rd')} phase={phase} numbers={DOZEN_3RD} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-3rd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-3rd') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} />
         </div>
-        <div className="border-r border-[#5ea896]" />
+        <div className="bg-transparent" />
       </div>
 
       {/* SECTION 3: Even Chances */}
       <div className="grid grid-cols-[32px_1fr_32px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full rounded-b-lg overflow-hidden bg-black/10">
-        <div className="border-l border-b border-[#5ea896]" />
+        <div className="bg-transparent" />
         <div className="grid grid-cols-6 gap-0 border-l border-b border-[#5ea896]">
           <OutsideBetCell label="1-18" bet={bets.get('low')} onPlace={() => onPlaceBet('low')} onRemove={() => onRemoveBet('low')} disabled={disabled} isWinner={isBetWinner('low')} phase={phase} numbers={LOW_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="low" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('low') : true} style={{ borderRight: '1px solid #5ea896' }} />
           <OutsideBetCell label="Even" bet={bets.get('even')} onPlace={() => onPlaceBet('even')} onRemove={() => onRemoveBet('even')} disabled={disabled} isWinner={isBetWinner('even')} phase={phase} numbers={EVEN_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="even" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('even') : true} style={{ borderRight: '1px solid #5ea896' }} />
-          <OutsideBetCell label={<div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-[#bd222e] shadow-lg" />} bet={bets.get('red')} onPlace={() => onPlaceBet('red')} onRemove={() => onRemoveBet('red')} disabled={disabled} isWinner={isBetWinner('red')} phase={phase} numbers={RED_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="red" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('red') : true} style={{ borderRight: '1px solid #5ea896' }} />
-          <OutsideBetCell label={<div className="w-3 h-3 md:w-4 md:h-4 rounded-full bg-[#1e1e1e] shadow-lg" />} bet={bets.get('black')} onPlace={() => onPlaceBet('black')} onRemove={() => onRemoveBet('black')} disabled={disabled} isWinner={isBetWinner('black')} phase={phase} numbers={BLACK_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="black" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('black') : true} style={{ borderRight: '1px solid #5ea896' }} />
+          <OutsideBetCell 
+            label={
+              <span className="text-[9px] sm:text-[11px] md:text-[13px] font-black uppercase tracking-tighter">Red</span>
+            } 
+            bet={bets.get('red')} 
+            onPlace={() => onPlaceBet('red')} 
+            onRemove={() => onRemoveBet('red')} 
+            disabled={disabled} 
+            isWinner={isBetWinner('red')} 
+            phase={phase} 
+            numbers={RED_NUMBERS} 
+            onHover={handleHover} 
+            onHoverEnd={handleHoverEnd} 
+            betId="red" 
+            deleteMode={deleteMode} 
+            onPopLastChip={onPopLastChip} 
+            onClearZone={onClearZone} 
+            isMine={myBets ? myBets.has('red') : true} 
+            style={{ borderRight: '1px solid #5ea896', background: '#bd222e' }} 
+          />
+          <OutsideBetCell 
+            label={
+              <span className="text-[9px] sm:text-[11px] md:text-[13px] font-black uppercase tracking-tighter">Black</span>
+            } 
+            bet={bets.get('black')} 
+            onPlace={() => onPlaceBet('black')} 
+            onRemove={() => onRemoveBet('black')} 
+            disabled={disabled} 
+            isWinner={isBetWinner('black')} 
+            phase={phase} 
+            numbers={BLACK_NUMBERS} 
+            onHover={handleHover} 
+            onHoverEnd={handleHoverEnd} 
+            betId="black" 
+            deleteMode={deleteMode} 
+            onPopLastChip={onPopLastChip} 
+            onClearZone={onClearZone} 
+            isMine={myBets ? myBets.has('black') : true} 
+            style={{ borderRight: '1px solid #5ea896', background: '#1e1e1e' }} 
+          />
           <OutsideBetCell label="Odd" bet={bets.get('odd')} onPlace={() => onPlaceBet('odd')} onRemove={() => onRemoveBet('odd')} disabled={disabled} isWinner={isBetWinner('odd')} phase={phase} numbers={ODD_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="odd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('odd') : true} style={{ borderRight: '1px solid #5ea896' }} />
           <OutsideBetCell label="19-36" bet={bets.get('high')} onPlace={() => onPlaceBet('high')} onRemove={() => onRemoveBet('high')} disabled={disabled} isWinner={isBetWinner('high')} phase={phase} numbers={HIGH_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="high" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('high') : true} style={{ borderRight: '1px solid #5ea896' }} />
         </div>
-        <div className="border-r border-b border-[#5ea896]" />
+        <div className="bg-transparent" />
       </div>
 
       {/* Hover Highlight Overlay */}

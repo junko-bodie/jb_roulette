@@ -11,9 +11,11 @@ import EliminationScreen from './components/EliminationScreen';
 import WinnerScreen from './components/WinnerScreen';
 import Scoreboard from '@/components/tournament/Scoreboard';
 import Avatar from '@/components/ui/Avatar';
+import SpinHistory from '@/components/ui/SpinHistory';
 import { useGame } from '@/context/GameContext';
 import Toast from '@/components/ui/Toast';
 import { soundEngine } from '@/lib/audioEngine';
+import styles from '../tournament.module.css';
 
 export default function TournamentPage() {
   const {
@@ -35,7 +37,8 @@ export default function TournamentPage() {
     bets,
     setBets,
     totalBet,
-    dismissResult
+    dismissResult,
+    history
   } = useTournament();
   const { userProfile } = useGame();
   
@@ -58,7 +61,13 @@ export default function TournamentPage() {
 
   useEffect(() => {
     if (tournament?.status === 'active' && !hasStartedRef.current) {
-      setIsStarting(true);
+      // Only show "Match Found" animation if we're at the very beginning
+      const isVeryStart = currentRound === 1 && currentSpin === 1;
+      
+      if (isVeryStart) {
+        setIsStarting(true);
+      }
+      
       hasStartedRef.current = true;
       const timer = setTimeout(() => setIsStarting(false), 2500);
       return () => clearTimeout(timer);
@@ -74,6 +83,11 @@ export default function TournamentPage() {
   useEffect(() => {
     if (phase === "result") {
       setShowResult(true);
+      // Auto-dismiss after 2 seconds to keep the game moving fast
+      const timer = setTimeout(() => {
+        handleDismissResult();
+      }, 2000);
+      return () => clearTimeout(timer);
     } else if (phase === "betting") {
       setShowResult(false);
     }
@@ -417,57 +431,69 @@ export default function TournamentPage() {
           animate={{ opacity: 1, y: 0 }}
           style={{
             zIndex: 10,
-            width: '90%',
-            maxWidth: '600px',
-            background: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(10px)',
-            border: '2px solid rgba(201, 164, 76, 0.4)',
-            borderRadius: '24px',
-            padding: '40px',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
-            textAlign: 'center'
+            width: '94%',
+            maxWidth: '640px',
+            background: 'linear-gradient(135deg, rgba(20, 50, 40, 0.95) 0%, rgba(10, 30, 20, 0.98) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '2px solid rgba(201, 164, 76, 0.35)',
+            borderRadius: '32px',
+            padding: '48px 40px',
+            boxShadow: '0 30px 100px rgba(0,0,0,0.8), inset 0 0 40px rgba(201, 164, 76, 0.05)',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
-          <div style={{ color: '#c9a44c', fontWeight: 900, letterSpacing: '0.3em', fontSize: '10px', textTransform: 'uppercase', marginBottom: '12px' }}>
+          {/* Subtle inner glow */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,164,76,0.3), transparent)' }} />
+
+          <div style={{ color: '#c9a44c', fontWeight: 900, letterSpacing: '0.4em', fontSize: '10px', textTransform: 'uppercase', marginBottom: '16px', opacity: 0.8 }}>
             Tournament Matchmaking
           </div>
-          <h2 style={{ fontSize: '32px', color: '#fff', fontWeight: 900, marginBottom: '8px' }}>
+          <h2 className={styles.shimmerText} style={{ fontSize: '36px', fontWeight: 900, marginBottom: '8px', letterSpacing: '-0.02em' }}>
             Searching for Players...
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginBottom: '32px' }}>
-            Filling remaining spots with bots in {lobbyTimeRemaining}s
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginBottom: '40px', fontWeight: 500 }}>
+            Filling remaining spots with bots in <span style={{ color: '#c9a44c', fontWeight: 800 }}>{lobbyTimeRemaining}s</span>
           </p>
 
           {/* Players Grid */}
           <div style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(3, 1fr)', 
-            gap: '16px',
-            marginBottom: '40px' 
+            gap: '20px',
+            marginBottom: '48px' 
           }}>
             {Array.from({ length: 6 }).map((_, i) => {
               const p = tournament.players[i];
               return (
                 <div key={i} style={{
-                  background: p ? 'rgba(201,164,76,0.1)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${p ? 'rgba(201,164,76,0.3)' : 'rgba(255,255,255,0.1)'}`,
-                  borderRadius: '16px',
-                  padding: '16px 8px',
+                  background: p ? 'rgba(201,164,76,0.08)' : 'rgba(0,0,0,0.2)',
+                  border: `1px solid ${p ? 'rgba(201,164,76,0.4)' : 'rgba(201,164,76,0.1)'}`,
+                  borderRadius: '20px',
+                  padding: '20px 12px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '8px',
-                  opacity: p ? 1 : 0.4
+                  justifyContent: 'center',
+                  gap: '12px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: p ? '0 10px 20px rgba(0,0,0,0.2)' : 'none'
                 }}>
-                  <Avatar type={p?.avatar_url || 'default'} size="md" />
+                  <div style={{ position: 'relative' }}>
+                    <Avatar type={p?.avatar_url || 'default'} size="md" />
+                    {p && <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', background: '#4ade80', borderRadius: '50%', border: '2px solid #0a1e14' }} />}
+                  </div>
                   <span style={{ 
-                    color: p ? '#fff' : 'rgba(255,255,255,0.2)', 
+                    color: p ? '#fff' : 'rgba(255,255,255,0.15)', 
                     fontSize: '11px', 
-                    fontWeight: 700,
+                    fontWeight: 800,
                     maxWidth: '100%',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
                   }}>
                     {p ? p.username : 'EMPTY'}
                   </span>
@@ -476,14 +502,31 @@ export default function TournamentPage() {
             })}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: '12px',
+            background: 'rgba(0,0,0,0.2)',
+            padding: '12px 24px',
+            borderRadius: '100px',
+            width: 'fit-content',
+            margin: '0 auto',
+            border: '1px solid rgba(201,164,76,0.1)'
+          }}>
             <motion.div 
               animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-              style={{ width: '20px', height: '20px', border: '3px solid rgba(201,164,76,0.2)', borderTopColor: '#c9a44c', borderRadius: '50%' }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+              style={{ 
+                width: '18px', 
+                height: '18px', 
+                border: '2px solid rgba(201,164,76,0.1)', 
+                borderTopColor: '#c9a44c', 
+                borderRadius: '50%' 
+              }}
             />
-            <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700, fontSize: '13px' }}>
-              Matched {tournament.players.length}/6 Players
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Matched <span style={{ color: '#c9a44c' }}>{tournament.players.length}/6</span> Players
             </span>
           </div>
         </motion.div>
@@ -535,7 +578,7 @@ export default function TournamentPage() {
 
           {/* Competitors List */}
           <div className="flex flex-wrap justify-center gap-6 mb-12">
-            {tournament.players.slice(0, 6).map((p, i) => (
+            {tournament?.players?.slice(0, 6).map((p, i) => (
               <motion.div
                 key={p.player_id.toString()}
                 initial={{ opacity: 0, y: 15, scale: 0.8 }}
@@ -569,7 +612,7 @@ export default function TournamentPage() {
           >
             <div className="h-px w-64 bg-gradient-to-r from-transparent via-[#c9a44c]/40 to-transparent" />
             <span className="text-white/60 font-black text-sm uppercase tracking-[0.3em]">
-              Starting Round 1
+              Starting Round {currentRound}
             </span>
             <motion.div
               animate={{ opacity: [0.3, 1, 0.3] }}
@@ -600,17 +643,24 @@ export default function TournamentPage() {
           minHeight: '60px',
         }}
       >
-        <div className="flex items-center gap-6">
+        <div className="flex items-center">
           <button
             onClick={() => window.location.href = '/lobby'}
-            className="text-[#c9a44c] hover:text-white transition-colors"
+            className="text-[#c9a44c] hover:text-white transition-colors mr-10"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
           
-          <div className="flex flex-col">
+          <div className="hidden lg:block">
+            <SpinHistory history={history} />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-8">
+          {/* Round Information */}
+          <div className="flex flex-col items-end">
             <h1 className="text-[#c9a44c] font-black text-lg tracking-widest uppercase leading-none">
               Round {currentRound} of 5
             </h1>
@@ -618,34 +668,34 @@ export default function TournamentPage() {
               Spin {currentSpin} of 5
             </div>
           </div>
-        </div>
 
-        {/* Timer - Centered */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-          <div className={`
-            w-12 h-12 rounded-full flex items-center justify-center border-2 
-            ${isUrgent ? 'border-red-500 bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-[#c9a44c] bg-black/60 shadow-xl'}
-            transition-all duration-300
-          `}>
-            <span className={`text-xl font-black tabular-nums ${isUrgent ? 'text-red-500' : 'text-[#c9a44c]'}`}>
-              {phase === 'betting' ? displayTime : '--'}
-            </span>
+          {/* Timer Section */}
+          <div className="flex items-center gap-3">
+            <div className={`
+              w-12 h-12 rounded-full flex items-center justify-center border-2 
+              ${isUrgent ? 'border-red-500 bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-[#c9a44c] bg-black/60 shadow-xl'}
+              transition-all duration-300
+            `}>
+              <span className={`text-xl font-black tabular-nums ${isUrgent ? 'text-red-500' : 'text-[#c9a44c]'}`}>
+                {phase === 'betting' ? displayTime : '--'}
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">
+                {phase === 'betting' ? 'BETS OPEN' : phase.toUpperCase()}
+              </span>
+              {isUrgent && <span className="text-[9px] font-black text-red-500 uppercase tracking-tighter mt-0.5">Closing soon!</span>}
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">
-              {phase === 'betting' ? 'BETS OPEN' : phase.toUpperCase()}
-            </span>
-            {isUrgent && <span className="text-[9px] font-black text-red-500 uppercase tracking-tighter mt-0.5">Closing soon!</span>}
-          </div>
-        </div>
 
-        <div className="flex items-center gap-4">
-           {/* Placeholder for symmetry or extra tournament stats if needed */}
-           <div className="hidden sm:flex flex-col items-end">
-              <span className="text-[12px] font-black text-white">{userProfile.name}</span>
-              <span className="text-[9px] text-[#c9a44c] uppercase font-bold tracking-tighter">Tournament Mode</span>
-           </div>
-           <Avatar type={userProfile.avatar} size="sm" className="border-2 border-[#c9a44c]/40" />
+          {/* Player Profile Section */}
+          <div className="flex items-center gap-4 pl-4 border-l border-white/10">
+             <div className="hidden sm:flex flex-col items-end">
+                <span className="text-[12px] font-black text-white">{userProfile.name}</span>
+                <span className="text-[9px] text-[#c9a44c] uppercase font-bold tracking-tighter">Tournament Mode</span>
+             </div>
+             <Avatar type={userProfile.avatar} size="sm" className="border-2 border-[#c9a44c]/40" />
+          </div>
         </div>
       </header>
 

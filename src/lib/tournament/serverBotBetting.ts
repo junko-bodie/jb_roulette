@@ -9,27 +9,27 @@ export function generateServerBotBets(bot: TournamentPlayer, spinNumber: number 
 
   if (currentChips <= 0) return [];
 
-  // Bots wager between 10% and 25% of their chips for a balanced feel
-  const wagerPercent = 0.1 + (Math.random() * 0.15);
-  const maxWager = Math.max(5, Math.floor(currentChips * wagerPercent));
+  // Bots wager between 15% and 40% of their chips for a more aggressive feel
+  const wagerPercent = 0.15 + (Math.random() * 0.25);
+  const maxWager = Math.max(10, Math.floor(currentChips * wagerPercent));
   if (maxWager < 1) return [];
  
-  // Target moderate number of zones (3 to 7)
-  const numZones = Math.floor(Math.random() * 5) + 3;
+  // Target zones (3 to 6)
+  const numZones = Math.floor(Math.random() * 4) + 3;
   let totalWagered = 0;
 
   for (let i = 0; i < numZones; i++) {
     const remainingAllowed = maxWager - totalWagered;
     if (remainingAllowed < 1) break;
 
+    // ── Zone Selection Logic ──
     const isOutside = Math.random() < 0.5; // 50/50 mix
     let pool;
-
     if (isOutside) {
       pool = ALL_OUTSIDE_BETS;
     } else {
       const subType = Math.random();
-      if (subType < 0.5) pool = ALL_STRAIGHT_BETS; // More straights
+      if (subType < 0.5) pool = ALL_STRAIGHT_BETS;
       else if (subType < 0.8) pool = ALL_SPLIT_BETS;
       else pool = ALL_CORNER_BETS;
     }
@@ -37,28 +37,32 @@ export function generateServerBotBets(bot: TournamentPlayer, spinNumber: number 
     const randomDef = pool[Math.floor(Math.random() * pool.length)];
     const betId = (randomDef as any).id;
 
-    // To prevent betting on same zone multiple times in one generation pass
+    // Prevent duplicate zones in one pass
     if (bets.find(b => b.betId === betId)) continue;
 
-    // Pick largest possible chips to reach a "bold" bet for this zone
-    // Bots will try to spend about 1/4 of their remaining allowance on each new zone
-    const targetForZone = Math.max(1, Math.floor(remainingAllowed / (numZones - i)));
+    // ── Amount Selection Logic ──
+    const isWhaleMove = Math.random() < 0.1;
+    const targetForZone = isWhaleMove 
+      ? Math.max(50, Math.floor(remainingAllowed * 0.6)) 
+      : Math.max(1, Math.floor(remainingAllowed / (numZones - i)));
+
     let zoneAmount = 0;
     const zoneChips: number[] = [];
 
     while (zoneAmount < targetForZone) {
-      const possibleChars = CHIP_VALUES.filter(v => v <= (targetForZone - zoneAmount));
+      const possibleChars = CHIP_VALUES.filter(v => v <= (targetForZone - zoneAmount + 25));
       if (possibleChars.length === 0) {
-        // Just take the smallest 1 if we have room in total maxWager
         if (totalWagered + zoneAmount < maxWager) {
           zoneChips.push(1);
           zoneAmount += 1;
         }
         break;
       }
-      const chip = possibleChars[possibleChars.length - 1]; // Pick largest available
+      
+      const chip = possibleChars[possibleChars.length - 1];
       zoneChips.push(chip);
       zoneAmount += chip;
+      if (totalWagered + zoneAmount >= maxWager) break;
     }
 
     if (zoneAmount > 0) {

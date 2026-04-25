@@ -260,9 +260,9 @@ export async function GET(
           if (now < bettingDeadline && !allReady) {
             phase = 'betting';
           } else {
-            // ── AUTO-SPIN WATCHDOG: betting deadline passed OR all players ready, execute spin ──
+            // ── AUTO-SPIN WATCHDOG: betting deadline passed, execute spin ──
             const GRACE = 2000; // 2s grace
-            if (allReady || now > bettingDeadline + GRACE) {
+            if (now > bettingDeadline + GRACE) {
               console.log(`[Watchdog] Auto-spinning for round ${activeRound._id}, spin ${currentSpinNumber}`);
 
               const existing = await db.collection('spins').findOne({
@@ -395,10 +395,27 @@ export async function GET(
       { sort: { created_at: -1 } }
     );
 
+    // Fetch history (last 25 spins for the current round)
+    const historySpins = activeRound 
+      ? await db.collection('spins')
+          .find({ round_id: activeRound._id })
+          .sort({ created_at: -1 })
+          .limit(25)
+          .toArray()
+      : [];
+
+    const history = historySpins.map(s => ({
+      ...s.result,
+      id: s._id.toString(),
+      spin_number: s.spin_number,
+      round_id: s.round_id?.toString()
+    }));
+
     return NextResponse.json({
       ...(freshTournament || tournament),
       active_round: activeRound,
       latest_spin: finalLatestSpin,
+      history,
       server_time: now,
       calculated_phase: phase,
       betting_deadline: bettingDeadline,

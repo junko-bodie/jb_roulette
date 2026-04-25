@@ -10,6 +10,7 @@ import { soundEngine } from '@/lib/audioEngine';
 
 import { useGame } from '@/context/GameContext';
 import BetTimer from '@/components/ui/BetTimer';
+import TournamentRules from '@/components/tournament/TournamentRules';
 
 interface RouletteTableProps {
   wheelType: WheelType;
@@ -147,8 +148,8 @@ const RouletteTable = memo(function RouletteTable({
         <div
           className="relative rounded-[32px] border-b-4 border-black/40 overflow-hidden flex flex-row items-center justify-start gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full"
           style={{
-            background: 'radial-gradient(circle at 50% 50%, #0d2e23 0%, #051410 100%)', 
-            padding: '1.2rem 1.8rem 1.2rem 0.8rem',
+            background: 'radial-gradient(circle at 50% 50%, #0d2e23 0%, #051410 100%)',
+            padding: '0.02rem 1.8rem 1.2rem 0.8rem',
             zIndex: 2,
             boxShadow: `
               inset 0 0 80px rgba(0,0,0,0.8),
@@ -162,8 +163,8 @@ const RouletteTable = memo(function RouletteTable({
             ref={wheelRef}
             className="relative flex justify-center items-center flex-1 mobile-wheel-section"
             initial={{ opacity: 0, scale: 0.95 }}
-            animate={isMobile 
-              ? { opacity: 1, scale: 1, y: 0 } 
+            animate={isMobile
+              ? { opacity: 1, scale: 1, y: 0 }
               : { opacity: 1, scale: 1, y: -25 }
             }
           >
@@ -177,50 +178,70 @@ const RouletteTable = memo(function RouletteTable({
 
             {/* Wheel type toggle — overlaid at bottom center of wheel */}
             {!tournamentMode && (
-            <div
-              className="absolute flex items-center gap-2 text-[13px] z-30"
-              style={{
-                fontFamily: 'var(--font-inter)',
-                bottom: '-40px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.75)',
-                borderRadius: '9999px',
-                padding: '5px 10px',
-                backdropFilter: 'blur(8px)',
-                border: '1.5px solid rgba(201, 164, 76, 0.4)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
-              }}
-            >
-              <button
-                onClick={() => setWheelType('american')}
-                className="px-6 py-2 rounded-full transition-all duration-300 cursor-pointer"
+              <div
+                className="absolute flex items-center gap-2 text-[13px] z-30"
                 style={{
-                  background: wheelType === 'american' ? '#c9a84c60' : 'transparent',
-                  color: wheelType === 'american' ? '#f4fbfb' : '#c2d7d580',
-                  fontWeight: 'bold',
+                  fontFamily: 'var(--font-inter)',
+                  bottom: '-40px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(0,0,0,0.75)',
+                  borderRadius: '9999px',
+                  padding: '5px 10px',
+                  backdropFilter: 'blur(8px)',
+                  border: '1.5px solid rgba(201, 164, 76, 0.4)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
                 }}
               >
-                American
-              </button>
-              <button
-                onClick={() => setWheelType('european')}
-                className="px-6 py-2 rounded-full transition-all duration-300 cursor-pointer"
-                style={{
-                  background: wheelType === 'european' ? '#c9a84c60' : 'transparent',
-                  color: wheelType === 'european' ? '#f4fbfb' : '#c2d7d580',
-                  fontWeight: 'bold',
-                }}
-              >
-                European
-              </button>
-            </div>
+                <button
+                  onClick={() => setWheelType('american')}
+                  className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
+                  style={{
+                    background: wheelType === 'american'
+                      ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
+                      : 'rgba(255,255,255,0.05)',
+                    color: wheelType === 'american' ? '#000' : '#c2d7d580',
+                    fontWeight: 900,
+                    fontSize: '14px',
+                    letterSpacing: '0.05em',
+                    border: '2px solid',
+                    borderColor: wheelType === 'american' ? '#f5edd5' : 'transparent',
+                    boxShadow: wheelType === 'american'
+                      ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
+                      : 'none',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  American
+                </button>
+                <button
+                  onClick={() => setWheelType('european')}
+                  className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
+                  style={{
+                    background: wheelType === 'european'
+                      ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
+                      : 'rgba(255,255,255,0.05)',
+                    color: wheelType === 'european' ? '#000' : '#c2d7d580',
+                    fontWeight: 900,
+                    fontSize: '14px',
+                    letterSpacing: '0.05em',
+                    border: '2px solid',
+                    borderColor: wheelType === 'european' ? '#f5edd5' : 'transparent',
+                    boxShadow: wheelType === 'european'
+                      ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
+                      : 'none',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  European
+                </button>
+              </div>
             )}
           </motion.div>
 
           {/* Table Section (Right) */}
           <motion.div
-            className="flex-[2] flex flex-col items-center justify-center p-2 mobile-table-section w-full"
+            className="flex-[2] flex flex-col items-center justify-start p-2 mobile-table-section w-full"
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
             animate={isMobile
               ? { opacity: 1, x: 0, scale: 1 }
@@ -228,9 +249,8 @@ const RouletteTable = memo(function RouletteTable({
             }
             transition={{ duration: 0.5 }}
           >
-            {/* Junko Bodie Title — above the betting grid (hidden in tournament mode) */}
-            {!tournamentMode && (
-            <div className="flex flex-col items-center mb-0.5 -mt-2" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
+            {/* Junko Bodie Title & Tournament Rules */}
+            <div className="flex flex-col items-center mb-0.5 -mt-24" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
               <h1
                 className="text-2xl md:text-3xl tracking-wider"
                 style={{
@@ -247,7 +267,7 @@ const RouletteTable = memo(function RouletteTable({
               >
                 JUNKO BODIE
               </h1>
-              <div className="flex items-center gap-2 -mt-0.5">
+              <div className="flex items-center gap-2 -mt-0.5 mb-2">
                 <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
                 <span
                   className="text-[9px] uppercase tracking-[0.4em]"
@@ -261,8 +281,9 @@ const RouletteTable = memo(function RouletteTable({
                 </span>
                 <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
               </div>
+
+              {tournamentMode && <TournamentRules />}
             </div>
-            )}
 
             {/* Betting Grid Section with Blur & Overlay */}
             <div className="w-full relative">
@@ -313,162 +334,162 @@ const RouletteTable = memo(function RouletteTable({
 
             {/* ═══ BUTTONS — directly below betting grid (hidden in tournament mode) ═══ */}
             {!tournamentMode && (
-            <div
-              className="flex items-center justify-end gap-3 mt-2 w-full pr-8"
-              style={{ transform: 'scaleX(0.78) scaleY(0.645)' }}
-            >
-              {/* Timer UI - only show if betting and timer enabled */}
-              <div className="flex flex-col items-center justify-center mr-4">
-                {isTimerEnabled && !isSpinning && phase === 'BETTING' && (
-                  <BetTimer
-                    duration={45}
-                    isActive={!isSpinning && phase === 'BETTING'}
-                    onTimeout={() => {
-                      if (onTimeout) {
-                        onTimeout();
-                      } else if (hasBets && !isSpinning) {
-                        handleSpinClick();
-                      }
-                    }}
-                  />
+              <div
+                className="flex items-center justify-end gap-3 mt-2 w-full pr-8"
+                style={{ transform: 'scaleX(1.0) scaleY(1.0)' }}
+              >
+                {/* Timer UI - only show if betting and timer enabled */}
+                <div className="flex flex-col items-center justify-center mr-4">
+                  {isTimerEnabled && !isSpinning && phase === 'BETTING' && (
+                    <BetTimer
+                      duration={45}
+                      isActive={!isSpinning && phase === 'BETTING'}
+                      onTimeout={() => {
+                        if (onTimeout) {
+                          onTimeout();
+                        } else if (hasBets && !isSpinning) {
+                          handleSpinClick();
+                        }
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* 2X and Delete Mode Buttons — Left Side */}
+                {!isBettingDisabled && totalBet > 0 && (
+                  <>
+                    <BettingControlButtons
+                      totalBet={totalBet}
+                      balance={balance}
+                      onDouble={onDoubleAllBets || (() => false)}
+                      onToggleDelete={onToggleDeleteMode || (() => { })}
+                      deleteMode={deleteMode}
+                      disabled={isBettingDisabled}
+                    />
+                    <div style={{ width: '1px', height: '24px', background: '#5ea896', opacity: 0.3 }} />
+                  </>
                 )}
+
+                {/* RESET — compact bordered box */}
+                <button
+                  onClick={onRebet}
+                  disabled={!canBet || !hasLastSpin}
+                  className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase' as const,
+                    color: '#d4d0c4',
+                    background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                    border: '2px solid #5ea896',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    lineHeight: 1,
+                  }}
+                >
+                  Reset
+                </button>
+
+                {/* CLEAR — compact bordered box (clears all bets) */}
+                <button
+                  onClick={handleClearBetsClick}
+                  disabled={!canBet || !hasBets}
+                  className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase' as const,
+                    color: '#d4d0c4',
+                    background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
+                    border: '2px solid #5ea896',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    lineHeight: 1,
+                  }}
+                >
+                  Clear
+                </button>
+
+                {/* CLEAR LAST BET — compact bordered box with sub-label */}
+                <button
+                  onClick={handleClearLastBetClick}
+                  disabled={!canBet || !hasBets}
+                  className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '10px',
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase' as const,
+                    color: '#d4d0c4',
+                    background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                    border: '2px solid #5ea896',
+                    borderRadius: '6px',
+                    padding: '5px 10px',
+                    lineHeight: 1,
+                    display: 'flex',
+                    flexDirection: 'column' as const,
+                    alignItems: 'center',
+                    gap: '2px',
+                  }}
+                >
+                  <span>Clear</span>
+                  <span style={{ fontSize: '7px', opacity: 0.6, letterSpacing: '0.05em' }}>LAST BET</span>
+                </button>
+
+                {/* SPIN — dark green oval with thick gold border */}
+                {/* SPIN — dark green oval with thick gold border */}
+                <motion.button
+                  onClick={handleSpinClick}
+                  disabled={!spinEnabled}
+                  whileHover={spinEnabled ? { scale: 1.06, y: -1 } : {}}
+                  whileTap={spinEnabled ? { scale: 1.12, y: 1 } : {}}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="relative overflow-hidden cursor-pointer disabled:cursor-not-allowed ml-1"
+                  style={{
+                    background: spinEnabled
+                      ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
+                      : 'linear-gradient(180deg, #1a1a1a 0%, #111 100%)',
+                    color: spinEnabled ? '#ffffff' : '#444',
+                    fontFamily: "'Bodoni Moda', serif",
+                    fontStyle: 'italic',
+                    fontWeight: 800,
+                    fontSize: '0.9rem',
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase' as const,
+                    padding: '8px 26px',
+                    borderRadius: '9999px',
+                    borderWidth: spinEnabled ? '3px' : '2px',
+                    borderStyle: 'solid',
+                    borderColor: spinEnabled ? '#c9a44c' : '#333',
+                    boxShadow: spinEnabled
+                      ? `0 0 0 2px #1a0f09, 0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -3px 0 rgba(0,0,0,0.4), 0 0 30px rgba(201, 168, 76, 0.3)`
+                      : 'none',
+                    textShadow: spinEnabled ? '0 2px 4px rgba(0,0,0,0.6)' : 'none',
+                  } as React.CSSProperties}
+                >
+                  {/* Shimmer overlay */}
+                  {spinEnabled && !isSpinning && (
+                    <motion.div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.15) 50%, transparent 65%)',
+                        backgroundSize: '200% 100%',
+                        borderRadius: '9999px',
+                      } as React.CSSProperties}
+                      animate={{ backgroundPosition: ['200% 0%', '-200% 0%'] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'linear', repeatDelay: 2 }}
+                    />
+                  )}
+                  <span className="relative z-10">
+                    {isSpinning ? 'Spinning...' : 'SPIN'}
+                  </span>
+                </motion.button>
               </div>
-
-              {/* 2X and Delete Mode Buttons — Left Side */}
-              {!isBettingDisabled && totalBet > 0 && (
-                <>
-                  <BettingControlButtons
-                    totalBet={totalBet}
-                    balance={balance}
-                    onDouble={onDoubleAllBets || (() => false)}
-                    onToggleDelete={onToggleDeleteMode || (() => { })}
-                    deleteMode={deleteMode}
-                    disabled={isBettingDisabled}
-                  />
-                  <div style={{ width: '1px', height: '24px', background: '#5ea896', opacity: 0.3 }} />
-                </>
-              )}
-
-              {/* RESET — compact bordered box */}
-              <button
-                onClick={onRebet}
-                disabled={!canBet || !hasLastSpin}
-                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
-                style={{
-                  fontFamily: 'var(--font-inter)',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase' as const,
-                  color: '#d4d0c4',
-                  background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
-                  border: '2px solid #5ea896',
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  lineHeight: 1,
-                }}
-              >
-                Reset
-              </button>
-
-              {/* CLEAR — compact bordered box (clears all bets) */}
-              <button
-                onClick={handleClearBetsClick}
-                disabled={!canBet || !hasBets}
-                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
-                style={{
-                  fontFamily: 'var(--font-inter)',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase' as const,
-                  color: '#d4d0c4',
-                  background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
-                  border: '2px solid #5ea896',
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  lineHeight: 1,
-                }}
-              >
-                Clear
-              </button>
-
-              {/* CLEAR LAST BET — compact bordered box with sub-label */}
-              <button
-                onClick={handleClearLastBetClick}
-                disabled={!canBet || !hasBets}
-                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
-                style={{
-                  fontFamily: 'var(--font-inter)',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase' as const,
-                  color: '#d4d0c4',
-                  background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
-                  border: '2px solid #5ea896',
-                  borderRadius: '6px',
-                  padding: '5px 10px',
-                  lineHeight: 1,
-                  display: 'flex',
-                  flexDirection: 'column' as const,
-                  alignItems: 'center',
-                  gap: '2px',
-                }}
-              >
-                <span>Clear</span>
-                <span style={{ fontSize: '7px', opacity: 0.6, letterSpacing: '0.05em' }}>LAST BET</span>
-              </button>
-
-              {/* SPIN — dark green oval with thick gold border */}
-              {/* SPIN — dark green oval with thick gold border */}
-              <motion.button
-                onClick={handleSpinClick}
-                disabled={!spinEnabled}
-                whileHover={spinEnabled ? { scale: 1.06, y: -1 } : {}}
-                whileTap={spinEnabled ? { scale: 1.12, y: 1 } : {}}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className="relative overflow-hidden cursor-pointer disabled:cursor-not-allowed ml-1"
-                style={{
-                  background: spinEnabled
-                    ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
-                    : 'linear-gradient(180deg, #1a1a1a 0%, #111 100%)',
-                  color: spinEnabled ? '#ffffff' : '#444',
-                  fontFamily: "'Bodoni Moda', serif",
-                  fontStyle: 'italic',
-                  fontWeight: 800,
-                  fontSize: '1.1rem',
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase' as const,
-                  padding: '10px 34px',
-                  borderRadius: '9999px',
-                  borderWidth: spinEnabled ? '4px' : '2px',
-                  borderStyle: 'solid',
-                  borderColor: spinEnabled ? '#c9a44c' : '#333',
-                  boxShadow: spinEnabled
-                    ? `0 0 0 2px #1a0f09, 0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -3px 0 rgba(0,0,0,0.4), 0 0 30px rgba(201, 168, 76, 0.3)`
-                    : 'none',
-                  textShadow: spinEnabled ? '0 2px 4px rgba(0,0,0,0.6)' : 'none',
-                } as React.CSSProperties}
-              >
-                {/* Shimmer overlay */}
-                {spinEnabled && !isSpinning && (
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.15) 50%, transparent 65%)',
-                      backgroundSize: '200% 100%',
-                      borderRadius: '9999px',
-                    } as React.CSSProperties}
-                    animate={{ backgroundPosition: ['200% 0%', '-200% 0%'] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'linear', repeatDelay: 2 }}
-                  />
-                )}
-                <span className="relative z-10">
-                  {isSpinning ? 'Spinning...' : 'SPIN'}
-                </span>
-              </motion.button>
-            </div>
             )}
           </motion.div>
         </div>

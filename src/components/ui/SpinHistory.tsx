@@ -27,7 +27,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
   return (
     <div className="flex items-center gap-3 px-4 py-1">
       <span
-        className="text-sm font-bold uppercase tracking-[0.2em] mr-3 whitespace-nowrap"
+        className="text-sm font-bold uppercase tracking-[0.2em] mr-6 whitespace-nowrap"
         style={{ color: '#e0d6c2', fontFamily: "'Bodoni Moda', serif", letterSpacing: '0.2em' }}
       >
         History
