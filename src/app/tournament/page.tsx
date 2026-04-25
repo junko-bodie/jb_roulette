@@ -87,10 +87,10 @@ export default function TournamentLobby() {
         <div style={{ color: 'rgba(201,164,76,0.6)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.2em' }}>
           PRO TOURNAMENT SERIES
         </div>
-        <button 
+        <button
           onClick={handleSignOut}
-          style={{ 
-            background: 'none', border: '1px solid rgba(255,100,100,0.3)', color: '#ff6b6b', 
+          style={{
+            background: 'none', border: '1px solid rgba(255,100,100,0.3)', color: '#ff6b6b',
             padding: '8px 16px', borderRadius: '12px', fontSize: '10px', cursor: 'pointer',
             textTransform: 'uppercase', letterSpacing: '0.15em', marginLeft: 'auto',
             fontWeight: 800
@@ -101,14 +101,14 @@ export default function TournamentLobby() {
       </header>
 
       <main className={styles.main}>
-        <motion.div 
+        <motion.div
           className={styles.lobbyContainer}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3 }}
@@ -125,13 +125,13 @@ export default function TournamentLobby() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
             <div style={{ textAlign: 'center', maxWidth: '500px' }}>
               <p className={styles.subtitle} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: 0 }}>
-                Step into the high-stakes arena where legends are made. 
+                Step into the high-stakes arena where legends are made.
                 Test your luck and strategy against the finest players.
               </p>
             </div>
 
             {/* ARE YOU READY HYPE SECTION */}
-            <motion.div 
+            <motion.div
               className={styles.readySection}
               animate={{ scale: [1, 1.01, 1] }}
               transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
@@ -159,7 +159,7 @@ export default function TournamentLobby() {
               <div style={{ width: '1px', height: '30px', background: 'rgba(201,164,76,0.15)' }} />
 
               <div style={{ textAlign: 'left' }}>
-                <motion.div 
+                <motion.div
                   className={styles.shimmerText}
                   style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '-0.02em', fontStyle: 'italic' }}
                 >
@@ -170,13 +170,13 @@ export default function TournamentLobby() {
             </motion.div>
 
             <div className={styles.slotFooter} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-              <button 
+              <button
                 className={styles.startButton}
                 onClick={handleStartTournament}
                 disabled={isCreating}
-                style={{ 
-                  width: '100%', 
-                  maxWidth: '360px', 
+                style={{
+                  width: '100%',
+                  maxWidth: '360px',
                   height: '56px',
                   fontSize: '16px',
                   borderRadius: '14px',

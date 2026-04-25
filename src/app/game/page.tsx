@@ -253,7 +253,7 @@ export default function GamePage() {
           </div>
         </div>
 
-        <div 
+        <div
           onClick={() => {
             soundEngine?.playClick();
             setIsProfileOpen(true);
@@ -262,16 +262,16 @@ export default function GamePage() {
         >
           <div className="relative">
             <div className="w-10 h-10 rounded-full border border-[#c9a44c]/60 overflow-hidden bg-black/60 shadow-lg group-hover:border-[#c9a44c] transition-all">
-              <img 
-                src={userProfile?.avatar || '/avatars/default.png'} 
-                alt="avatar" 
-                className="w-full h-full object-cover" 
+              <img
+                src={userProfile?.avatar || '/avatars/default.png'}
+                alt="avatar"
+                className="w-full h-full object-cover"
               />
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border border-black rounded-full shadow-sm" />
           </div>
           <div className="flex flex-col">
-            <span 
+            <span
               className="text-white font-bold text-base leading-tight tracking-tight shadow-black drop-shadow-md group-hover:text-[#c9a44c] transition-colors"
               style={{ fontFamily: "'Bodoni Moda', serif", fontStyle: 'italic' }}
             >
