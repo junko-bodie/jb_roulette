@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useGame } from '@/context/GameContext';
 import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/ui/Avatar';
-import WelcomeVideoModal from '@/components/ui/WelcomeVideoModal';
 import styles from './tournament.module.css';
 
 export default function TournamentLobby() {
@@ -204,7 +203,6 @@ export default function TournamentLobby() {
       <footer style={{ padding: '40px', textAlign: 'center', fontSize: '10px', color: 'rgba(201,164,76,0.3)', letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 800 }}>
         Professional Roulette Tournament • Join the Elite League
       </footer>
-      <WelcomeVideoModal />
     </div>
   );
 }

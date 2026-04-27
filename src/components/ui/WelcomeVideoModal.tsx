@@ -3,22 +3,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function WelcomeVideoModal() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+interface WelcomeVideoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-  useEffect(() => {
-    const hidden = localStorage.getItem('hideWelcomeVideo');
-    if (!hidden) {
-      setIsOpen(true);
-    }
-  }, []);
+export default function WelcomeVideoModal({ isOpen, onClose }: WelcomeVideoModalProps) {
+  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const handleClose = () => {
     if (dontShowAgain) {
       localStorage.setItem('hideWelcomeVideo', 'true');
     }
-    setIsOpen(false);
+    onClose();
   };
 
   if (!isOpen) return null;

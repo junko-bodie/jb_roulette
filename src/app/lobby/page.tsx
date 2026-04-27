@@ -18,6 +18,7 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState<string | null>(null);
+  const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -172,7 +173,14 @@ export default function Home() {
 
           <motion.div
             className={styles.playCard}
-            onClick={() => router.push('/tournament')}
+            onClick={() => {
+              const hidden = localStorage.getItem('hideWelcomeVideo');
+              if (hidden) {
+                router.push('/tournament');
+              } else {
+                setIsWelcomeVideoOpen(true);
+              }
+            }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
@@ -262,7 +270,13 @@ export default function Home() {
       {/* Modals */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
-      <WelcomeVideoModal />
+      <WelcomeVideoModal 
+        isOpen={isWelcomeVideoOpen} 
+        onClose={() => {
+          setIsWelcomeVideoOpen(false);
+          router.push('/tournament');
+        }} 
+      />
     </div>
   );
 }
