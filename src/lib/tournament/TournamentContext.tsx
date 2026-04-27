@@ -6,6 +6,7 @@ import { Tournament, TournamentPlayer } from '@/lib/models/Tournament';
 import { PlacedBet } from '../bets';
 import { calculatePayouts } from '../payouts';
 import { useGame } from '@/context/GameContext';
+import { soundEngine } from '../audioEngine';
 
 export type TournamentPhase =
   | 'waiting'
@@ -16,6 +17,16 @@ export type TournamentPhase =
   | 'elimination'
   | 'round_complete'
   | 'completed';
+
+export interface BettingEvent {
+  id: string;
+  username: string;
+  amount: number;
+  betId: string;
+  timestamp: number;
+  color: string;
+  betZone?: string;
+}
 
 interface TournamentContextType {
   tournament: Tournament | null;
@@ -33,6 +44,9 @@ interface TournamentContextType {
     is_bot: boolean;
     status: 'active' | 'eliminated';
     final_position?: number | null;
+    color: string;
+    currentWager: number;
+    isEliminating?: boolean; // For animation
   }>;
   timeRemaining: number;
   setPhase: (phase: TournamentPhase) => void;
@@ -54,6 +68,8 @@ interface TournamentContextType {
   totalBet: number;
   history: any[];
   showResult: boolean;
+  events: BettingEvent[];
+  addEvent: (event: Omit<BettingEvent, 'id' | 'timestamp'>) => void;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(undefined);
@@ -69,6 +85,15 @@ const PHASE_PRIORITY: Record<string, number> = {
   completed: 6,
   round_complete: 3.5,
 };
+
+const PLAYER_COLORS = [
+  '#2563EB', // Sapphire Blue
+  '#059669', // Emerald Green
+  '#991B1B', // Deep Crimson
+  '#7C3AED', // Amethyst Purple
+  '#0D9488', // Deep Teal
+  '#475569', // Storm Slate
+];
 
 export function TournamentProvider({ children }: { children: React.ReactNode }) {
   const params = useParams();
@@ -99,6 +124,11 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const [bettingDeadline, setBettingDeadline] = useState<number>(0);
   const [dismissedSpinId, setDismissedSpinId] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [events, setEvents] = useState<BettingEvent[]>([]);
+  const [prevLeaderId, setPrevLeaderId] = useState<string | null>(null);
+  const announcedElimId = useRef<string | null>(null);
+  const announcedLeaderId = useRef<string | null>(null);
+  const announcedBettingSpinArr = useRef<string[]>([]);
 
   // Refs for stable closures
   const phaseRef = useRef<TournamentPhase>('waiting');
@@ -114,6 +144,32 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   betsRef.current = bets;
 
   const totalSpins = 5;
+  
+  // Clear betting events and play announcement when a new betting phase starts
+  useEffect(() => {
+    if (phase === 'betting') {
+      setEvents([]);
+      
+      const spinKey = `${currentRound}-${currentSpin}`;
+      if (!announcedBettingSpinArr.current.includes(spinKey)) {
+        // High-roller timing: delay for Match Found screen (2.5s) on initial spin
+        const isVeryStart = currentRound === 1 && currentSpin === 1;
+        const delay = isVeryStart ? 2800 : 500;
+        
+        setTimeout(() => {
+          if (phaseRef.current === 'betting') {
+            soundEngine?.playPlaceBetsSound?.();
+          }
+        }, delay);
+
+        announcedBettingSpinArr.current.push(spinKey);
+        // Keep only last 10 spin keys to avoid memory growth
+        if (announcedBettingSpinArr.current.length > 10) {
+          announcedBettingSpinArr.current.shift();
+        }
+      }
+    }
+  }, [phase, currentSpin, currentRound]);
 
   // ════════════════════════════════════════════════════════════
   // submitBets — locks bets in and waits for server watchdog to spin
@@ -131,6 +187,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     
     // The player's UI changes to "LOCKED" waiting for others or the deadline
     setPhase('locked');
+    soundEngine?.playLockSound();
 
     try {
       const player = tournament?.players?.find(p => 
@@ -151,7 +208,12 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       });
 
       if (!res.ok) {
-         console.error('[Tournament] Bet lock server error');
+         const errorData = await res.json().catch(() => ({}));
+         console.error('[Tournament] Bet lock server error:', errorData.error || res.statusText);
+         
+         // RECOVERY: If submission failed, revert to betting so user can try again or wait for auto-sub
+         setPhase('betting');
+         spinSubmittedRef.current = ''; 
       }
       
       // We do not set the spin data locally here. 
@@ -159,6 +221,9 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       // automatically based on everyone being locked or the timer expiring.
     } catch (err) {
       console.error('[Tournament] submitBets error:', err);
+      // RECOVERY
+      setPhase('betting');
+      spinSubmittedRef.current = '';
     }
   }, [id, currentRound, currentSpin, userProfile, tournament]);
 
@@ -316,12 +381,21 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     loadTournament();
   }, [loadTournament]);
 
-  // ── Poll every 2s ──
+  // ── Poll for tournament updates ──
   useEffect(() => {
-    if (!id) return;
-    const interval = setInterval(loadTournament, 2000);
-    return () => clearInterval(interval);
-  }, [id, loadTournament]);
+    if (!id || (tournament && tournament.status === 'completed')) return;
+
+    let timeoutId: any;
+    const poll = async () => {
+      await loadTournament();
+      // Throttle background polling to 15s to prevent catch-up bursts on focus
+      const isHidden = typeof document !== 'undefined' && document.hidden;
+      timeoutId = setTimeout(poll, isHidden ? 15000 : 2000);
+    };
+
+    poll();
+    return () => clearTimeout(timeoutId);
+  }, [id, loadTournament, tournament?.status]);
 
   // ── Smooth lobby timer ──
   useEffect(() => {
@@ -348,8 +422,10 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
 
   // ── Smooth local timer countdown ──
   useEffect(() => {
-    if (phase !== 'betting' || bettingDeadline <= 0) {
-      if (phase !== 'betting') setTimeRemaining(0);
+    // Keep timer active during locked phase so player sees countdown
+    const isBettingOrLocked = (phase === 'betting' || phase === 'locked');
+    if (!isBettingOrLocked || bettingDeadline <= 0) {
+      if (!isBettingOrLocked) setTimeRemaining(0);
       return;
     }
 
@@ -411,8 +487,29 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     spinBotBets.forEach((bet: any) => {
       const delay = Math.max(0, (base + (bet.reveal_at_ms || 0)) - Date.now());
       timeouts.push(setTimeout(() => {
+        // Skip visual state updates when hidden to prevent "burst" events on focus
+        if (typeof document !== 'undefined' && document.hidden) return;
+        
         setBotBets(prev => {
           if (prev.some((b: any) => b.betId === bet.betId)) return prev;
+          
+          // Find player color
+          const playerIdx = tournament?.players?.findIndex(p => p.player_id.toString() === bet.player_id.toString()) ?? 0;
+          const playerColor = PLAYER_COLORS[playerIdx % PLAYER_COLORS.length];
+
+          // Add to betting events feed
+          setEvents(curr => [
+            {
+              id: `${bet.betId}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+              username: bet.username,
+              amount: bet.amount,
+              betId: bet.betId,
+              timestamp: Date.now(),
+              color: playerColor
+            },
+            ...curr.slice(0, 19) // Keep last 20 events
+          ]);
+
           return [...prev, { player_id: bet.player_id, username: bet.username, betId: bet.betId, amount: bet.amount, chips: bet.chips }];
         });
       }, delay));
@@ -471,9 +568,30 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     });
 
     setPendingSpinData(null);
+
+    // Audio Feedback for the human player
+    if (myResult) {
+      if (myResult.net_change > 0) {
+        soundEngine?.playWinSound?.();
+      } else if (myResult.net_change < 0) {
+        soundEngine?.playLossSound?.();
+      }
+    }
   }, [pendingSpinData, lastSpinResult, userProfile.id]);
 
-  // ── syncMyBets — push pending bets to server for other players to see ──
+  // ── addEvent — manually push event to feed ──
+  const addEvent = useCallback((event: Omit<BettingEvent, 'id' | 'timestamp'>) => {
+    setEvents(curr => [
+      {
+        ...event,
+        id: `${event.betId}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+        timestamp: Date.now()
+      },
+      ...curr.slice(0, 19)
+    ]);
+  }, []);
+
+  // ── Sync My Bets ──
   const syncMyBets = useCallback(async (currentBets: any[]) => {
     if (!id || phase !== 'betting' || currentBets.length === 0) return;
 
@@ -555,17 +673,67 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     if (!tournament) return [];
     const active = (tournament.players || []).filter(p => p.status === 'active').sort((a, b) => b.current_chips - a.current_chips);
     const eliminated = (tournament.players || []).filter(p => p.status === 'eliminated').sort((a, b) => (a.final_position || 10) - (b.final_position || 10));
-    return [...active, ...eliminated].map((p, index) => ({
-      player_id: p.player_id,
-      username: p.username,
-      chips: p.current_chips,
-      rank: p.status === 'active' ? index + 1 : (p.final_position || 0),
-      is_bot: p.is_bot,
-      status: p.status,
-      final_position: p.final_position,
-      has_champion_badge: p.has_champion_badge,
-    }));
-  }, [tournament]);
+    
+    const players = [...active, ...eliminated].map((p, index) => {
+      // Find original index in tournament.players to keep color stable
+      const originalIndex = tournament.players?.findIndex(tp => tp.player_id.toString() === p.player_id.toString()) ?? index;
+      
+      // Calculate current wager
+      let currentWager = 0;
+      if (p.is_bot) {
+        // Sum bot bets for this spin
+        currentWager = botBets
+          .filter(bb => bb.player_id.toString() === p.player_id.toString())
+          .reduce((sum, bb) => sum + (bb.amount || 0), 0);
+      } else {
+        // Human player wagers
+        currentWager = Array.from(bets.values()).reduce((sum, b) => sum + b.amount, 0);
+      }
+
+      return {
+        player_id: p.player_id,
+        username: p.username,
+        chips: p.current_chips,
+        rank: p.status === 'active' ? index + 1 : (p.final_position || 0),
+        is_bot: p.is_bot,
+        status: p.status,
+        final_position: p.final_position,
+        has_champion_badge: p.has_champion_badge,
+        color: PLAYER_COLORS[originalIndex % PLAYER_COLORS.length],
+        currentWager
+      };
+    });
+
+    return players;
+  }, [tournament, botBets, bets]);
+
+  // ── Announce Leader Changes & Eliminations ──
+  useEffect(() => {
+    if (phase === 'betting' || phase === 'result' || phase === 'elimination') {
+      const leader = scores.find(s => s.rank === 1 && s.status === 'active');
+      if (leader && leader.player_id.toString() !== announcedLeaderId.current) {
+        // Only announce if it's not the very first load
+        if (announcedLeaderId.current && (phase === 'result' || phase === 'betting')) {
+          soundEngine?.announceNewLeader?.(leader.username);
+        }
+        announcedLeaderId.current = leader.player_id.toString();
+        setPrevLeaderId(leader.player_id.toString());
+      }
+    }
+  }, [scores, phase]);
+
+  useEffect(() => {
+    if (eliminatedPlayer && phase === 'elimination') {
+      const elimId = eliminatedPlayer.player_id.toString();
+      if (announcedElimId.current !== elimId) {
+        soundEngine?.announceElimination?.(eliminatedPlayer.username);
+        announcedElimId.current = elimId;
+      }
+    } else if (phase === 'betting') {
+       // Reset for next round
+       announcedElimId.current = null;
+    }
+  }, [eliminatedPlayer, phase]);
 
   const totalBet = useMemo(() =>
     Array.from(bets.values()).reduce((sum, bet) => sum + bet.amount, 0),
@@ -601,6 +769,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     totalBet,
     history: displayHistory,
     showResult,
+    events,
+    addEvent,
   }), [
     tournament,
     currentRound,
@@ -629,7 +799,9 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     setBets,
     totalBet,
     displayHistory,
-    showResult
+    showResult,
+    events,
+    addEvent
   ]);
 
   return (

@@ -5,6 +5,7 @@ import { calculatePayouts } from '@/lib/payouts';
 import { AMERICAN_WHEEL_ORDER, EUROPEAN_WHEEL_ORDER, getDisplayNumber, getNumberColor } from '@/lib/rng';
 import { generateAllRoundBotBets } from '@/lib/tournament/serverBotBetting';
 import { awardTournamentRewards } from '@/lib/tournament/rewards';
+import { getRandomBotName } from '@/lib/tournament/botNames';
 
 // Phase timing constants (ms)
 const SPINNING_DURATION = 5000;  // 5s wheel animation
@@ -60,11 +61,14 @@ export async function GET(
         // Fill remaining spots with bots
         const currentPlayers = tournament.players || [];
         const neededBots = Math.max(0, 6 - currentPlayers.length);
+        const usedNames: string[] = currentPlayers.map((p: any) => p.username);
+        
         const bots = Array.from({ length: neededBots }).map(() => {
-          const botId = Math.floor(1000 + Math.random() * 9000);
+          const botName = getRandomBotName(usedNames);
+          usedNames.push(botName);
           return {
             player_id: new ObjectId(),
-            username: `Bot_${botId}`,
+            username: botName,
             avatar_url: '/avatars/bot.png',
             is_bot: true,
             starting_chips: 2000,
@@ -395,14 +399,12 @@ export async function GET(
       { sort: { created_at: -1 } }
     );
 
-    // Fetch history (last 25 spins for the current round)
-    const historySpins = activeRound 
-      ? await db.collection('spins')
-          .find({ round_id: activeRound._id })
-          .sort({ created_at: -1 })
-          .limit(25)
-          .toArray()
-      : [];
+    // Fetch history (last 25 spins across the entire tournament)
+    const historySpins = await db.collection('spins')
+        .find({ tournament_id: new ObjectId(id) })
+        .sort({ created_at: -1 })
+        .limit(25)
+        .toArray();
 
     const history = historySpins.map(s => ({
       ...s.result,

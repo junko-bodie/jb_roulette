@@ -42,6 +42,9 @@ export interface PlacedBet {
   amount: number;
   /** Chip values placed (for visual stacking) */
   chips: number[];
+  /** Optional color for tournament mode identification */
+  customColor?: string;
+  playerInitial?: string;
 }
 
 // -------------------------------------------------------------------

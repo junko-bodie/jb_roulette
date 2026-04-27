@@ -69,7 +69,16 @@ function getCellBg(num: number): string {
 }
 
 function ChipIndicator({ bet, phase, deleteMode, isMine }: { bet: PlacedBet; phase: string; deleteMode?: boolean; isMine?: boolean }) {
-  return <ChipStack chips={bet.chips} phase={phase} deleteMode={deleteMode} isMine={isMine} />;
+  return (
+    <ChipStack 
+      chips={bet.chips} 
+      phase={phase} 
+      deleteMode={deleteMode} 
+      isMine={isMine} 
+      customColor={bet.customColor}
+      playerInitial={bet.playerInitial}
+    />
+  );
 }
 
 /** Single number cell */
@@ -650,7 +659,7 @@ const BettingLayout = memo(function BettingLayout({
         style={{ boxShadow: '0 0 30px rgba(0,0,0,0.5)' }}
       >
         {/* ZEROS BLOCK */}
-        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-t border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
+        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-t border-l border-b border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
           <NumberCell
             num={0}
             bet={bets.get('straight-0')}
@@ -795,7 +804,7 @@ const BettingLayout = memo(function BettingLayout({
         </div>
 
         {/* COLUMNS BLOCK */}
-        <div className="grid grid-rows-3 gap-0 border-t border-[#5ea896] rounded-tr-lg overflow-hidden bg-black/10">
+        <div className="grid grid-rows-3 gap-0 border-t border-r border-b border-[#5ea896] rounded-tr-lg overflow-hidden bg-black/10">
           {[
             { id: 'column-3rd', label: '2-1', nums: COLUMN_3RD },
             { id: 'column-2nd', label: '2-1', nums: COLUMN_2ND },
@@ -818,6 +827,7 @@ const BettingLayout = memo(function BettingLayout({
               onPopLastChip={onPopLastChip}
               onClearZone={onClearZone}
               isMine={myBets ? myBets.has(item.id) : true}
+              style={{ borderBottom: '1px solid #5ea896' }}
             />
           ))}
         </div>

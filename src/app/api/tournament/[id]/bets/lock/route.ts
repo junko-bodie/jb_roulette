@@ -31,7 +31,7 @@ export async function POST(
     // Then, mark them as ready in the active round
     const result = await db.collection('rounds').updateOne(
       { _id: new ObjectId(round_id) },
-      { $addToSet: { ready_players: player_id } }
+      { $addToSet: { ready_players: new ObjectId(player_id) } }
     );
 
     if (result.matchedCount === 0) {

@@ -69,7 +69,7 @@ export default function Scoreboard() {
   }, [scores, prevRanks]);
 
   return (
-    <div className="sticky top-4 self-start z-40 w-72 md:w-80">
+    <div className="relative z-40 w-full flex flex-col">
       <motion.div
         initial={{ x: 50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -91,13 +91,15 @@ export default function Scoreboard() {
 
         {/* Players List */}
         <div className="relative z-10 px-4 pb-8 space-y-2 max-h-[60vh] overflow-y-auto no-scrollbar">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence>
             {scores.map((s, idx) => {
               const pid = s.player_id.toString();
               const m = movement[pid];
               const isMe = !s.is_bot;
               const isEliminated = s.status === "eliminated";
               const isFirst = s.rank === 1 && !isEliminated;
+              const isDanger = !isEliminated && s.rank >= Math.max(3, scores.filter(p => p.status === 'active').length - 1);
+              const isBetting = s.currentWager > 0 && phase === 'betting';
 
               return (
                 <motion.div
@@ -113,23 +115,32 @@ export default function Scoreboard() {
                       ? 'rgba(74, 222, 128, 0.15)'   // Green flash
                       : m === 'down' 
                       ? 'rgba(248, 113, 113, 0.15)'  // Red flash
+                      : isBetting
+                      ? 'rgba(201, 164, 76, 0.08)' // Betting glow
                       : isMe 
                       ? 'rgba(201, 164, 76, 0.2)' 
                       : 'rgba(255, 255, 255, 0.03)',
+                    boxShadow: isFirst ? 'inset 0 0 20px rgba(201, 164, 76, 0.1)' : 'none'
                   }}
                   transition={{
-                    layout: { type: 'spring', stiffness: 200, damping: 25 },
-                    backgroundColor: { duration: 0.8 }
+                    layout: { type: 'spring', stiffness: 350, damping: 35 }, // Faster, more responsive
+                    backgroundColor: { duration: 0.4 }
                   }}
                   className={`group relative flex items-center justify-between p-4 rounded-3xl transition-all duration-500 border ${
-                    isMe 
+                    isFirst
+                      ? 'border-[#c9a44c]/60 shadow-[0_0_15px_rgba(201,164,76,0.2)]'
+                    : isMe 
                       ? 'border-[#c9a44c]/40' 
                       : isEliminated
                       ? 'border-white/5 grayscale'
+                      : isDanger
+                      ? 'border-red-400/30'
                       : m === 'up'
                       ? 'border-green-400/50'
                       : m === 'down'
                       ? 'border-red-400/50'
+                      : isBetting
+                      ? 'border-[#c9a44c]/30 animate-pulse'
                       : 'border-white/5 hover:border-[#c9a44c]/30'
                   }`}
                 >
@@ -137,19 +148,29 @@ export default function Scoreboard() {
                     {/* Rank Circle */}
                     <motion.div 
                       layout
-                      className={`w-9 h-9 flex-shrink-0 rounded-2xl flex items-center justify-center relative overflow-hidden ${
-                        isFirst ? 'bg-gradient-to-br from-[#fef1a6] via-[#c9a44c] to-[#a07a2d] shadow-lg' :
-                        isMe ? 'bg-white text-black' :
-                        isEliminated ? 'bg-white/5 text-white/20' : 'bg-white/10 text-white/60'
-                      }`}
+                      className={`w-10 h-10 flex-shrink-0 rounded-2xl flex items-center justify-center relative shadow-xl border border-white/10`}
+                      style={{ 
+                        background: isFirst 
+                          ? 'linear-gradient(135deg, #fef08a 0%, #c9a44c 50%, #856114 100%)' 
+                          : `linear-gradient(135deg, ${s.color} 0%, ${s.color}dd 100%)`,
+                        boxShadow: isFirst 
+                          ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 0 10px rgba(255,255,255,0.4)' 
+                          : `0 8px 15px -3px ${s.color}40, inset 0 0 8px rgba(255,255,255,0.2)`
+                      }}
                     >
                       {isEliminated ? (
-                        <Skull className="w-4 h-4" />
+                        <Skull className="w-4 h-4 text-white/50" />
                       ) : (
-                        <span className={`text-base font-black tabular-nums ${isFirst ? 'text-black' : ''}`} style={{ fontFamily: FONTS.primary }}>
+                        <span 
+                          className={`text-lg font-black tabular-nums filter drop-shadow-sm ${isFirst ? 'text-[#3e2b00]' : 'text-white'}`} 
+                          style={{ fontFamily: FONTS.primary }}
+                        >
                           {s.rank}
                         </span>
                       )}
+                      
+                      {/* Glossy Sheen */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
                     </motion.div>
                     
                     <div className="flex flex-col min-w-0">
@@ -162,6 +183,20 @@ export default function Scoreboard() {
                           {isEliminated ? `POS #${s.final_position}` : isMe ? 'PRO' : 'BOT'}
                         </span>
                       </div>
+                      
+                      {/* Current Wager Status */}
+                      {!isEliminated && s.currentWager > 0 && (
+                        <motion.div 
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-1 mt-1"
+                        >
+                          <div className="w-1 h-1 rounded-full bg-[#c9a44c] animate-ping" />
+                          <span className="text-[9px] font-bold text-[#c9a44c] uppercase tracking-wider">
+                            At Risk: ${s.currentWager.toLocaleString()}
+                          </span>
+                        </motion.div>
+                      )}
                     </div>
                   </div>
 

@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import SettingsModal from '@/components/ui/SettingsModal';
 import ProfileModal from '@/components/ui/ProfileModal';
 import Avatar from '@/components/ui/Avatar';
+import WelcomeVideoModal from '@/components/ui/WelcomeVideoModal';
 
 export default function Home() {
   const { user, isLoading, userProfile, balance } = useGame();
@@ -103,7 +104,7 @@ export default function Home() {
           </div>
           <div className={styles.profileInfo}>
             <div className="flex items-center gap-2">
-              <span className={styles.playerName}>{userProfile.name}</span>
+              <span className={styles.playerName}>Hello {userProfile.name}!</span>
               {userProfile.badges?.champion && (
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="#c9a44c">
                   <title>Tournament Champion</title>
@@ -261,6 +262,7 @@ export default function Home() {
       {/* Modals */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+      <WelcomeVideoModal />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useGame } from '@/context/GameContext';
 import { createClient } from '@/lib/supabase/client';
 import Avatar from '@/components/ui/Avatar';
+import WelcomeVideoModal from '@/components/ui/WelcomeVideoModal';
 import styles from './tournament.module.css';
 
 export default function TournamentLobby() {
@@ -117,14 +118,14 @@ export default function TournamentLobby() {
               The Calm Before The Storm
             </motion.div>
             <h1 className={`${styles.title} ${styles.shimmerText}`} style={{ fontSize: '48px', marginBottom: '4px', lineHeight: 1 }}>
-              Elite Tournament
+              Elite Roulette Tournament
             </h1>
             <div style={{ height: '2px', width: '40px', background: '#c9a44c', margin: '14px auto' }} />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
             <div style={{ textAlign: 'center', maxWidth: '500px' }}>
-              <p className={styles.subtitle} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: 0 }}>
+              <p className={styles.subtitle} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, margin: 0 }}>
                 Step into the high-stakes arena where legends are made.
                 Test your luck and strategy against the finest players.
               </p>
@@ -151,7 +152,7 @@ export default function TournamentLobby() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Avatar type={userProfile.avatar} size="lg" />
                 <div>
-                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '9px', fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase' }}>CHALLENGER</div>
+                  <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '9px', fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase' }}>CHALLENGER</div>
                   <div style={{ color: '#fff', fontSize: '20px', fontWeight: 900, fontFamily: 'Bodoni, serif' }}>{userProfile.name}</div>
                 </div>
               </div>
@@ -203,6 +204,7 @@ export default function TournamentLobby() {
       <footer style={{ padding: '40px', textAlign: 'center', fontSize: '10px', color: 'rgba(201,164,76,0.3)', letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 800 }}>
         Professional Roulette Tournament • Join the Elite League
       </footer>
+      <WelcomeVideoModal />
     </div>
   );
 }

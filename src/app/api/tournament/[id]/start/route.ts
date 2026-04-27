@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 import { TournamentPlayer } from '@/lib/models/Tournament';
 import { generateAllRoundBotBets } from '@/lib/tournament/serverBotBetting';
+import { getRandomBotName } from '@/lib/tournament/botNames';
 
 export async function POST(
   req: Request,
@@ -52,14 +53,17 @@ export async function POST(
     const neededBots = Math.max(0, 6 - currentPlayers.length);
     
     if (neededBots > 0) {
+      const usedNames: string[] = [];
       const bots: TournamentPlayer[] = Array.from({ length: neededBots }).map(() => {
-        const botId = Math.floor(1000 + Math.random() * 9000);
+        const botName = getRandomBotName(usedNames);
+        usedNames.push(botName);
+        
         // Randomly give bots a crown to make the competition feel "elite" (1 in 10 bots)
         const botHasChampionBadge = Math.random() < 0.1;
 
         return {
           player_id: new ObjectId(),
-          username: `Bot_${botId}`,
+          username: botName,
           avatar_url: '/avatars/bot.png',
           is_bot: true,
           starting_chips: 2000,

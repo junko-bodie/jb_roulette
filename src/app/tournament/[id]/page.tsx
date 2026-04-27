@@ -16,6 +16,7 @@ import { useGame } from '@/context/GameContext';
 import Toast from '@/components/ui/Toast';
 import { soundEngine } from '@/lib/audioEngine';
 import styles from '../tournament.module.css';
+import LiveBettingFeed from '@/components/tournament/LiveBettingFeed';
 
 export default function TournamentPage() {
   const {
@@ -38,15 +39,17 @@ export default function TournamentPage() {
     setBets,
     totalBet,
     dismissResult,
-    history
+    history,
+    addEvent
   } = useTournament();
   const { userProfile } = useGame();
   
   const [fundError, setFundError] = useState<string | null>(null);
 
-  const triggerFundError = useCallback((message: string = 'Insufficient chips for this bet') => {
-    setFundError(message);
+  const triggerFundError = useCallback(() => {
     soundEngine?.playDeniedSound();
+    setFundError('Insufficient chips for this bet.');
+    setTimeout(() => setFundError(null), 2500);
   }, []);
 
   const handleClearFundError = useCallback(() => setFundError(null), []);
@@ -93,11 +96,14 @@ export default function TournamentPage() {
     }
   }, [phase]);
 
-  
   const player = useMemo(() => {
     if (!userProfile?.id || !tournament) return tournament?.players?.find(p => !p.is_bot);
     return tournament.players?.find(p => p.player_id.toString() === userProfile.id);
   }, [tournament, userProfile?.id]);
+
+  const myColor = useMemo(() => {
+    return scores.find(s => s.player_id.toString() === player?.player_id.toString())?.color || '#c9a44c';
+  }, [scores, player]);
 
   const myChips = player?.current_chips || 0;
 
@@ -123,42 +129,61 @@ export default function TournamentPage() {
       const merged = new Map<string, PlacedBet>();
       allSpinBets.forEach((b: any) => {
         const existing = merged.get(b.betId);
+        const scoreEntry = scores.find(s => s.player_id.toString() === b.player_id?.toString());
+        const pColor = scoreEntry?.color;
+        const pInitial = scoreEntry?.username?.[0] || '?';
+        
         if (existing) {
           merged.set(b.betId, {
             betId: b.betId,
             amount: existing.amount + b.amount,
-            chips: [...existing.chips, ...(b.chips || [b.amount])]
+            chips: [...existing.chips, ...(b.chips || [b.amount])],
+            customColor: existing.customColor || pColor,
+            playerInitial: existing.playerInitial || pInitial
           });
         } else {
           merged.set(b.betId, {
             betId: b.betId,
             amount: b.amount,
-            chips: b.chips || [b.amount]
+            chips: b.chips || [b.amount],
+            customColor: pColor,
+            playerInitial: pInitial
           });
         }
       });
       return merged;
     }
 
-    // Fallback: If we are in spinning but server bets aren't in yet,
-    // we continue showing the pending bets plus local bets
-    const merged = new Map<string, PlacedBet>(bets);
+    // Local bets always have my color
+    const merged = new Map<string, PlacedBet>();
+    bets.forEach((b, id) => {
+      merged.set(id, { ...b, customColor: myColor, playerInitial: userProfile.name?.[0] || 'Y' });
+    });
     
     // Add bot bets from context
     if (botBets && Array.isArray(botBets)) {
-      botBets.forEach((b: PlacedBet) => {
+      botBets.forEach((b: any) => {
         const existing = merged.get(b.betId);
+        const scoreEntry = scores.find(s => s.player_id.toString() === b.player_id.toString());
+        const botColor = scoreEntry?.color;
+        const botInitial = scoreEntry?.username?.[0] || 'B';
+        
         if (existing) {
           merged.set(b.betId, {
             betId: b.betId,
             amount: existing.amount + b.amount,
-            chips: [...existing.chips, ...(b.chips || [b.amount])]
+            chips: [...existing.chips, ...(b.chips || [b.amount])],
+            // Keep my color/initial as priority
+            customColor: existing.customColor || botColor,
+            playerInitial: existing.playerInitial || botInitial
           });
         } else {
           merged.set(b.betId, {
             betId: b.betId,
             amount: b.amount,
-            chips: b.chips || [b.amount]
+            chips: b.chips || [b.amount],
+            customColor: botColor,
+            playerInitial: botInitial
           });
         }
       });
@@ -171,19 +196,27 @@ export default function TournamentPage() {
         : (p.username === userProfile.name && !p.is_bot);
         
       if (!isMe && p.pending_bets) {
+        const scoreEntry = scores.find(s => s.player_id.toString() === p.player_id.toString());
+        const pColor = scoreEntry?.color;
+        const pInitial = scoreEntry?.username?.[0] || 'P';
+
         p.pending_bets.forEach((b: any) => {
           const existing = merged.get(b.betId);
           if (existing) {
             merged.set(b.betId, {
               betId: b.betId,
               amount: existing.amount + b.amount,
-              chips: [...existing.chips, ...(b.chips || [b.amount])]
+              chips: [...existing.chips, ...(b.chips || [b.amount])],
+              customColor: existing.customColor || pColor,
+              playerInitial: existing.playerInitial || pInitial
             });
           } else {
             merged.set(b.betId, {
               betId: b.betId,
               amount: b.amount,
-              chips: b.chips || [b.amount]
+              chips: b.chips || [b.amount],
+              customColor: pColor,
+              playerInitial: pInitial
             });
           }
         });
@@ -191,10 +224,16 @@ export default function TournamentPage() {
     });
 
     return merged;
-  }, [phase, allSpinBets, bets, botBets, tournament?.players, userProfile?.id, userProfile.name]);
+  }, [phase, allSpinBets, bets, botBets, tournament?.players, userProfile?.id, userProfile.name, scores, myColor]);
 
   const [betPlacementHistory, setBetPlacementHistory] = useState<{ betId: string; amount: number }[]>([]);
   const [lastSpinBets, setLastSpinBets] = useState<Map<string, PlacedBet>>(new Map());
+
+  const lastTotal = useMemo(() =>
+    Array.from(lastSpinBets.values()).reduce((sum, b) => sum + b.amount, 0),
+    [lastSpinBets]
+  );
+
 
   const handlePlaceBet = useCallback((betId: string) => {
     if (phase !== "betting") return;
@@ -222,9 +261,19 @@ export default function TournamentPage() {
       newBets.set(betId, {
         betId,
         amount: currentAmount + selectedChip,
-        chips: [...currentChips, selectedChip]
+        chips: [...currentChips, selectedChip],
+        customColor: myColor
       });
       return newBets;
+    });
+
+    // Add to betting feed
+    addEvent({
+      username: userProfile.name,
+      amount: selectedChip,
+      betId: betId,
+      betZone: betId,
+      color: myColor
     });
 
     // Track history for "Clear Last Bet"
@@ -232,6 +281,7 @@ export default function TournamentPage() {
   }, [phase, deleteMode, myChips, totalBet, selectedChip, setBets]);
 
   const handleRemoveBet = useCallback((betId: string) => {
+    soundEngine?.playSwoosh();
     setBets(prev => {
       const newBets = new Map(prev);
       newBets.delete(betId);
@@ -240,6 +290,7 @@ export default function TournamentPage() {
   }, [setBets]);
 
   const handleClearBets = useCallback(() => {
+    soundEngine?.playSwoosh();
     setBets(new Map());
     setBetPlacementHistory([]);
   }, [setBets]);
@@ -252,6 +303,7 @@ export default function TournamentPage() {
     if (!lastAction) return;
 
     // Update history state independently
+    soundEngine?.playSwoosh();
     setBetPlacementHistory(nextHistory);
 
     // Update bets state based on the popped action
@@ -301,6 +353,8 @@ export default function TournamentPage() {
       prev.map(entry => ({ ...entry, amount: entry.amount * 2 }))
     );
 
+    soundEngine?.play2XClick();
+
     return true;
   }, [phase, bets, myChips, totalBet, setBets]);
 
@@ -317,6 +371,7 @@ export default function TournamentPage() {
     ]));
     
     setBets(clonedBets);
+    soundEngine?.playRebetSound();
 
     // Reconstruct history roughly for clearLast
     const newHistory: { betId: string; amount: number }[] = [];
@@ -344,11 +399,13 @@ export default function TournamentPage() {
           amount: newChips.reduce((a, b) => a + b, 0)
         });
       }
+      soundEngine?.playSwoosh();
       return newBets;
     });
   }, [setBets]);
 
   const handleClearZone = useCallback((betId: string) => {
+    soundEngine?.playSwoosh();
     setBets(prev => {
       const newBets = new Map(prev);
       newBets.delete(betId);
@@ -700,6 +757,7 @@ export default function TournamentPage() {
       </header>
 
       <main className="flex-1 min-h-0 relative px-2 py-0 overflow-hidden flex items-stretch justify-center gap-4">
+        
 
         {/* Roulette Table — takes most of the space */}
         <div className="flex-1 min-w-0 max-w-[1200px] flex flex-col justify-center items-center">
@@ -739,9 +797,22 @@ export default function TournamentPage() {
           />
         </div>
 
-        {/* Scoreboard Sidebar */}
-        <div className="flex-shrink-0 flex items-center py-4">
-          <Scoreboard />
+        {/* Scoreboard & Betting Feed Sidebar */}
+        <div className="flex-shrink-0 flex flex-col gap-4 py-6 w-80 max-h-[85vh]">
+          <div className="flex-shrink-0">
+            <Scoreboard />
+          </div>
+          
+          <div className="flex-1 min-h-0 flex flex-col bg-black/40 rounded-[2.5rem] border border-white/5 backdrop-blur-md overflow-hidden pt-12 pb-8 px-10 shadow-2xl">
+            <div className="flex-shrink-0 flex items-center justify-center gap-3 mb-6">
+              <div className="h-px w-10 bg-gradient-to-l from-[#c9a44c]/30 to-transparent" />
+              <span className="text-[10px] font-black text-[#c9a44c] uppercase tracking-[0.4em] whitespace-nowrap">Live Feed</span>
+              <div className="h-px w-10 bg-gradient-to-r from-[#c9a44c]/30 to-transparent" />
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <LiveBettingFeed />
+            </div>
+          </div>
         </div>
       </main>
 
@@ -784,12 +855,28 @@ export default function TournamentPage() {
 
           {/* Betting Controls: Rebet, Clear, Clear Last, 2X, Delete */}
           <div className="flex items-center gap-2">
+            {/* REBET (Repeat last spin's bets) */}
+            <motion.button
+              onClick={() => {
+                handleRebet();
+              }}
+              disabled={phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                px-3 h-10 rounded-xl flex items-center justify-center font-black text-[10px] border-2 transition-all
+                ${(phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal) 
+                  ? 'bg-white/5 border-white/10 text-white/20' 
+                  : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
+              `}
+              title="Repeat last bets"
+            >
+              RESET
+            </motion.button>
+
             {/* UNDO (Clear Last Bet) */}
             <motion.button
               onClick={() => {
-                import('@/lib/audioEngine').then(({ soundEngine }) => {
-                  soundEngine?.playSwoosh();
-                });
                 handleClearLastBet();
               }}
               disabled={phase !== "betting" || betPlacementHistory.length === 0}
@@ -799,7 +886,7 @@ export default function TournamentPage() {
                 w-10 h-10 rounded-full flex flex-col items-center justify-center border-2 transition-all
                 ${(phase !== "betting" || betPlacementHistory.length === 0) 
                   ? 'bg-white/5 border-white/10 text-white/20' 
-                  : 'bg-gradient-to-br from-[#3b2518] to-black border-[#c9a44c]/60 text-[#c9a44c] shadow-lg shadow-black/40'}
+                  : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
               `}
               title="Clear last bet"
             >
@@ -809,9 +896,6 @@ export default function TournamentPage() {
             {/* CLEAR ALL */}
             <motion.button
               onClick={() => {
-                import('@/lib/audioEngine').then(({ soundEngine }) => {
-                  soundEngine?.playSwoosh();
-                });
                 handleClearBets();
               }}
               disabled={phase !== "betting" || bets.size === 0}
@@ -821,7 +905,7 @@ export default function TournamentPage() {
                 px-3 h-10 rounded-xl flex items-center justify-center font-black text-[10px] border-2 transition-all
                 ${(phase !== "betting" || bets.size === 0) 
                   ? 'bg-white/5 border-white/10 text-white/20' 
-                  : 'bg-gradient-to-br from-[#3b2518] to-black border-[#c9a44c]/60 text-[#c9a44c] shadow-lg shadow-black/40'}
+                  : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
               `}
               title="Clear all bets"
             >
@@ -832,9 +916,6 @@ export default function TournamentPage() {
 
             <motion.button
               onClick={() => {
-                import('@/lib/audioEngine').then(({ soundEngine }) => {
-                  soundEngine?.play2XClick();
-                });
                 handleDoubleAllBets();
               }}
               disabled={phase !== "betting" || myChips < totalBet * 2 || totalBet === 0}
@@ -844,7 +925,7 @@ export default function TournamentPage() {
                 w-10 h-10 rounded-full flex items-center justify-center font-black text-xs border-2 transition-all
                 ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0) 
                   ? 'bg-white/5 border-white/10 text-white/20' 
-                  : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#555] text-black shadow-lg shadow-[#c9a44c]/20'}
+                  : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/20'}
               `}
               title="Double all bets"
             >
@@ -853,9 +934,7 @@ export default function TournamentPage() {
 
             <motion.button
               onClick={() => {
-                import('@/lib/audioEngine').then(({ soundEngine }) => {
-                  soundEngine?.playSwoosh();
-                });
+                soundEngine?.playSwoosh();
                 setDeleteMode(!deleteMode);
               }}
               disabled={phase !== "betting"}
@@ -867,7 +946,7 @@ export default function TournamentPage() {
                   ? 'bg-white/5 border-white/10 text-white/20' 
                   : deleteMode 
                     ? 'bg-red-500 border-red-400 text-white shadow-lg shadow-red-500/40' 
-                    : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#555] text-black shadow-lg shadow-[#c9a44c]/20'}
+                    : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/20'}
               `}
               title={deleteMode ? "Exit clear mode" : "Enter clear mode"}
             >

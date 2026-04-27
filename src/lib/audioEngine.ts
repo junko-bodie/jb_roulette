@@ -1,6 +1,6 @@
 'use client';
 
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
 
 /**
  * AudioEngine — Manages all game sound effects using Howler.js
@@ -20,10 +20,10 @@ class AudioEngine {
     if (typeof window !== 'undefined') {
       this.sounds = {
         chip: new Howl({
-          src: ['/sounds/chip.mp3'],
-          volume: 0.35,
+          src: ['/soundreality-pen-click-411629.mp3'],
+          volume: 0.45,
           preload: true,
-          pool: 5,           // Allow multiple chips to overlap without cutting off
+          pool: 10,           // Allow multiple chips to overlap without cutting off
         }),
         spin: new Howl({
           src: ['/sounds/spin.mp3'],
@@ -93,17 +93,35 @@ class AudioEngine {
           preload: true,
           onloaderror: (id, err) => console.warn('AudioEngine: Denied sound load error'),
         }),
+        placeBets: new Howl({
+          src: ['/sounds/placeBets.mp3'],
+          volume: 0.8,
+          preload: true,
+        }),
       };
+
+      // ── Visibility Guard ──
+      // Use Howler's global mute for maximum reliability in the background
+      document.addEventListener('visibilitychange', () => {
+        if (typeof Howler !== 'undefined') {
+          Howler.mute(document.hidden);
+        }
+        if (document.hidden) {
+          this.stopAll();
+        }
+      });
     }
   }
 
   // ── Chip / Tick ────────────────────────────────────────────────────────────
 
   playChipSound() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     if (this.enabled && this.sounds.chip) this.sounds.chip.play();
   }
 
   playWheelTick() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     if (this.enabled && this.sounds.tick) {
       const id = this.sounds.tick.play();
       this.sounds.tick.rate(0.8 + Math.random() * 0.4, id);
@@ -122,6 +140,7 @@ class AudioEngine {
   }
 
   playClick() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     if (this.enabled && this.sounds.click) this.sounds.click.play();
   }
 
@@ -138,6 +157,7 @@ class AudioEngine {
   }
 
   playThump() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     console.log('AudioEngine: Playing thump...');
     if (this.enabled && this.sounds.thump) this.sounds.thump.play();
   }
@@ -150,9 +170,15 @@ class AudioEngine {
     if (this.enabled && this.sounds.denied) this.sounds.denied.play();
   }
 
+  playPlaceBetsSound() {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    if (this.enabled && this.sounds.placeBets) this.sounds.placeBets.play();
+  }
+
   // ── Win / Loss ─────────────────────────────────────────────────────────────
 
   playWinSound() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     if (this.enabled && this.sounds.win) {
       this.sounds.win.stop();   // reset in case it's still playing
       this.sounds.win.play();
@@ -160,6 +186,7 @@ class AudioEngine {
   }
 
   playLossSound() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     if (this.enabled && this.sounds.loss) {
       this.sounds.loss.stop();
       this.sounds.loss.play();
@@ -169,6 +196,7 @@ class AudioEngine {
   // ── Spin sound (looping, with real-time volume/rate control) ───────────────
 
   startSpinSound() {
+    if (typeof document !== 'undefined' && document.hidden) return;
     if (this.enabled && this.sounds.spin) {
       this.sounds.spin.stop();
       this.sounds.spin.volume(0.25);
@@ -195,10 +223,49 @@ class AudioEngine {
     }
   }
 
+  // ── Verbal Announcements (Speech Synthesis) ───────────────────────────────
+
+  announce(text: string) {
+    if (!this.enabled || typeof window === 'undefined' || !window.speechSynthesis) return;
+
+    // Don't announce if the tab is hidden (prevents queuing/exploding on focus)
+    if (document.hidden) return;
+
+    // Interrupt previous announcement if same type or high priority
+    if (window.speechSynthesis.speaking) {
+       window.speechSynthesis.cancel();
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.volume = 0.95;
+    utterance.rate = 1.1; // Fast for excitement
+    utterance.pitch = 1.05;
+
+    // Try to find a good premium voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const premiumVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Premium'));
+    if (premiumVoice) utterance.voice = premiumVoice;
+
+    window.speechSynthesis.speak(utterance);
+  }
+
+  announceNewLeader(name: string) {
+    this.announce(`New leader: ${name}!`);
+    this.play2XClick(); // Subtle chime
+  }
+
+  announceElimination(name: string) {
+    this.announce(`${name} has been eliminated.`);
+    this.playLossSound();
+  }
+
   // ── Global controls ───────────────────────────────────────────────────────
 
   stopAll() {
     Object.values(this.sounds).forEach(s => s.stop());
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     this.spinId = null;
   }
 

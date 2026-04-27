@@ -9,9 +9,11 @@ interface ChipStackProps {
   className?: string;
   deleteMode?: boolean;
   isMine?: boolean;
+  customColor?: string;
+  playerInitial?: string;
 }
 
-export default function ChipStack({ chips, phase, className = '', deleteMode = false, isMine = true }: ChipStackProps) {
+export default function ChipStack({ chips, phase, className = '', deleteMode = false, isMine = true, customColor, playerInitial }: ChipStackProps) {
   if (chips.length === 0) return null;
 
   // Show last 4 chips visually in the stack
@@ -56,6 +58,9 @@ export default function ChipStack({ chips, phase, className = '', deleteMode = f
             style={{
               background: chipColor,
               zIndex: originalIndex,
+              boxShadow: customColor ? `0 0 10px ${customColor}80` : 'none',
+              borderColor: customColor ? customColor : 'rgba(255,255,255,0.2)',
+              borderWidth: customColor ? '2px' : '1px'
             }}
           >
             <span
@@ -78,6 +83,7 @@ export default function ChipStack({ chips, phase, className = '', deleteMode = f
           </span>
         </div>
       )}
+
     </div>
   );
 }

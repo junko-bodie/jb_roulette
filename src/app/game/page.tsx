@@ -240,48 +240,18 @@ export default function GamePage() {
           padding: '8px 16px',
         }}
       >
-        {/* Left: Chip Selection Tray */}
         <div className="flex items-center gap-3">
-          <div className="max-w-[400px]">
-            <ChipTray
-              selectedChip={game.selectedChip}
-              onSelectChip={game.setSelectedChip}
-              balance={game.balance}
-              totalBet={game.totalBet}
-              disabled={isSpinningWheel}
-            />
-          </div>
+          <ChipTray
+            selectedChip={game.selectedChip}
+            onSelectChip={game.setSelectedChip}
+            balance={game.balance}
+            totalBet={game.totalBet}
+            disabled={isSpinningWheel}
+          />
         </div>
 
-        <div
-          onClick={() => {
-            soundEngine?.playClick();
-            setIsProfileOpen(true);
-          }}
-          className="hidden md:flex items-center gap-4 px-6 py-1.5 rounded-xl bg-black/30 border border-[#c9a44c]/20 backdrop-blur-sm self-center mx-auto hover:bg-black/50 hover:border-[#c9a44c]/50 transition-all cursor-pointer group active:scale-95"
-        >
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full border border-[#c9a44c]/60 overflow-hidden bg-black/60 shadow-lg group-hover:border-[#c9a44c] transition-all">
-              <img
-                src={userProfile?.avatar || '/avatars/default.png'}
-                alt="avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border border-black rounded-full shadow-sm" />
-          </div>
-          <div className="flex flex-col">
-            <span
-              className="text-white font-bold text-base leading-tight tracking-tight shadow-black drop-shadow-md group-hover:text-[#c9a44c] transition-colors"
-              style={{ fontFamily: "'Bodoni Moda', serif", fontStyle: 'italic' }}
-            >
-              Hello {userProfile?.name}!
-            </span>
-            <span className="text-[8px] text-[#c9a44c] uppercase tracking-[0.3em] font-black leading-none mt-0.5">
-              VIP Roulette Member
-            </span>
-          </div>
-        </div>
+        {/* Center space is now empty in flex-justify, but we will place the floating card absolutely */}
+        <div className="hidden md:block w-[300px]" /> 
 
         {/* Right: Balance + Stats */}
         <div className="flex items-center gap-3">
@@ -305,6 +275,43 @@ export default function GamePage() {
           </div>
         </div>
       </footer>
+
+      {/* ═══ FLOATING PLAYER CARD — Bridges Footer & Table ═══ */}
+      <div 
+        onClick={() => {
+          soundEngine?.playClick();
+          setIsProfileOpen(true);
+        }}
+        className="hidden md:flex absolute bottom-[10px] left-1/2 -translate-x-1/2 z-[20] items-center gap-6 px-10 py-3 rounded-full bg-black/60 border-2 border-[#c9a44c]/40 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.6),0_0_20px_rgba(201,164,76,0.15)] hover:bg-black/80 hover:border-[#c9a44c] transition-all cursor-pointer group active:scale-95"
+        style={{
+          boxShadow: '0 -8px 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(201, 164, 76, 0.1)',
+        }}
+      >
+        <div className="relative">
+          <div className="w-14 h-14 rounded-full border-2 border-[#c9a44c]/80 overflow-hidden bg-black/80 shadow-2xl group-hover:border-[#c9a44c] transition-all group-hover:scale-110">
+            <img
+              src={userProfile?.avatar || '/avatars/default.png'}
+              alt="avatar"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-black rounded-full shadow-lg" />
+        </div>
+        <div className="flex flex-col">
+          <span
+            className="text-white font-black text-xl leading-tight tracking-tight shadow-black drop-shadow-lg group-hover:text-[#c9a44c] transition-colors"
+            style={{ fontFamily: "'Bodoni Moda', serif", fontStyle: 'italic' }}
+          >
+            Hello {userProfile?.name}!
+          </span>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-[10px] text-[#c9a44c] uppercase tracking-[0.4em] font-black leading-none">
+              Elite VIP Member
+            </span>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#c9a44c] animate-pulse" />
+          </div>
+        </div>
+      </div>
 
       <ResultDisplay
         result={game.currentResult}

@@ -146,7 +146,7 @@ const RouletteTable = memo(function RouletteTable({
 
         {/* The green felt area — VIP Emerald Edition */}
         <div
-          className="relative rounded-[32px] border-b-4 border-black/40 overflow-hidden flex flex-row items-center justify-start gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full"
+          className="relative rounded-[32px] border-b-4 border-black/40 flex flex-row items-center justify-start gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full"
           style={{
             background: 'radial-gradient(circle at 50% 50%, #0d2e23 0%, #051410 100%)',
             padding: '0.02rem 1.8rem 1.2rem 0.8rem',
@@ -245,7 +245,7 @@ const RouletteTable = memo(function RouletteTable({
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
             animate={isMobile
               ? { opacity: 1, x: 0, scale: 1 }
-              : { opacity: 1, x: 0.5, scaleX: 1.12, scaleY: 1.7 } // Slightly reduced from 1.15/1.85
+              : { opacity: 1, x: 1, scaleX: 1.08, scaleY: 1.5 } // Reduced scaling to prevent clipping
             }
             transition={{ duration: 0.5 }}
           >
@@ -383,8 +383,8 @@ const RouletteTable = memo(function RouletteTable({
                     textTransform: 'uppercase' as const,
                     color: '#d4d0c4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
-                    border: '2px solid #5ea896',
-                    borderRadius: '6px',
+                    border: '3px solid #c9a44c',
+                    borderRadius: '8px',
                     padding: '6px 12px',
                     lineHeight: 1,
                   }}
@@ -405,8 +405,8 @@ const RouletteTable = memo(function RouletteTable({
                     textTransform: 'uppercase' as const,
                     color: '#d4d0c4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
-                    border: '2px solid #5ea896',
-                    borderRadius: '6px',
+                    border: '3px solid #c9a44c',
+                    borderRadius: '8px',
                     padding: '6px 12px',
                     lineHeight: 1,
                   }}
@@ -427,8 +427,8 @@ const RouletteTable = memo(function RouletteTable({
                     textTransform: 'uppercase' as const,
                     color: '#d4d0c4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
-                    border: '2px solid #5ea896',
-                    borderRadius: '6px',
+                    border: '3px solid #c9a44c',
+                    borderRadius: '10px',
                     padding: '5px 10px',
                     lineHeight: 1,
                     display: 'flex',
