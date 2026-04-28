@@ -40,10 +40,12 @@ export default function TournamentPage() {
     totalBet,
     dismissResult,
     history,
-    addEvent
+    addEvent,
+    wheelType,
+    updateWheelType
   } = useTournament();
   const { userProfile } = useGame();
-  
+
   const [fundError, setFundError] = useState<string | null>(null);
 
   const triggerFundError = useCallback(() => {
@@ -66,11 +68,11 @@ export default function TournamentPage() {
     if (tournament?.status === 'active' && !hasStartedRef.current) {
       // Only show "Match Found" animation if we're at the very beginning
       const isVeryStart = currentRound === 1 && currentSpin === 1;
-      
+
       if (isVeryStart) {
         setIsStarting(true);
       }
-      
+
       hasStartedRef.current = true;
       const timer = setTimeout(() => setIsStarting(false), 2500);
       return () => clearTimeout(timer);
@@ -112,7 +114,7 @@ export default function TournamentPage() {
   // Sync bets to server for other players to see
   useEffect(() => {
     if (phase !== "betting" || bets.size === 0) return;
-    
+
     // Sync immediately on first bet
     syncMyBets(Array.from(bets.values()));
 
@@ -132,7 +134,7 @@ export default function TournamentPage() {
         const scoreEntry = scores.find(s => s.player_id.toString() === b.player_id?.toString());
         const pColor = scoreEntry?.color;
         const pInitial = scoreEntry?.username?.[0] || '?';
-        
+
         if (existing) {
           merged.set(b.betId, {
             betId: b.betId,
@@ -159,7 +161,7 @@ export default function TournamentPage() {
     bets.forEach((b, id) => {
       merged.set(id, { ...b, customColor: myColor, playerInitial: userProfile.name?.[0] || 'Y' });
     });
-    
+
     // Add bot bets from context
     if (botBets && Array.isArray(botBets)) {
       botBets.forEach((b: any) => {
@@ -167,7 +169,7 @@ export default function TournamentPage() {
         const scoreEntry = scores.find(s => s.player_id.toString() === b.player_id.toString());
         const botColor = scoreEntry?.color;
         const botInitial = scoreEntry?.username?.[0] || 'B';
-        
+
         if (existing) {
           merged.set(b.betId, {
             betId: b.betId,
@@ -191,10 +193,10 @@ export default function TournamentPage() {
 
     // Include other real players' pending bets
     tournament?.players?.forEach(p => {
-      const isMe = userProfile?.id 
-        ? p.player_id?.toString() === userProfile.id 
+      const isMe = userProfile?.id
+        ? p.player_id?.toString() === userProfile.id
         : (p.username === userProfile.name && !p.is_bot);
-        
+
       if (!isMe && p.pending_bets) {
         const scoreEntry = scores.find(s => s.player_id.toString() === p.player_id.toString());
         const pColor = scoreEntry?.color;
@@ -237,7 +239,7 @@ export default function TournamentPage() {
 
   const handlePlaceBet = useCallback((betId: string) => {
     if (phase !== "betting") return;
-    
+
     if (deleteMode) {
       setBets(prev => {
         const newBets = new Map(prev);
@@ -330,7 +332,7 @@ export default function TournamentPage() {
 
   const handleDoubleAllBets = useCallback(() => {
     if (phase !== "betting" || bets.size === 0) return false;
-    
+
     if (myChips < totalBet * 2) {
       triggerFundError();
       return false;
@@ -369,7 +371,7 @@ export default function TournamentPage() {
       betId,
       { ...bet, chips: [...bet.chips] }
     ]));
-    
+
     setBets(clonedBets);
     soundEngine?.playRebetSound();
 
@@ -483,7 +485,7 @@ export default function TournamentPage() {
         <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '40%', height: '40%', background: 'rgba(201,164,76,0.05)', borderRadius: '50%', filter: 'blur(80px)' }} />
         <div style={{ position: 'absolute', bottom: '-10%', left: '-10%', width: '40%', height: '40%', background: 'rgba(201,164,76,0.03)', borderRadius: '50%', filter: 'blur(80px)' }} />
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
@@ -515,11 +517,11 @@ export default function TournamentPage() {
           </p>
 
           {/* Players Grid */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(3, 1fr)', 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '20px',
-            marginBottom: '48px' 
+            marginBottom: '48px'
           }}>
             {Array.from({ length: 6 }).map((_, i) => {
               const p = tournament.players[i];
@@ -541,9 +543,9 @@ export default function TournamentPage() {
                     <Avatar type={p?.avatar_url || 'default'} size="md" />
                     {p && <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', background: '#4ade80', borderRadius: '50%', border: '2px solid #0a1e14' }} />}
                   </div>
-                  <span style={{ 
-                    color: p ? '#fff' : 'rgba(255,255,255,0.15)', 
-                    fontSize: '11px', 
+                  <span style={{
+                    color: p ? '#fff' : 'rgba(255,255,255,0.15)',
+                    fontSize: '11px',
                     fontWeight: 800,
                     maxWidth: '100%',
                     overflow: 'hidden',
@@ -559,10 +561,10 @@ export default function TournamentPage() {
             })}
           </div>
 
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             gap: '12px',
             background: 'rgba(0,0,0,0.2)',
             padding: '12px 24px',
@@ -571,15 +573,15 @@ export default function TournamentPage() {
             margin: '0 auto',
             border: '1px solid rgba(201,164,76,0.1)'
           }}>
-            <motion.div 
+            <motion.div
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-              style={{ 
-                width: '18px', 
-                height: '18px', 
-                border: '2px solid rgba(201,164,76,0.1)', 
-                borderTopColor: '#c9a44c', 
-                borderRadius: '50%' 
+              style={{
+                width: '18px',
+                height: '18px',
+                border: '2px solid rgba(201,164,76,0.1)',
+                borderTopColor: '#c9a44c',
+                borderRadius: '50%'
               }}
             />
             <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -594,9 +596,9 @@ export default function TournamentPage() {
   // ════════════ MATCH FOUND OVERLAY ════════════
   if (isStarting && tournament) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" 
-           style={{ background: 'radial-gradient(circle at center, #1a4d3c 0%, #050d0a 100%)' }}>
-        
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
+        style={{ background: 'radial-gradient(circle at center, #1a4d3c 0%, #050d0a 100%)' }}>
+
         {/* Animated Background Rays */}
         <motion.div
           animate={{ rotate: 360 }}
@@ -685,13 +687,13 @@ export default function TournamentPage() {
   }
 
   return (
-    <div 
+    <div
       className="flex flex-col h-screen w-full overflow-hidden select-none"
       style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
     >
 
       {/* ═══ TOP HEADER — TOURNAMENT INFO + TIMER ═══ */}
-      <header 
+      <header
         className="flex-shrink-0 flex items-center justify-between px-6 py-2 z-10"
         style={{
           background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
@@ -709,7 +711,7 @@ export default function TournamentPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
-          
+
           <div className="hidden lg:block">
             <SpinHistory history={history} />
           </div>
@@ -747,26 +749,26 @@ export default function TournamentPage() {
 
           {/* Player Profile Section */}
           <div className="flex items-center gap-4 pl-4 border-l border-white/10">
-             <div className="hidden sm:flex flex-col items-end">
-                <span className="text-[12px] font-black text-white">{userProfile.name}</span>
-                <span className="text-[9px] text-[#c9a44c] uppercase font-bold tracking-tighter">Tournament Mode</span>
-             </div>
-             <Avatar type={userProfile.avatar} size="sm" className="border-2 border-[#c9a44c]/40" />
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-[12px] font-black text-white">{userProfile.name}</span>
+              <span className="text-[9px] text-[#c9a44c] uppercase font-bold tracking-tighter">Tournament Mode</span>
+            </div>
+            <Avatar type={userProfile.avatar} size="sm" className="border-2 border-[#c9a44c]/40" />
           </div>
         </div>
       </header>
 
       <main className="flex-1 min-h-0 relative px-2 py-0 overflow-hidden flex items-stretch justify-center gap-4">
-        
+
 
         {/* Roulette Table — takes most of the space */}
         <div className="flex-1 min-w-0 max-w-[1200px] flex flex-col justify-center items-center">
           <RouletteTable
-            wheelType="european"
+            wheelType={wheelType}
             currentResult={lastSpinResult}
             isSpinning={phase === "spinning"}
             onSpinComplete={completeSpin}
-            wheelSize={420}
+            wheelSize={phase === "spinning" ? 580 : 420}
             wheelRef={{ current: null }}
             bets={displayBets}
             myBets={bets}
@@ -775,12 +777,12 @@ export default function TournamentPage() {
             isBettingDisabled={phase !== "betting"}
             lastPayout={lastPlayerPayout}
             phase={
-              phase === "betting" ? "BETTING" : 
-              phase === "spinning" ? "SPINNING" : 
-              phase === "locked" ? "LOCKED" : 
-              "RESULT"
+              phase === "betting" ? "BETTING" :
+                phase === "spinning" ? "SPINNING" :
+                  phase === "locked" ? "LOCKED" :
+                    "RESULT"
             }
-            setWheelType={() => { }}
+            setWheelType={(type) => updateWheelType(type)}
             onSpin={() => { }}
             onRebet={handleRebet}
             onClearBets={handleClearBets}
@@ -798,11 +800,19 @@ export default function TournamentPage() {
         </div>
 
         {/* Scoreboard & Betting Feed Sidebar */}
-        <div className="flex-shrink-0 flex flex-col gap-4 py-6 w-80 max-h-[85vh]">
+        <motion.div
+          animate={{
+            width: phase === "spinning" ? 0 : 320,
+            opacity: phase === "spinning" ? 0 : 1,
+            x: phase === "spinning" ? 100 : 0
+          }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="flex-shrink-0 flex flex-col gap-4 py-6 max-h-[85vh] overflow-hidden"
+        >
           <div className="flex-shrink-0">
             <Scoreboard />
           </div>
-          
+
           <div className="flex-1 min-h-0 flex flex-col bg-black/40 rounded-[2.5rem] border border-white/5 backdrop-blur-md overflow-hidden pt-12 pb-8 px-10 shadow-2xl">
             <div className="flex-shrink-0 flex items-center justify-center gap-3 mb-6">
               <div className="h-px w-10 bg-gradient-to-l from-[#c9a44c]/30 to-transparent" />
@@ -813,11 +823,11 @@ export default function TournamentPage() {
               <LiveBettingFeed />
             </div>
           </div>
-        </div>
+        </motion.div>
       </main>
 
       {/* ═══ FOOTER — CHIP TRAY + CONTROLS ═══ */}
-      <footer 
+      <footer
         className="flex-shrink-0 w-full px-6 py-2 flex items-center justify-between z-10"
         style={{
           background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
@@ -836,7 +846,7 @@ export default function TournamentPage() {
               disabled={phase !== "betting"}
             />
           </div>
-          
+
           <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner">
             <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold leading-none">Balance</span>
             <span className="text-sm font-black text-white mt-1">
@@ -865,13 +875,13 @@ export default function TournamentPage() {
               whileTap={{ scale: 0.95 }}
               className={`
                 px-3 h-10 rounded-xl flex items-center justify-center font-black text-[10px] border-2 transition-all
-                ${(phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal) 
-                  ? 'bg-white/5 border-white/10 text-white/20' 
+                ${(phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal)
+                  ? 'bg-white/5 border-white/10 text-white/20'
                   : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
               `}
               title="Repeat last bets"
             >
-              RESET
+              REBET
             </motion.button>
 
             {/* UNDO (Clear Last Bet) */}
@@ -884,8 +894,8 @@ export default function TournamentPage() {
               whileTap={{ scale: 0.95 }}
               className={`
                 w-10 h-10 rounded-full flex flex-col items-center justify-center border-2 transition-all
-                ${(phase !== "betting" || betPlacementHistory.length === 0) 
-                  ? 'bg-white/5 border-white/10 text-white/20' 
+                ${(phase !== "betting" || betPlacementHistory.length === 0)
+                  ? 'bg-white/5 border-white/10 text-white/20'
                   : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
               `}
               title="Clear last bet"
@@ -903,8 +913,8 @@ export default function TournamentPage() {
               whileTap={{ scale: 0.95 }}
               className={`
                 px-3 h-10 rounded-xl flex items-center justify-center font-black text-[10px] border-2 transition-all
-                ${(phase !== "betting" || bets.size === 0) 
-                  ? 'bg-white/5 border-white/10 text-white/20' 
+                ${(phase !== "betting" || bets.size === 0)
+                  ? 'bg-white/5 border-white/10 text-white/20'
                   : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
               `}
               title="Clear all bets"
@@ -923,8 +933,8 @@ export default function TournamentPage() {
               whileTap={{ scale: 0.95 }}
               className={`
                 w-10 h-10 rounded-full flex items-center justify-center font-black text-xs border-2 transition-all
-                ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0) 
-                  ? 'bg-white/5 border-white/10 text-white/20' 
+                ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0)
+                  ? 'bg-white/5 border-white/10 text-white/20'
                   : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/20'}
               `}
               title="Double all bets"
@@ -942,10 +952,10 @@ export default function TournamentPage() {
               whileTap={{ scale: 0.95 }}
               className={`
                 w-10 h-10 rounded-full flex items-center justify-center font-black text-lg border-2 transition-all
-                ${phase !== "betting" 
-                  ? 'bg-white/5 border-white/10 text-white/20' 
-                  : deleteMode 
-                    ? 'bg-red-500 border-red-400 text-white shadow-lg shadow-red-500/40' 
+                ${phase !== "betting"
+                  ? 'bg-white/5 border-white/10 text-white/20'
+                  : deleteMode
+                    ? 'bg-red-500 border-red-400 text-white shadow-lg shadow-red-500/40'
                     : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/20'}
               `}
               title={deleteMode ? "Exit clear mode" : "Enter clear mode"}
@@ -960,8 +970,8 @@ export default function TournamentPage() {
             disabled={phase !== "betting"}
             className={`
               px-6 py-2 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] transition-all
-              ${phase === 'betting' 
-                ? 'bg-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/40 hover:scale-105 active:scale-95' 
+              ${phase === 'betting'
+                ? 'bg-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/40 hover:scale-105 active:scale-95'
                 : 'bg-white/5 text-white/20 border border-white/10 cursor-not-allowed'}
             `}
           >

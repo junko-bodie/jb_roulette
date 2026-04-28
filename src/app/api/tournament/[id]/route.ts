@@ -427,3 +427,36 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const { wheel_type } = await request.json();
+    const db = await getDb();
+
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid ID format' }, { status: 400 });
+    }
+
+    if (wheel_type !== 'american' && wheel_type !== 'european') {
+      return NextResponse.json({ error: 'Invalid wheel type' }, { status: 400 });
+    }
+
+    const result = await db.collection('tournaments').updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { wheel_type } }
+    );
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, wheel_type });
+  } catch (error: any) {
+    console.error('Update tournament error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

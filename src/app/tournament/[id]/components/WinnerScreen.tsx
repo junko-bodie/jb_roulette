@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
-import { Trophy, Medal, Star, ArrowLeft, Gift, Award } from 'lucide-react';
+import { Trophy, Medal, Award, ChevronRight, Play } from 'lucide-react';
 
 interface WinnerScreenProps {
   tournament: any;
@@ -17,10 +17,18 @@ interface WinnerScreenProps {
   };
 }
 
+const LaurelIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M6 19C6 19 3 17 3 12C3 7 6 5 6 5M18 19C18 19 21 17 21 12C21 7 18 5 18 5M12 17L10 19L12 21L14 19L12 17Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M7 14L8 15M7 10L8 9M17 14L16 15M17 10L16 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
 export default function WinnerScreen({ tournament, player }: WinnerScreenProps) {
   useEffect(() => {
     // Only trigger rewards for the real player once
-    if (player.username === tournament.players.find((p: any) => !p.is_bot)?.username) {
+    const realPlayer = tournament.players.find((p: any) => !p.is_bot);
+    if (player.username === realPlayer?.username) {
       fetch(`/api/tournament/${tournament._id}/rewards`, { method: 'POST' })
         .then(res => res.json())
         .then(data => console.log('Rewards processed:', data))
@@ -35,16 +43,11 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
       const duration = 5 * 1000;
       const animationEnd = Date.now() + duration;
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
-
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
       const interval: any = setInterval(() => {
         const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
+        if (timeLeft <= 0) return clearInterval(interval);
         const particleCount = 50 * (timeLeft / duration);
         confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
         confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
@@ -54,7 +57,6 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
     }
   }, [isWinner]);
 
-  // Standing calculation
   const standings = useMemo(() => {
     return [...tournament.players].sort((a, b) => {
       const posA = a.final_position || (a.status === "active" ? 1 : 6);
@@ -64,148 +66,172 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
   }, [tournament]);
 
   const pointsEarned = (7 - player.final_position) * 250 + Math.floor(player.final_chips / 10);
-  const seasonPoints = player.final_position === 1 ? 100 : 
-                       player.final_position === 2 ? 60 : 
-                       player.final_position === 3 ? 40 : 
-                       player.final_position === 4 ? 25 : 
-                       player.final_position === 5 ? 10 : 5;
 
   return (
-    <div className="fixed inset-0 z-[200] overflow-y-auto bg-[#050d0a] flex flex-col items-center py-24 px-4 pb-32" style={{ background: `radial-gradient(circle at center, #165b45 0%, #050d0a 100%)` }}>
-      
-      {/* ═══ WINNER BANNER ═══ */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-6xl text-center mb-20"
-      >
-        <div className="flex justify-center mb-10">
-          <div className="relative">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute -inset-8 border-2 border-dashed border-gold/30 rounded-full"
-            />
-            <div className={`w-36 h-36 rounded-full flex items-center justify-center ${isWinner ? 'bg-gold shadow-[0_0_80px_rgba(201,164,76,0.8)]' : 'bg-white/10'}`}>
-              {isWinner ? <Trophy className="w-18 h-18 text-black" /> : <Medal className="w-18 h-18 text-gold" />}
-            </div>
-          </div>
-        </div>
-
-        <h1 className="text-8xl font-black text-white uppercase tracking-tightest mb-6 leading-none">
-          {isWinner ? "Tournament Champion" : player.final_position === 2 ? "Runner Up" : "Final Standings"}
-        </h1>
-        <p className="text-gold/60 font-bold uppercase tracking-[0.5em] text-lg">
-          {isWinner ? "A Masterclass performance at the table" : `Ranked #${player.final_position} overall`}
-        </p>
-      </motion.div>
-
-      {/* ═══ STATS GRID ═══ */}
-      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-10 mb-20 px-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-black/60 border border-white/10 rounded-[2.5rem] p-14 backdrop-blur-2xl text-center shadow-2xl relative overflow-hidden group">
-           <div className="absolute top-0 left-0 w-full h-1 bg-gold/30" />
-           <span className="text-[12px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 block">Final Rank</span>
-           <div className="text-7xl font-black text-gold">#{player.final_position}</div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-black/60 border border-white/10 rounded-[2.5rem] p-14 backdrop-blur-2xl text-center shadow-2xl relative overflow-hidden group">
-           <div className="absolute top-0 left-0 w-full h-1 bg-white/10" />
-           <span className="text-[12px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 block">Chips Collected</span>
-           <div className="text-7xl font-black text-white">${player.final_chips.toLocaleString()}</div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-black/60 border border-white/10 rounded-[2.5rem] p-14 backdrop-blur-2xl text-center shadow-2xl relative overflow-hidden group">
-           <div className="absolute top-0 left-0 w-full h-1 bg-green-500/30" />
-           <span className="text-[12px] font-black text-white/30 uppercase tracking-[0.3em] mb-4 block">Global XP</span>
-           <div className="text-7xl font-black text-green-500">+{pointsEarned}</div>
-        </motion.div>
+    <div className="fixed inset-0 z-[200] overflow-y-auto bg-[#050d0a] flex flex-col items-center py-24 px-4 selection:bg-gold/30">
+      {/* ═══ LUXURY BACKGROUND ═══ */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,#1a5c43_0%,#050d0a_100%)]" />
+        
+        {/* Blurred Chip Stacks */}
+        <motion.img 
+          initial={{ opacity: 0, x: -50 }} 
+          animate={{ opacity: 0.4, x: 0 }} 
+          src="/images/casino/winner_bg.png" 
+          className="absolute -bottom-20 -left-40 w-[700px] blur-sm rotate-12" 
+        />
+        <motion.img 
+          initial={{ opacity: 0, x: 50 }} 
+          animate={{ opacity: 0.4, x: 0 }} 
+          src="/images/casino/winner_bg.png" 
+          className="absolute -bottom-40 -right-40 w-[800px] blur-md -rotate-12 scale-x-[-1]" 
+        />
+        
+        {/* Grain Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: `url('https://grainy-gradients.vercel.app/noise.svg')` }} />
       </div>
 
-      {/* ═══ REWARDS BANNER (ONLY FOR REAL PLAYERS) ═══ */}
-      {!player.is_bot && (
-        <motion.div
-           initial={{ opacity: 0, y: 30 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.4 }}
-           className="w-full max-w-6xl mb-20 p-12 rounded-[3.5rem] border-2 border-gold/30 bg-gradient-to-br from-gold/10 via-black to-black backdrop-blur-3xl shadow-[0_40px_80px_rgba(0,0,0,0.8)] relative overflow-hidden"
+      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center">
+        {/* ═══ TOP ICON ═══ */}
+        <motion.div 
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          className="relative mb-12"
         >
-          {/* Background Highlight */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-gold/5 blur-[100px] -mr-40 -mt-40 rounded-full" />
-          
-          <div className="flex flex-col lg:flex-row items-center gap-12 relative z-10">
-            <div className="flex-shrink-0">
-               <div className="w-24 h-24 rounded-3xl bg-gold/20 flex items-center justify-center border border-gold/40">
-                  <Gift className="w-12 h-12 text-gold" />
-               </div>
+          <div className="absolute inset-0 bg-gold/20 blur-3xl rounded-full" />
+          <div className="relative w-28 h-28 rounded-full bg-gradient-to-b from-[#c9a44c] to-[#a67c2e] p-[2px] shadow-[0_0_50px_rgba(201,164,76,0.3)]">
+            <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+              <Award className="w-14 h-14 text-gold" />
             </div>
-            
-            <div className="flex-1 text-center lg:text-left">
-               <h3 className="text-3xl font-black text-white italic uppercase tracking-wider mb-3">Rewards Unlocked</h3>
-               <p className="text-white/60 text-lg leading-relaxed max-w-2xl">
-                 Congratulations! Your elite performance has secured premium rewards for your account.
-               </p>
-            </div>
+          </div>
+          {/* Circular Glow Effect */}
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 4, repeat: Infinity }}
+            className="absolute -inset-6 border border-gold/30 rounded-full"
+          />
+        </motion.div>
 
-            <div className="flex flex-wrap justify-center lg:justify-end gap-8">
-               <div className="flex flex-col items-center p-6 bg-black/60 rounded-3xl border border-white/10 min-w-[150px]">
-                  <span className="text-4xl font-black text-gold">+{seasonPoints}</span>
-                  <span className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] mt-2">Season Pts</span>
-               </div>
-               {isWinner && (
-                 <div className="flex flex-col items-center p-6 bg-gold/10 rounded-3xl border border-gold/40 min-w-[150px]">
-                    <Award className="w-8 h-8 text-gold mb-2" />
-                    <span className="text-[11px] font-bold text-gold uppercase tracking-[0.2em]">Champion</span>
-                 </div>
-               )}
+        {/* ═══ TITLE SECTION ═══ */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-8xl font-black text-white uppercase tracking-tight mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
+            Final Standings
+          </h1>
+          <p className="text-gold font-bold uppercase tracking-[0.5em] text-xl">
+            Ranked #{player.final_position} Overall
+          </p>
+        </motion.div>
+
+        {/* ═══ STATS CARDS ═══ */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-16">
+          {[
+            { label: 'Final Rank', value: `#${player.final_position}`, color: 'text-gold' },
+            { label: 'Chips Collected', value: `$${player.final_chips.toLocaleString()}`, color: 'text-white' },
+            { label: 'Global XP Earned', value: `+${pointsEarned}`, color: 'text-[#4ade80]' }
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 + (i * 0.1) }}
+              className="bg-[#0a1612]/80 border border-white/5 rounded-3xl p-10 flex flex-col items-center justify-center group hover:border-gold/20 transition-all shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              <span className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-6 group-hover:text-gold/50 transition-colors">
+                {stat.label}
+              </span>
+              <div className={`text-6xl font-black ${stat.color} tracking-tight`}>
+                {stat.value}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ═══ CLASSIFICATION TABLE ═══ */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="w-full bg-[#0a1410] border border-[#c9a44c]/30 rounded-[3rem] p-4 shadow-[0_60px_150px_rgba(0,0,0,0.9)] mb-16 relative"
+        >
+          {/* Inner Border Glow */}
+          <div className="absolute inset-0 rounded-[3rem] border border-white/5 pointer-events-none" />
+          
+          <div className="p-10">
+            <h3 className="text-[12px] font-black text-gold/40 uppercase tracking-[0.6em] mb-12 text-center">
+              Final Tournament Classification
+            </h3>
+            
+            <div className="space-y-4">
+              {standings.map((s, idx) => {
+                const isMe = s.username === tournament.players.find((p: any) => !p.is_bot)?.username;
+                const isWinnerRow = idx === 0;
+                
+                return (
+                  <motion.div 
+                    key={s.player_id.toString()}
+                    className={`flex items-center justify-between p-7 rounded-2xl border transition-all ${
+                      isWinnerRow ? 'bg-[#c9a44c]/10 border-[#c9a44c]/40' : 
+                      isMe ? 'bg-white/10 border-white/20' : 'bg-[#0c1a15] border-white/5'
+                    }`}
+                  >
+                    <div className="flex items-center gap-8">
+                      {/* Rank with Laurels */}
+                      <div className="relative flex items-center justify-center">
+                        <LaurelIcon className={`w-14 h-14 ${isWinnerRow ? 'text-gold' : 'text-white/10'}`} />
+                        <span className={`absolute inset-0 flex items-center justify-center font-black text-xl ${isWinnerRow ? 'text-gold' : 'text-white/40'}`}>
+                          ({idx + 1})
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-col">
+                        <span className={`font-black text-2xl tracking-tight ${isMe ? 'text-gold' : 'text-white'}`}>
+                          {s.username}
+                        </span>
+                        <span className="text-[10px] text-white/25 uppercase tracking-widest font-black pt-1">
+                          {isMe ? 'YOU' : 'ROBOT CPU'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <div className="font-black text-3xl text-white tracking-tighter">
+                        ${(s.final_chips || s.current_chips || 0).toLocaleString()}
+                      </div>
+                      <div className="text-[9px] text-white/30 uppercase font-black tracking-widest mt-1">
+                        Final Chips
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </motion.div>
-      )}
 
-      {/* ═══ FINAL STANDINGS ═══ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="w-full max-w-6xl bg-black/70 border border-white/10 rounded-[3.5rem] p-16 backdrop-blur-2xl shadow-[0_50px_120px_rgba(0,0,0,0.7)] mb-20"
-      >
-        <h3 className="text-[12px] font-black text-gold uppercase tracking-[0.6em] mb-12 text-center opacity-70">Final Tournament Classification</h3>
-        
-        <div className="space-y-8">
-          {standings.map((s, idx) => {
-            const isMe = s.player_id.toString() === tournament.players.find((p: any) => !p.is_bot)?.player_id.toString();
-            return (
-              <div key={s.player_id.toString()} className={`flex items-center justify-between p-8 rounded-3xl border transition-all ${
-                idx === 0 ? 'bg-gold/10 border-gold/40 shadow-lg shadow-gold/5' : 
-                isMe ? 'bg-white/10 border-gold/30' : 'bg-black/40 border-white/5'
-              }`}>
-                <div className="flex items-center gap-10">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center font-black text-2xl ${
-                    idx === 0 ? 'bg-gold text-black' : 'bg-white/5 text-white/40'
-                  }`}>
-                    {idx + 1}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className={`font-black text-2xl ${isMe ? 'text-gold' : 'text-white'}`}>{s.username}</span>
-                    <span className="text-[12px] text-white/20 uppercase tracking-[0.2em] font-bold mt-1">{s.is_bot ? 'Robot CPU' : 'Participant'}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-black text-3xl text-white">${s.current_chips.toLocaleString()}</div>
-                  <div className="text-[11px] text-white/20 uppercase font-black tracking-widest mt-1">Final Chips</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
+        {/* ═══ ACTION BUTTON ═══ */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="pb-24"
+        >
+          <Link 
+            href="/tournament" 
+            className="group relative flex items-center gap-6 px-16 py-8 bg-gradient-to-b from-[#e6c16a] to-[#c9a44c] text-black font-black uppercase tracking-[0.4em] rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-[0_30px_70px_rgba(201,164,76,0.3)] hover:shadow-[0_40px_90px_rgba(201,164,76,0.4)] overflow-hidden text-xl"
+          >
+            {/* Gloss Highlight */}
+            <div className="absolute top-0 inset-x-0 h-1/2 bg-white/20 skew-y-[-2deg] origin-left" />
+            <Play className="w-6 h-6 fill-current" />
+            PLAY ANOTHER TOURNAMENT
+          </Link>
+        </motion.div>
 
-      {/* ═══ ACTION ═══ */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
-        <Link href="/tournament" className="group flex items-center gap-6 px-16 py-8 bg-gold text-black font-black uppercase tracking-[0.3em] rounded-[2rem] transition-all hover:scale-105 active:scale-95 shadow-[0_30px_60px_rgba(201,164,76,0.3)] text-xl">
-          <ArrowLeft className="w-8 h-8 transition-transform group-hover:-translate-x-3" />
-          Play Another Tournament
-        </Link>
-      </motion.div>
-
+      </div>
     </div>
   );
 }

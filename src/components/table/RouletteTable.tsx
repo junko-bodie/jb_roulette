@@ -161,12 +161,18 @@ const RouletteTable = memo(function RouletteTable({
           {/* Wheel Section (Left) */}
           <motion.div
             ref={wheelRef}
-            className="relative flex justify-center items-center flex-1 mobile-wheel-section"
-            initial={{ opacity: 0, scale: 0.95 }}
+            className="relative flex justify-center items-center mobile-wheel-section"
+            initial={{ opacity: 0, scale: 0.95, flex: 1 }}
             animate={isMobile
-              ? { opacity: 1, scale: 1, y: 0 }
-              : { opacity: 1, scale: 1, y: -25 }
+              ? { opacity: 1, scale: isSpinning ? 1.1 : 1, y: 0, flex: 1 }
+              : {
+                opacity: 1,
+                scale: isSpinning ? 1.15 : 1,
+                y: isSpinning ? 0 : -25,
+                flex: isSpinning ? 4 : 1
+              }
             }
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             <RouletteWheel
               wheelType={wheelType}
@@ -177,77 +183,84 @@ const RouletteTable = memo(function RouletteTable({
             />
 
             {/* Wheel type toggle — overlaid at bottom center of wheel */}
-            {!tournamentMode && (
-              <div
-                className="absolute flex items-center gap-2 text-[13px] z-30"
+            <div
+              className="absolute flex items-center gap-2 text-[13px] z-30"
+              style={{
+                fontFamily: 'var(--font-inter)',
+                bottom: isMobile ? '-20px' : '-40px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.75)',
+                borderRadius: '9999px',
+                padding: '5px 10px',
+                backdropFilter: 'blur(8px)',
+                border: '1.5px solid rgba(201, 164, 76, 0.4)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                opacity: isBettingDisabled ? 0.5 : 1,
+                pointerEvents: isBettingDisabled ? 'none' : 'auto',
+                transition: 'opacity 0.3s ease'
+              }}
+            >
+              <button
+                onClick={() => setWheelType('american')}
+                className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
                 style={{
-                  fontFamily: 'var(--font-inter)',
-                  bottom: '-40px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'rgba(0,0,0,0.75)',
-                  borderRadius: '9999px',
-                  padding: '5px 10px',
-                  backdropFilter: 'blur(8px)',
-                  border: '1.5px solid rgba(201, 164, 76, 0.4)',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+                  background: wheelType === 'american'
+                    ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
+                    : 'rgba(255,255,255,0.05)',
+                  color: wheelType === 'american' ? '#000' : '#c2d7d580',
+                  fontWeight: 900,
+                  fontSize: '14px',
+                  letterSpacing: '0.05em',
+                  border: '2px solid',
+                  borderColor: wheelType === 'american' ? '#f5edd5' : 'transparent',
+                  boxShadow: wheelType === 'american'
+                    ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
+                    : 'none',
+                  textTransform: 'uppercase'
                 }}
               >
-                <button
-                  onClick={() => setWheelType('american')}
-                  className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
-                  style={{
-                    background: wheelType === 'american'
-                      ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
-                      : 'rgba(255,255,255,0.05)',
-                    color: wheelType === 'american' ? '#000' : '#c2d7d580',
-                    fontWeight: 900,
-                    fontSize: '14px',
-                    letterSpacing: '0.05em',
-                    border: '2px solid',
-                    borderColor: wheelType === 'american' ? '#f5edd5' : 'transparent',
-                    boxShadow: wheelType === 'american'
-                      ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
-                      : 'none',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  American
-                </button>
-                <button
-                  onClick={() => setWheelType('european')}
-                  className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
-                  style={{
-                    background: wheelType === 'european'
-                      ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
-                      : 'rgba(255,255,255,0.05)',
-                    color: wheelType === 'european' ? '#000' : '#c2d7d580',
-                    fontWeight: 900,
-                    fontSize: '14px',
-                    letterSpacing: '0.05em',
-                    border: '2px solid',
-                    borderColor: wheelType === 'european' ? '#f5edd5' : 'transparent',
-                    boxShadow: wheelType === 'european'
-                      ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
-                      : 'none',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  European
-                </button>
-              </div>
-            )}
+                American
+              </button>
+              <button
+                onClick={() => setWheelType('european')}
+                className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
+                style={{
+                  background: wheelType === 'european'
+                    ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
+                    : 'rgba(255,255,255,0.05)',
+                  color: wheelType === 'european' ? '#000' : '#c2d7d580',
+                  fontWeight: 900,
+                  fontSize: '14px',
+                  letterSpacing: '0.05em',
+                  border: '2px solid',
+                  borderColor: wheelType === 'european' ? '#f5edd5' : 'transparent',
+                  boxShadow: wheelType === 'european'
+                    ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
+                    : 'none',
+                  textTransform: 'uppercase'
+                }}
+              >
+                European
+              </button>
+            </div>
           </motion.div>
 
           {/* Table Section (Right) */}
           <motion.div
-            className="flex-[2] flex flex-col items-center justify-start p-2 mobile-table-section w-full"
-            initial={{ opacity: 0, x: 20, scale: 0.95 }}
+            className="flex flex-col items-center justify-start p-2 mobile-table-section w-full"
+            initial={{ opacity: 0, x: 20, scale: 0.95, flex: 2 }}
             animate={isMobile
-              ? { opacity: 1, x: 0, scale: 1 }
-              : { opacity: 1, x: 1, scaleX: 1.08, scaleY: 1.5 } // Reduced scaling to prevent clipping
+              ? { opacity: isSpinning ? 0 : 1, scale: isSpinning ? 0.9 : 1, y: 0, flex: isSpinning ? 0 : 2 }
+              : {
+                opacity: isSpinning ? 0.2 : 1,
+                x: 1,
+                scaleX: isSpinning ? 0.9 : 1.08,
+                scaleY: isSpinning ? 0.9 : 1.5,
+                flex: isSpinning ? 0.5 : 2
+              }
             }
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Junko Bodie Title & Tournament Rules */}
             <div className="flex flex-col items-center mb-0.5 -mt-24" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
@@ -335,11 +348,11 @@ const RouletteTable = memo(function RouletteTable({
             {/* ═══ BUTTONS — directly below betting grid (hidden in tournament mode) ═══ */}
             {!tournamentMode && (
               <div
-                className="flex items-center justify-end gap-3 mt-2 w-full pr-8"
+                className={`flex items-center justify-end ${!tournamentMode ? 'gap-6 mt-12 mb-6' : 'gap-3 mt-2'} w-full pr-8`}
                 style={{ transform: 'scaleX(1.0) scaleY(1.0)' }}
               >
                 {/* Timer UI - only show if betting and timer enabled */}
-                <div className="flex flex-col items-center justify-center mr-4">
+                <div className="flex flex-col items-center justify-center mr-6">
                   {isTimerEnabled && !isSpinning && phase === 'BETTING' && (
                     <BetTimer
                       duration={45}
@@ -357,7 +370,7 @@ const RouletteTable = memo(function RouletteTable({
 
                 {/* 2X and Delete Mode Buttons — Left Side */}
                 {!isBettingDisabled && totalBet > 0 && (
-                  <>
+                  <div className="flex items-center gap-4 mr-2">
                     <BettingControlButtons
                       totalBet={totalBet}
                       balance={balance}
@@ -367,29 +380,30 @@ const RouletteTable = memo(function RouletteTable({
                       disabled={isBettingDisabled}
                     />
                     <div style={{ width: '1px', height: '24px', background: '#5ea896', opacity: 0.3 }} />
-                  </>
+                  </div>
                 )}
 
-                {/* RESET — compact bordered box */}
+                {/* RE-BET — compact bordered box */}
                 <button
                   onClick={onRebet}
                   disabled={!canBet || !hasLastSpin}
                   className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
-                    color: '#d4d0c4',
+                    color: '#e4e0d4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
                     border: '3px solid #c9a44c',
-                    borderRadius: '8px',
-                    padding: '6px 12px',
+                    borderRadius: '10px',
+                    padding: '8px 16px',
                     lineHeight: 1,
+                    boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
                 >
-                  Reset
+                  RE-BET
                 </button>
 
                 {/* CLEAR — compact bordered box (clears all bets) */}
@@ -399,57 +413,57 @@ const RouletteTable = memo(function RouletteTable({
                   className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
-                    color: '#d4d0c4',
+                    color: '#e4e0d4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
                     border: '3px solid #c9a44c',
-                    borderRadius: '8px',
-                    padding: '6px 12px',
+                    borderRadius: '10px',
+                    padding: '8px 16px',
                     lineHeight: 1,
+                    boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
                 >
                   Clear
                 </button>
 
-                {/* CLEAR LAST BET — compact bordered box with sub-label */}
+                {/* UNDO — compact bordered box */}
                 <button
                   onClick={handleClearLastBetClick}
                   disabled={!canBet || !hasBets}
                   className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
-                    fontSize: '10px',
+                    fontSize: '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
-                    color: '#d4d0c4',
+                    color: '#e4e0d4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
                     border: '3px solid #c9a44c',
                     borderRadius: '10px',
-                    padding: '5px 10px',
+                    padding: '8px 16px',
                     lineHeight: 1,
-                    display: 'flex',
-                    flexDirection: 'column' as const,
-                    alignItems: 'center',
-                    gap: '2px',
+                    boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
                 >
-                  <span>Clear</span>
-                  <span style={{ fontSize: '7px', opacity: 0.6, letterSpacing: '0.05em' }}>LAST BET</span>
+                  UNDO
                 </button>
 
-                {/* SPIN — dark green oval with thick gold border */}
-                {/* SPIN — dark green oval with thick gold border */}
+                {/* SPIN — dark green oval with thick gold 3D border */}
                 <motion.button
                   onClick={handleSpinClick}
                   disabled={!spinEnabled}
-                  whileHover={spinEnabled ? { scale: 1.06, y: -1 } : {}}
-                  whileTap={spinEnabled ? { scale: 1.12, y: 1 } : {}}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                  className="relative overflow-hidden cursor-pointer disabled:cursor-not-allowed ml-1"
+                  whileHover={spinEnabled ? { scale: 1.05, y: -2 } : {}}
+                  whileTap={spinEnabled ? {
+                    scale: 0.98,
+                    y: 4,
+                    boxShadow: `0 2px 0 0 #1a0f09, 0 4px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.2)`
+                  } : {}}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                  className="relative overflow-hidden cursor-pointer disabled:cursor-not-allowed ml-4"
                   style={{
                     background: spinEnabled
                       ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
@@ -457,17 +471,17 @@ const RouletteTable = memo(function RouletteTable({
                     color: spinEnabled ? '#ffffff' : '#444',
                     fontFamily: "'Bodoni Moda', serif",
                     fontStyle: 'italic',
-                    fontWeight: 800,
-                    fontSize: '0.9rem',
-                    letterSpacing: '0.2em',
+                    fontWeight: 900,
+                    fontSize: '1rem',
+                    letterSpacing: '0.25em',
                     textTransform: 'uppercase' as const,
-                    padding: '8px 26px',
+                    padding: '12px 40px',
                     borderRadius: '9999px',
                     borderWidth: spinEnabled ? '3px' : '2px',
                     borderStyle: 'solid',
-                    borderColor: spinEnabled ? '#c9a44c' : '#333',
+                    borderColor: spinEnabled ? '#f5edd5' : '#333',
                     boxShadow: spinEnabled
-                      ? `0 0 0 2px #1a0f09, 0 6px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -3px 0 rgba(0,0,0,0.4), 0 0 30px rgba(201, 168, 76, 0.3)`
+                      ? `0 8px 0 0 #1a0f09, 0 12px 25px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -5px 0 rgba(0,0,0,0.3), 0 0 40px rgba(201, 168, 76, 0.3)`
                       : 'none',
                     textShadow: spinEnabled ? '0 2px 4px rgba(0,0,0,0.6)' : 'none',
                   } as React.CSSProperties}

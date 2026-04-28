@@ -70,6 +70,8 @@ interface TournamentContextType {
   showResult: boolean;
   events: BettingEvent[];
   addEvent: (event: Omit<BettingEvent, 'id' | 'timestamp'>) => void;
+  wheelType: 'american' | 'european';
+  updateWheelType: (type: 'american' | 'european') => Promise<void>;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(undefined);
@@ -138,6 +140,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const generatedRef = useRef<string>('');
   const spinSubmittedRef = useRef<string>(''); // Tracks "round-spin" key for submissions
   const isFetchingRef = useRef(false); // Prevent concurrent polls
+
+  const [wheelType, setWheelTypeState] = useState<'american' | 'european'>('european');
 
   phaseRef.current = phase;
   roundIdRef.current = roundId;
@@ -247,6 +251,10 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       
       if (data.history) {
         setRawHistory(data.history);
+      }
+      
+      if (data.wheel_type && data.wheel_type !== wheelType) {
+        setWheelTypeState(data.wheel_type);
       }
       
       setError(null);
@@ -658,6 +666,31 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     }
   }, [id]);
 
+  const updateWheelType = useCallback(async (type: 'american' | 'european') => {
+    if (!id) return;
+    
+    // Optimistic update
+    setWheelTypeState(type);
+    
+    try {
+      const res = await fetch(`/api/tournament/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wheel_type: type }),
+      });
+      
+      if (!res.ok) {
+        throw new Error('Failed to update wheel type');
+      }
+      
+      // Update local tournament object too
+      setTournament(prev => prev ? { ...prev, wheel_type: type } : null);
+    } catch (err) {
+      console.error('[Tournament] updateWheelType error:', err);
+      // Revert on error? Or just leave it, next poll will fix it
+    }
+  }, [id]);
+
   // ── Derived state ──
   const activePlayers = useMemo(() =>
     tournament?.players?.filter(p => p.status === 'active') || [],
@@ -771,6 +804,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     showResult,
     events,
     addEvent,
+    wheelType,
+    updateWheelType,
   }), [
     tournament,
     currentRound,
