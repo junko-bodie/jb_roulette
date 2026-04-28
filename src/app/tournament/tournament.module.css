@@ -1,233 +1,344 @@
 .page {
   min-height: 100vh;
-  background: radial-gradient(circle at center, #0a2a1f 0%, #05140e 100%);
-  color: #fff;
-  font-family: var(--font-geist-sans);
-  position: relative;
-  overflow-x: hidden;
+  min-height: 100dvh;
+  background: #0d2116;
+  /* Deep page background */
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.windowFrame {
+  width: 100%;
+  max-width: 1100px;
+  height: 90vh;
+  max-height: 800px;
+  background: #0f2c1c;
+  /* A slightly lighter green for the frame */
+  border: 1px solid rgba(212, 188, 129, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
-}
-
-.bgGrid {
-  position: fixed;
-  inset: 0;
-  background-image: 
-    linear-gradient(rgba(201, 164, 76, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(201, 164, 76, 0.08) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
-}
-
-.bgAccents {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.bgOrb1 {
-  position: absolute;
-  top: -10%;
-  left: -10%;
-  width: 70%;
-  height: 70%;
-  background: radial-gradient(circle, rgba(201, 164, 76, 0.12) 0%, transparent 70%);
-  filter: blur(100px);
-}
-
-.bgOrb2 {
-  position: absolute;
-  bottom: -10%;
-  right: -10%;
-  width: 70%;
-  height: 70%;
-  background: radial-gradient(circle, rgba(10, 42, 31, 0.4) 0%, transparent 70%);
-  filter: blur(100px);
+  position: relative;
+  overflow: hidden;
 }
 
 .header {
-  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
-  border-bottom: 1px solid rgba(201, 164, 76, 0.1);
-  background: rgba(5, 20, 14, 0.85);
-  backdrop-filter: blur(15px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  padding: 24px 32px;
+  z-index: 10;
+}
+
+.logoGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .logoText {
-  color: #c9a44c;
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 0.25em;
+  color: #cca658;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  text-shadow: 0 0 20px rgba(201, 164, 76, 0.3);
+}
+
+.logoSub {
+  color: #8c7645;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.signOutBtn {
+  background: transparent;
+  color: #cca658;
+  border: 1px solid #755f30;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.signOutBtn:hover {
+  background: rgba(204, 166, 88, 0.1);
 }
 
 .main {
   flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 30px 20px;
-  z-index: 1;
-  min-height: 0; 
+  z-index: 10;
+  padding: 0 24px 24px 24px;
 }
 
-.lobbyContainer {
-  max-width: 860px;
+.ivoryCard {
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  background: linear-gradient(135deg, rgba(15, 35, 25, 0.8) 0%, rgba(5, 15, 10, 0.9) 100%);
-  border: 1px solid rgba(201, 164, 76, 0.25);
-  border-radius: 32px;
-  padding: 40px;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(201, 164, 76, 0.05);
-  backdrop-filter: blur(30px);
+  height: 100%;
+  background: #f1dbb7;
+  /* Modified to golden color requested */
+  border-radius: 12px;
+  padding: 2px;
+  /* Super thin padding */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
   position: relative;
+}
+
+.ivoryCardInner {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #dcc499;
+  border-radius: 8px;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  background: #f1dbb7;
+  /* Modified to golden color requested */
+  box-sizing: border-box;
+}
+
+/* Beautiful inverted corners */
+.cornerTL,
+.cornerTR,
+.cornerBL,
+.cornerBR {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #dcc499;
+  border-radius: 50%;
+  background: #f1dbb7;
+  /* Match outer card */
+  z-index: 2;
+}
+
+.cornerTL {
+  top: -10px;
+  left: -10px;
+}
+
+.cornerTR {
+  top: -10px;
+  right: -10px;
+}
+
+.cornerBL {
+  bottom: -10px;
+  left: -10px;
+}
+
+.cornerBR {
+  bottom: -10px;
+  right: -10px;
+}
+
+
+.watermark {
+  position: absolute;
+  right: -80px;
+  bottom: -80px;
+  width: 450px;
+  height: 450px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cardContent {
+  position: relative;
+  z-index: 10;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 650px;
+  justify-content: center;
+  transform: translateY(-20px);
 }
 
-.shimmerText {
-  background: linear-gradient(
-    90deg,
-    #c9a44c 0%,
-    #f3d078 50%,
-    #c9a44c 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 3s linear infinite;
-}
-
-@keyframes shimmer {
-  to { background-position: 200% center; }
+.topLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  color: #1a3c2a;
+  text-transform: uppercase;
+  margin-bottom: 12px;
 }
 
 .title {
-  font-size: 32px;
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
-  color: #fff;
-  margin-bottom: 8px;
-  text-align: center;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 44px;
+  color: #0f2c1c;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.sepLine {
+  width: 70px;
+  height: 1px;
+  background: #0f2c1c;
+}
+
+.sepDiamond {
+  width: 5px;
+  height: 5px;
+  background: #cda359;
+  transform: rotate(45deg);
 }
 
 .subtitle {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
   text-align: center;
+  font-size: 14px;
+  color: #2b3b32;
+  line-height: 1.6;
   margin-bottom: 40px;
 }
 
-.slotsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+.playerBanner {
+  width: 100%;
+  background: #193826;
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 40px;
+  /* Notched corners using clip-path! */
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 10px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
-.slot {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 20px;
-  padding: 20px;
+.bannerLeft {
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: all 0.3s ease;
+  flex: 1;
 }
 
-.slotActive {
-  background: rgba(201, 164, 76, 0.05);
-  border-color: rgba(201, 164, 76, 0.3);
+.trophyIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1.5px solid #d4bc81;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.slotInfo {
+.playerInfo {
   display: flex;
   flex-direction: column;
 }
 
-.playerName {
-  font-weight: 700;
-  color: #fff;
-  font-size: 16px;
-}
-
-.playerBalance {
-  font-size: 13px;
-  color: #c9a44c;
-  font-weight: 600;
-  margin-top: 2px;
-}
-
-.botBadge {
-  font-size: 10px;
+.challengerLabel {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #9cbda8;
+  margin-bottom: 4px;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 8px;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.05em;
 }
 
-.slotFooter {
+.playerName {
+  font-family: 'Bodoni Moda', 'Georgia', serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.bannerDivider {
+  width: 1px;
+  height: 48px;
+  background: rgba(212, 188, 129, 0.2);
+  margin: 0 40px;
+}
+
+.bannerRight {
+  flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
 }
 
-.startButton {
-  background: #c9a44c;
-  color: #050d0a;
-  border: none;
-  padding: 16px 48px;
-  border-radius: 16px;
-  font-size: 16px;
+.readyText {
+  font-family: 'Bodoni Moda', 'Georgia', serif;
+  font-style: italic;
+  font-size: 24px;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
+  color: #dcb360;
+  margin-bottom: 6px;
+}
+
+.precisionText {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  color: #cca658;
+}
+
+.enterButton {
+  width: 100%;
+  max-width: 500px;
+  height: 56px;
+  background: #c9a556;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #113626;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 20px rgba(201, 164, 76, 0.2);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  margin-bottom: 24px;
+  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
-.startButton:hover {
+.enterButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(201, 164, 76, 0.3);
-  background: #d4b360;
+  background: #d8ba78;
+  box-shadow: 0 14px 25px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5);
 }
 
-.startButton:disabled {
-  opacity: 0.5;
+.enterButton:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
-.loadingSpinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(5, 13, 10, 0.3);
-  border-radius: 50%;
-  border-top-color: #050d0a;
-  animation: spin 1s linear infinite;
-  margin-right: 12px;
+.footerText {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.dot {
+  font-size: 14px;
+  line-height: 0;
 }

@@ -1,28 +1,15 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useGame } from '@/context/GameContext';
 import { createClient } from '@/lib/supabase/client';
-import Avatar from '@/components/ui/Avatar';
 import styles from './tournament.module.css';
 
 export default function TournamentLobby() {
-  const { user, userProfile, isLoading: isGameLoading, setUserProfile } = useGame();
+  const { user, userProfile, isLoading: isGameLoading } = useGame();
   const router = useRouter();
   const supabase = createClient();
   const [isCreating, setIsCreating] = useState(false);
-  const [bots, setBots] = useState<{ username: string; avatar: string }[]>([]);
-
-  // Generate deterministic bots for the lobby preview
-  useEffect(() => {
-    const generatedBots = Array.from({ length: 5 }).map((_, i) => ({
-      username: `Bot_${1000 + i * 237 + Math.floor(Math.random() * 100)}`,
-      avatar: 'chip', // Use 'chip' icon for bots from Avatar.tsx
-    }));
-    setBots(generatedBots);
-  }, []);
 
   useEffect(() => {
     if (!isGameLoading && !user) {
@@ -33,14 +20,8 @@ export default function TournamentLobby() {
   const handleStartTournament = async () => {
     setIsCreating(true);
     try {
-      const response = await fetch('/api/tournament/create', {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create tournament');
-      }
-
+      const response = await fetch('/api/tournament/create', { method: 'POST' });
+      if (!response.ok) throw new Error('Failed to create tournament');
       const tournament = await response.json();
       router.push(`/tournament/${tournament._id}`);
     } catch (error) {
@@ -50,159 +31,113 @@ export default function TournamentLobby() {
     }
   };
 
-  if (isGameLoading || !user) {
-    return (
-      <div className={styles.page} style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <motion.span
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          style={{ color: '#c9a44c', letterSpacing: '0.3em', fontWeight: 800 }}
-        >
-          LOADING LOBBY...
-        </motion.span>
-      </div>
-    );
-  }
-
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
       localStorage.removeItem('local_guest_session');
       window.location.href = '/';
-    } catch (e) {
+    } catch {
       window.location.href = '/';
     }
   };
 
+  if (isGameLoading || !user) {
+    return (
+      <div className={styles.page} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: '#c9a44c', letterSpacing: '0.3em', fontWeight: 800 }}>LOADING...</span>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
-      <div className={styles.bgAccents}>
-        <div className={styles.bgOrb1} />
-        <div className={styles.bgOrb2} />
-      </div>
-      <div className={styles.bgGrid} />
-
-      <header className={styles.header}>
-        <div className={styles.logoText}>JUNKO BODIE ROULETTE</div>
-        <div style={{ color: 'rgba(201,164,76,0.6)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.2em' }}>
-          PRO TOURNAMENT SERIES
-        </div>
-        <button
-          onClick={handleSignOut}
-          style={{
-            background: 'none', border: '1px solid rgba(255,100,100,0.3)', color: '#ff6b6b',
-            padding: '8px 16px', borderRadius: '12px', fontSize: '10px', cursor: 'pointer',
-            textTransform: 'uppercase', letterSpacing: '0.15em', marginLeft: 'auto',
-            fontWeight: 800
-          }}
-        >
-          Sign Out
-        </button>
-      </header>
-
-      <main className={styles.main}>
-        <motion.div
-          className={styles.lobbyContainer}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              style={{ color: '#c9a44c', fontWeight: 900, letterSpacing: '0.4em', fontSize: '10px', textTransform: 'uppercase', marginBottom: '8px' }}
-            >
-              The Calm Before The Storm
-            </motion.div>
-            <h1 className={`${styles.title} ${styles.shimmerText}`} style={{ fontSize: '48px', marginBottom: '4px', lineHeight: 1 }}>
-              Elite Roulette Tournament
-            </h1>
-            <div style={{ height: '2px', width: '40px', background: '#c9a44c', margin: '14px auto' }} />
+      <div className={styles.windowFrame}>
+        <header className={styles.header}>
+          <div className={styles.logoGroup}>
+            <span className={styles.logoText}>JUNKO BODIE ROULETTE</span>
+            <span className={styles.logoSub}>PRO TOURNAMENT SERIES</span>
           </div>
+          <button className={styles.signOutBtn} onClick={handleSignOut}>SIGN OUT</button>
+        </header>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
-            <div style={{ textAlign: 'center', maxWidth: '500px' }}>
-              <p className={styles.subtitle} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, margin: 0 }}>
-                Step into the high-stakes arena where legends are made.
-                Test your luck and strategy against the finest players.
-              </p>
-            </div>
+        <main className={styles.main}>
+          <div className={styles.ivoryCard}>
+            <div className={styles.ivoryCardInner}>
+              <div className={styles.watermark}>
+                 <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style={{opacity: 0.1, width: '100%', height: '100%'}}>
+                   <circle cx="200" cy="200" r="180" fill="none" stroke="#8b7355" strokeWidth="2" />
+                   <circle cx="200" cy="200" r="140" fill="none" stroke="#8b7355" strokeWidth="1" strokeDasharray="4 4"/>
+                   <circle cx="200" cy="200" r="100" fill="none" stroke="#8b7355" strokeWidth="4" />
+                   <path d="M 200 20 L 200 380 M 20 200 L 380 200 M 70 70 L 330 330 M 70 330 L 330 70" stroke="#8b7355" strokeWidth="1" />
+                   <path d="M 200 0 L 210 30 L 190 30 Z" fill="#8b7355" />
+                   <path d="M 200 400 L 210 370 L 190 370 Z" fill="#8b7355" />
+                   <path d="M 0 200 L 30 190 L 30 210 Z" fill="#8b7355" />
+                   <path d="M 400 200 L 370 190 L 370 210 Z" fill="#8b7355" />
+                 </svg>
+              </div>
 
-            {/* ARE YOU READY HYPE SECTION */}
-            <motion.div
-              className={styles.readySection}
-              animate={{ scale: [1, 1.01, 1] }}
-              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-              style={{
-                background: 'linear-gradient(180deg, rgba(201,164,76,0.08) 0%, transparent 100%)',
-                padding: '24px 32px',
-                borderRadius: '24px',
-                border: '1px solid rgba(201,164,76,0.12)',
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '24px',
-                position: 'relative'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <Avatar type={userProfile.avatar} size="lg" />
-                <div>
-                  <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '9px', fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase' }}>CHALLENGER</div>
-                  <div style={{ color: '#fff', fontSize: '20px', fontWeight: 900, fontFamily: 'Bodoni, serif' }}>{userProfile.name}</div>
+              {/* Decorative Scooped Corners */}
+              <div className={styles.cornerTL} />
+              <div className={styles.cornerTR} />
+              <div className={styles.cornerBL} />
+              <div className={styles.cornerBR} />
+              
+              <div className={styles.cardContent}>
+                <div className={styles.topLabel}>THE CALM BEFORE THE STORM</div>
+                <h1 className={styles.title}>ELITE TOURNAMENT</h1>
+                
+                <div className={styles.separator}>
+                  <div className={styles.sepLine} />
+                  <div className={styles.sepDiamond} />
+                  <div className={styles.sepLine} />
+                </div>
+                
+                <p className={styles.subtitle}>
+                  Step into the high-stakes arena where legends are made.<br />
+                  Test your luck and strategy against the finest players.
+                </p>
+
+                <div className={styles.playerBanner}>
+                  <div className={styles.bannerLeft}>
+                    <div className={styles.trophyIcon}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#d4bc81', fill: 'rgba(212,188,129,0.1)' }}>
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+                        <path d="M4 22h16" />
+                        <path d="M10 14.66V17c0 .55-.47.98-1 1h6c-.53-.02-1-.45-1-1v-2.34" />
+                        <path d="M8 4h8l-1 10.66A2 2 0 0 1 13.01 16h-2.02A2 2 0 0 1 9 14.66L8 4z" />
+                      </svg>
+                    </div>
+                    <div className={styles.playerInfo}>
+                      <div className={styles.challengerLabel}>CHALLENGER</div>
+                      <div className={styles.playerName}>{userProfile.name}</div>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.bannerDivider} />
+                  
+                  <div className={styles.bannerRight}>
+                    <div className={styles.readyText}>Are You Ready?</div>
+                    <div className={styles.precisionText}>PRECISION • GLORY</div>
+                  </div>
+                </div>
+
+                <button
+                  className={styles.enterButton}
+                  onClick={handleStartTournament}
+                  disabled={isCreating}
+                >
+                  {isCreating ? 'PREPARING ARENA...' : 'ENTER TOURNAMENT'}
+                </button>
+
+                <div className={styles.footerText}>
+                  ENTRY: FREE <span className={styles.dot}>•</span> PRIZE: GLORY & GOLD
                 </div>
               </div>
-
-              <div style={{ width: '1px', height: '30px', background: 'rgba(201,164,76,0.15)' }} />
-
-              <div style={{ textAlign: 'left' }}>
-                <motion.div
-                  className={styles.shimmerText}
-                  style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '-0.02em', fontStyle: 'italic' }}
-                >
-                  Are You Ready?
-                </motion.div>
-                <div style={{ color: '#c9a44c', fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>PRECISION • GLORY</div>
-              </div>
-            </motion.div>
-
-            <div className={styles.slotFooter} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-              <button
-                className={styles.startButton}
-                onClick={handleStartTournament}
-                disabled={isCreating}
-                style={{
-                  width: '100%',
-                  maxWidth: '360px',
-                  height: '56px',
-                  fontSize: '16px',
-                  borderRadius: '14px',
-                  boxShadow: '0 15px 30px rgba(0,0,0,0.4), 0 0 15px rgba(201,164,76,0.15)'
-                }}
-              >
-                {isCreating ? (
-                  <>
-                    <span className={styles.loadingSpinner}></span>
-                    PREPARING ARENA...
-                  </>
-                ) : (
-                  'ENTER TOURNAMENT'
-                )}
-              </button>
-              <div style={{ fontSize: '11px', color: 'rgba(201,164,76,0.7)', fontWeight: 800, letterSpacing: '0.25em' }}>
-                ENTRY: FREE • PRIZE: GLORY & GOLD
-              </div>
             </div>
           </div>
-        </motion.div>
-      </main>
-
-      <footer style={{ padding: '40px', textAlign: 'center', fontSize: '10px', color: 'rgba(201,164,76,0.3)', letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 800 }}>
-        Professional Roulette Tournament • Join the Elite League
-      </footer>
+        </main>
+      </div>
     </div>
   );
 }
