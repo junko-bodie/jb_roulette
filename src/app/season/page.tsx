@@ -45,7 +45,7 @@ export default function GlobalLeaderboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050a08] text-white p-4 md:p-8 font-sans selection:bg-[#c9a44c]/30">
+    <div className="min-h-screen bg-[#050a08] text-white p-3 sm:p-4 md:p-8 font-sans selection:bg-[#c9a44c]/30">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#c9a44c]/5 rounded-full blur-[120px]" />
@@ -54,7 +54,7 @@ export default function GlobalLeaderboard() {
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => router.push('/lobby')}
@@ -63,7 +63,7 @@ export default function GlobalLeaderboard() {
               <ArrowLeft className="w-6 h-6 text-[#c9a44c]" />
             </button>
             <div>
-              <h1 className="text-4xl font-black uppercase tracking-tighter mb-1 italic" style={{ fontFamily: "'Bodoni Moda', serif" }}>
+              <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter mb-1 italic" style={{ fontFamily: "'Bodoni Moda', serif" }}>
                 World <span className="text-[#c9a44c]">Rankings</span>
               </h1>
               <div className="flex items-center gap-2 opacity-40">
@@ -73,7 +73,7 @@ export default function GlobalLeaderboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
             <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center min-w-[120px]">
               <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Status</span>
               <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export default function GlobalLeaderboard() {
 
         {/* Podium / Top 3 */}
         {!isLoading && entries.length >= 3 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
             {[entries[1], entries[0], entries[2]].map((player, idx) => {
               const displayIdx = [2, 1, 3][idx];
               const isFirst = displayIdx === 1;
@@ -100,14 +100,14 @@ export default function GlobalLeaderboard() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: displayIdx * 0.1 }}
-                  className={`relative p-8 rounded-[3rem] border flex flex-col items-center ${
+                  className={`relative p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border flex flex-col items-center ${
                     isFirst 
-                      ? 'bg-gradient-to-b from-[#c9a44c]/20 to-transparent border-[#c9a44c]/50 scale-110 z-20 shadow-[0_30px_100px_rgba(201,164,76,0.15)]' 
-                      : 'bg-white/5 border-white/10 mt-6'
+                      ? 'bg-gradient-to-b from-[#c9a44c]/20 to-transparent border-[#c9a44c]/50 sm:scale-110 z-20 shadow-[0_30px_100px_rgba(201,164,76,0.15)]' 
+                      : 'bg-white/5 border-white/10 sm:mt-6'
                   }`}
                 >
                   {isFirst && <Crown className="w-10 h-10 text-[#c9a44c] absolute -top-5" />}
-                  <div className={`w-24 h-24 rounded-full border-4 flex items-center justify-center mb-6 relative overflow-hidden ${
+                  <div className={`w-16 h-16 sm:w-24 sm:h-24 rounded-full border-4 flex items-center justify-center mb-4 sm:mb-6 relative overflow-hidden ${
                     isFirst ? 'border-[#c9a44c]' : 'border-white/20'
                   }`}>
                     <img src={player.avatar || '/avatars/default.png'} alt={player.name} className="w-full h-full object-cover" />
@@ -128,8 +128,8 @@ export default function GlobalLeaderboard() {
         )}
 
         {/* Table List */}
-        <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-3xl">
-          <div className="p-8 border-b border-white/5 bg-white/5 flex items-center justify-between">
+        <div className="bg-white/[0.03] border border-white/5 rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden backdrop-blur-3xl">
+          <div className="p-4 sm:p-8 border-b border-white/5 bg-white/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Star className="w-5 h-5 text-[#c9a44c]" />
               <span className="text-sm font-black uppercase tracking-widest text-white/60">Elite Contenders</span>
@@ -148,13 +148,13 @@ export default function GlobalLeaderboard() {
                   layout
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="group flex items-center justify-between p-4 rounded-3xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300"
+                  className="group flex items-center justify-between p-3 sm:p-4 rounded-2xl sm:rounded-3xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300"
                 >
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-3 sm:gap-6">
                     <span className="w-8 text-xl font-black text-white/20 italic tabular-nums">
                       {player.rank}
                     </span>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/10 overflow-hidden">
                         <img src={player.avatar || '/avatars/default.png'} alt={player.name} className="w-full h-full object-cover" />
                       </div>
@@ -174,7 +174,7 @@ export default function GlobalLeaderboard() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-12">
+                  <div className="flex items-center gap-4 sm:gap-12">
                     <div className="hidden md:flex flex-col items-end">
                        <span className="text-xs font-bold text-emerald-500/60">+{(Math.random() * 5).toFixed(1)}%</span>
                        <TrendingUp className="w-3 h-3 text-emerald-500/30 mt-1" />

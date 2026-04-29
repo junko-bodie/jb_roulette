@@ -141,7 +141,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const spinSubmittedRef = useRef<string>(''); // Tracks "round-spin" key for submissions
   const isFetchingRef = useRef(false); // Prevent concurrent polls
 
-  const [wheelType, setWheelTypeState] = useState<'american' | 'european'>('european');
+  const [wheelType, setWheelTypeState] = useState<'american' | 'european'>('american');
 
   phaseRef.current = phase;
   roundIdRef.current = roundId;

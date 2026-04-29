@@ -62,7 +62,8 @@ export async function POST() {
           created_at: new Date(),
           current_round: 1,
           winner_id: null,
-          players: [currentPlayer]
+          players: [currentPlayer],
+          wheel_type: 'american'
         };
 
         const result = await db.collection('tournaments').insertOne(newTournament as any);
@@ -84,7 +85,8 @@ export async function POST() {
           created_at: new Date(),
           current_round: 1,
           winner_id: null,
-          players: [currentPlayer]
+          players: [currentPlayer],
+          wheel_type: 'american'
         };
 
         const result = await db.collection('tournaments').insertOne(newTournament as any);

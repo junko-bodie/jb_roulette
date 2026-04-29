@@ -83,6 +83,37 @@ export default function TournamentPage() {
   const [deleteMode, setDeleteMode] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
+  const [tournamentWheelSize, setTournamentWheelSize] = useState(420);
+
+  // Responsive wheel sizing (same logic as solo game page)
+  useEffect(() => {
+    const updateWheelSize = () => {
+      const isMobilePortrait =
+        window.innerWidth <= 900 &&
+        window.matchMedia('(orientation: portrait)').matches;
+      const isLandscapeMobile =
+        window.matchMedia('(orientation: landscape)').matches &&
+        window.innerHeight <= 540 &&
+        window.innerWidth <= 950;
+      if (isMobilePortrait) {
+        setTournamentWheelSize(Math.min(window.innerWidth * 0.72, 300));
+      } else if (isLandscapeMobile) {
+        setTournamentWheelSize(260);
+      } else if (window.innerHeight < 600) {
+        setTournamentWheelSize(320);
+      } else if (window.innerHeight < 750) {
+        setTournamentWheelSize(400);
+      } else if (window.innerWidth < 1300 || window.innerHeight < 900) {
+        setTournamentWheelSize(480);
+      } else {
+        setTournamentWheelSize(550);
+      }
+    };
+
+    updateWheelSize();
+    window.addEventListener('resize', updateWheelSize);
+    return () => window.removeEventListener('resize', updateWheelSize);
+  }, []);
 
   // Synchronize phase with ResultDisplay
   useEffect(() => {
@@ -495,11 +526,11 @@ export default function TournamentPage() {
             background: 'linear-gradient(135deg, rgba(20, 50, 40, 0.95) 0%, rgba(10, 30, 20, 0.98) 100%)',
             backdropFilter: 'blur(20px)',
             border: '2px solid rgba(201, 164, 76, 0.35)',
-            borderRadius: '32px',
-            padding: '48px 40px',
+            borderRadius: '24px',
+            padding: 'clamp(20px, 5vw, 48px) clamp(16px, 4vw, 40px)',
             boxShadow: '0 30px 100px rgba(0,0,0,0.8), inset 0 0 40px rgba(201, 164, 76, 0.05)',
-            textAlign: 'center',
-            position: 'relative',
+            textAlign: 'center' as const,
+            position: 'relative' as const,
             overflow: 'hidden'
           }}
         >
@@ -520,8 +551,8 @@ export default function TournamentPage() {
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '20px',
-            marginBottom: '48px'
+            gap: 'clamp(8px, 2vw, 20px)',
+            marginBottom: 'clamp(24px, 4vw, 48px)'
           }}>
             {Array.from({ length: 6 }).map((_, i) => {
               const p = tournament.players[i];
@@ -688,18 +719,18 @@ export default function TournamentPage() {
 
   return (
     <div
-      className="flex flex-col h-screen w-full overflow-hidden select-none"
+      className="flex flex-col h-screen w-full overflow-hidden sm:overflow-hidden select-none mobile-root-scroll"
       style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
     >
 
       {/* ═══ TOP HEADER — TOURNAMENT INFO + TIMER ═══ */}
       <header
-        className="flex-shrink-0 flex items-center justify-between px-6 py-2 z-10"
+        className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2 z-10 gap-2"
         style={{
           background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
           borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
           boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
-          minHeight: '60px',
+          minHeight: '48px',
         }}
       >
         <div className="flex items-center">
@@ -717,14 +748,14 @@ export default function TournamentPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-2 sm:gap-8 flex-shrink-0">
           {/* Round Information */}
           <div className="flex flex-col items-end">
-            <h1 className="text-[#c9a44c] font-black text-lg tracking-widest uppercase leading-none">
-              Round {currentRound} of 5
+            <h1 className="text-[#c9a44c] font-black text-xs sm:text-lg tracking-widest uppercase leading-none">
+              <span className="hidden sm:inline">Round {currentRound} of 5</span>
             </h1>
-            <div className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
-              Spin {currentSpin} of 5
+            <div className="text-white/40 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] mt-0.5 sm:mt-1">
+              Spin {currentSpin}/5
             </div>
           </div>
 
@@ -758,7 +789,7 @@ export default function TournamentPage() {
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 relative px-2 py-0 overflow-hidden flex items-stretch justify-center gap-4">
+      <main className="flex-1 min-h-0 relative px-1 sm:px-2 py-0 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row items-stretch justify-center gap-2 sm:gap-4">
 
 
         {/* Roulette Table — takes most of the space */}
@@ -768,7 +799,7 @@ export default function TournamentPage() {
             currentResult={lastSpinResult}
             isSpinning={phase === "spinning"}
             onSpinComplete={completeSpin}
-            wheelSize={phase === "spinning" ? 580 : 420}
+            wheelSize={phase === "spinning" ? Math.min(tournamentWheelSize * 1.35, 580) : tournamentWheelSize}
             wheelRef={{ current: null }}
             bets={displayBets}
             myBets={bets}
@@ -799,7 +830,7 @@ export default function TournamentPage() {
           />
         </div>
 
-        {/* Scoreboard & Betting Feed Sidebar */}
+        {/* Scoreboard & Betting Feed — Desktop sidebar */}
         <motion.div
           animate={{
             width: phase === "spinning" ? 0 : 320,
@@ -807,7 +838,7 @@ export default function TournamentPage() {
             x: phase === "spinning" ? 100 : 0
           }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex-shrink-0 flex flex-col gap-4 py-6 max-h-[85vh] overflow-hidden"
+          className="hidden lg:flex flex-shrink-0 flex-col gap-4 py-6 max-h-[85vh] overflow-hidden"
         >
           <div className="flex-shrink-0">
             <Scoreboard />
@@ -824,159 +855,189 @@ export default function TournamentPage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Scoreboard & Live Feed — Mobile inline (below table) */}
+        <div className="flex lg:hidden flex-col gap-2 px-1 pb-2 flex-shrink-0">
+          {/* Compact horizontal scoreboard */}
+          <div className="bg-black/50 rounded-xl border border-white/10 backdrop-blur-md px-3 py-2">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[8px] font-black text-[#c9a44c] uppercase tracking-[0.3em]">Rankings</span>
+              <div className="flex-1 h-px bg-[#c9a44c]/20" />
+            </div>
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              {scores.filter(s => s.status === 'active').map((s) => {
+                const isMe = !s.is_bot;
+                return (
+                  <div
+                    key={s.player_id}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg flex-shrink-0 border ${isMe
+                        ? 'bg-[#c9a44c]/20 border-[#c9a44c]/40'
+                        : 'bg-white/5 border-white/5'
+                      }`}
+                  >
+                    <div
+                      className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-black text-white"
+                      style={{ background: s.color }}
+                    >
+                      {s.rank}
+                    </div>
+                    <span className={`text-[10px] font-bold truncate max-w-[60px] ${isMe ? 'text-[#c9a44c]' : 'text-white/70'}`}>
+                      {s.username}
+                    </span>
+                    <span className="text-[10px] font-black text-white/50 tabular-nums">
+                      ${s.chips >= 1000 ? `${(s.chips / 1000).toFixed(1)}k` : s.chips}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Compact live feed — last 3 events */}
+          {phase === 'betting' && (
+            <div className="bg-black/40 rounded-xl border border-white/5 backdrop-blur-md px-3 py-1.5 max-h-[80px] overflow-hidden">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Live Bets</span>
+              </div>
+              <LiveBettingFeed />
+            </div>
+          )}
+        </div>
       </main>
 
-      {/* ═══ FOOTER — CHIP TRAY + CONTROLS ═══ */}
+      {/* ═══ FOOTER — CHIP TRAY LEFT, BUTTONS RIGHT ═══ */}
+      {/* ═══ PREMIUM FOOTER DESIGN ═══ */}
       <footer
-        className="flex-shrink-0 w-full px-6 py-2 flex items-center justify-between z-10"
+        className="flex-shrink-0 w-full z-10 px-4 sm:px-8 py-3.5"
         style={{
-          background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
-          borderTop: '1px solid rgba(201, 164, 76, 0.3)',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.5)',
+          background: 'linear-gradient(to top, #0d0805 0%, #1a110a 100%)',
+          borderTop: '1px solid rgba(201, 164, 76, 0.4)',
+          boxShadow: '0 -12px 50px rgba(0,0,0,0.9)',
         }}
       >
-
-        <div className="flex items-center gap-3">
-          <div className="max-w-[400px]">
-            <ChipTray
-              selectedChip={selectedChip}
-              onSelectChip={setSelectedChip}
-              balance={myChips}
-              totalBet={totalBet}
-              disabled={phase !== "betting"}
-            />
+        <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          
+          {/* Left: Chip Tray */}
+          <div className="flex-shrink-0 order-1">
+            <div className="max-w-full overflow-x-auto no-scrollbar">
+              <ChipTray
+                selectedChip={selectedChip}
+                onSelectChip={setSelectedChip}
+                balance={myChips}
+                totalBet={totalBet}
+                disabled={phase !== "betting"}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner">
-            <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold leading-none">Balance</span>
-            <span className="text-sm font-black text-white mt-1">
-              ${myChips.toLocaleString()}
-            </span>
+          {/* Right: Betting Controls & Financials */}
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 sm:gap-6 order-2">
+            
+            {/* Total Bet Display */}
+            <div className="flex flex-col items-center px-5 py-2 rounded-2xl bg-black/60 border border-[#c9a44c]/30 shadow-[inset_0_0_20px_rgba(0,0,0,0.7)] min-w-[100px]">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-[#c9a44c]/60 font-black leading-none mb-2">Total Bet</span>
+              <span className="text-xl font-black text-white tabular-nums tracking-tighter" style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}>
+                ${totalBet.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Controls Group */}
+            <div className="flex items-center gap-3">
+              <motion.button
+                onClick={handleRebet}
+                disabled={phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal}
+                whileTap={{ scale: 0.95 }}
+                className={`h-11 px-6 rounded-xl flex items-center justify-center font-black text-[11px] uppercase tracking-[0.2em] border-2 transition-all
+                  ${(phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal)
+                    ? 'bg-black/20 border-white/5 text-white/10'
+                    : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c]/50 text-[#c9a44c] shadow-lg shadow-black/40 hover:border-[#c9a44c] hover:shadow-[#c9a44c]/20'}`}
+              >
+                REBET
+              </motion.button>
+
+              <div className="flex items-center bg-black/40 rounded-xl border-2 border-white/10 p-1 gap-1">
+                <motion.button
+                  onClick={handleClearLastBet}
+                  disabled={phase !== "betting" || betPlacementHistory.length === 0}
+                  whileTap={{ scale: 0.95 }}
+                  className={`h-9 px-4 rounded-lg flex items-center justify-center font-black text-[11px] uppercase tracking-wider transition-all
+                    ${(phase !== "betting" || betPlacementHistory.length === 0)
+                      ? 'text-white/10'
+                      : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
+                >
+                  UNDO
+                </motion.button>
+                <div className="w-px h-5 bg-white/10 mx-1" />
+                <motion.button
+                  onClick={handleClearBets}
+                  disabled={phase !== "betting" || bets.size === 0}
+                  whileTap={{ scale: 0.95 }}
+                  className={`h-9 px-4 rounded-lg flex items-center justify-center font-black text-[11px] uppercase tracking-wider transition-all
+                    ${(phase !== "betting" || bets.size === 0)
+                      ? 'text-white/10'
+                      : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
+                >
+                  CLEAR
+                </motion.button>
+              </div>
+
+              <motion.button
+                onClick={handleDoubleAllBets}
+                disabled={phase !== "betting" || myChips < totalBet * 2 || totalBet === 0}
+                whileTap={{ scale: 0.95 }}
+                className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-xs border-2 transition-all
+                  ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0)
+                    ? 'bg-black/20 border-white/5 text-white/10'
+                    : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#ffedb3] text-black shadow-[0_0_20px_rgba(201,164,76,0.3)] hover:scale-105'}`}
+              >
+                2X
+              </motion.button>
+
+              <motion.button
+                onClick={() => { soundEngine?.playSwoosh(); setDeleteMode(!deleteMode); }}
+                disabled={phase !== "betting"}
+                whileTap={{ scale: 0.95 }}
+                className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-xl border-2 transition-all
+                  ${phase !== "betting"
+                    ? 'bg-black/20 border-white/5 text-white/10'
+                    : deleteMode
+                      ? 'bg-red-600 border-red-400 text-white shadow-[0_0_25px_rgba(220,38,38,0.5)]'
+                      : 'bg-black/40 border-white/10 text-white/40 hover:border-[#c9a44c]/50 hover:text-[#c9a44c]'}`}
+              >
+                ✕
+              </motion.button>
+            </div>
+
+            {/* Balance Display */}
+            <div className="flex flex-col items-center px-6 py-2 rounded-2xl bg-gradient-to-b from-[#2d1a10] to-[#0d0805] border border-[#c9a44c]/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] min-w-[130px]">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-[#c9a44c] font-black leading-none mb-2 opacity-80">Balance</span>
+              <span className="text-xl font-black text-white tabular-nums tracking-tighter">
+                ${myChips.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Primary Action Button */}
+            <div className="relative">
+              <motion.button
+                onClick={handleSubmitBets}
+                disabled={phase !== "betting"}
+                whileHover={phase === 'betting' && bets.size > 0 ? { scale: 1.04, filter: 'brightness(1.1)' } : {}}
+                whileTap={phase === 'betting' && bets.size > 0 ? { scale: 0.96 } : {}}
+                className={`h-14 px-12 rounded-2xl font-black text-base uppercase tracking-[0.3em] transition-all shadow-2xl relative z-10
+                  ${phase === 'betting'
+                    ? (bets.size > 0 
+                        ? 'bg-gradient-to-br from-[#c9a44c] via-[#f5d68d] to-[#c9a44c] text-black border-2 border-[#ffedb3] shadow-[0_12px_40px_rgba(201,164,76,0.4)]' 
+                        : 'bg-white/5 border-2 border-white/5 text-white/10 cursor-default')
+                    : 'bg-black/80 border-2 border-[#c9a44c]/20 text-[#c9a44c] animate-pulse'}`}
+              >
+                {phase === "betting" ? (bets.size > 0 ? "PLACE BETS" : "BET NOW") : "PLACED"}
+              </motion.button>
+              {phase === 'betting' && bets.size > 0 && (
+                <div className="absolute inset-0 bg-[#c9a44c] blur-[40px] opacity-25 -z-0" />
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner">
-            <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold leading-none">Total Bet</span>
-            <span className="text-sm font-black text-white mt-1">
-              ${totalBet.toLocaleString()}
-            </span>
-          </div>
-
-          {/* Betting Controls: Rebet, Clear, Clear Last, 2X, Delete */}
-          <div className="flex items-center gap-2">
-            {/* REBET (Repeat last spin's bets) */}
-            <motion.button
-              onClick={() => {
-                handleRebet();
-              }}
-              disabled={phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`
-                px-3 h-10 rounded-xl flex items-center justify-center font-black text-[10px] border-2 transition-all
-                ${(phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal)
-                  ? 'bg-white/5 border-white/10 text-white/20'
-                  : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
-              `}
-              title="Repeat last bets"
-            >
-              REBET
-            </motion.button>
-
-            {/* UNDO (Clear Last Bet) */}
-            <motion.button
-              onClick={() => {
-                handleClearLastBet();
-              }}
-              disabled={phase !== "betting" || betPlacementHistory.length === 0}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`
-                w-10 h-10 rounded-full flex flex-col items-center justify-center border-2 transition-all
-                ${(phase !== "betting" || betPlacementHistory.length === 0)
-                  ? 'bg-white/5 border-white/10 text-white/20'
-                  : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
-              `}
-              title="Clear last bet"
-            >
-              <span className="text-[9px] font-black leading-none">UNDO</span>
-            </motion.button>
-
-            {/* CLEAR ALL */}
-            <motion.button
-              onClick={() => {
-                handleClearBets();
-              }}
-              disabled={phase !== "betting" || bets.size === 0}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`
-                px-3 h-10 rounded-xl flex items-center justify-center font-black text-[10px] border-2 transition-all
-                ${(phase !== "betting" || bets.size === 0)
-                  ? 'bg-white/5 border-white/10 text-white/20'
-                  : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c] text-[#c9a44c] shadow-lg shadow-black/40'}
-              `}
-              title="Clear all bets"
-            >
-              CLEAR
-            </motion.button>
-
-            <div className="w-px h-8 bg-white/10 mx-1" />
-
-            <motion.button
-              onClick={() => {
-                handleDoubleAllBets();
-              }}
-              disabled={phase !== "betting" || myChips < totalBet * 2 || totalBet === 0}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`
-                w-10 h-10 rounded-full flex items-center justify-center font-black text-xs border-2 transition-all
-                ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0)
-                  ? 'bg-white/5 border-white/10 text-white/20'
-                  : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/20'}
-              `}
-              title="Double all bets"
-            >
-              2X
-            </motion.button>
-
-            <motion.button
-              onClick={() => {
-                soundEngine?.playSwoosh();
-                setDeleteMode(!deleteMode);
-              }}
-              disabled={phase !== "betting"}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`
-                w-10 h-10 rounded-full flex items-center justify-center font-black text-lg border-2 transition-all
-                ${phase !== "betting"
-                  ? 'bg-white/5 border-white/10 text-white/20'
-                  : deleteMode
-                    ? 'bg-red-500 border-red-400 text-white shadow-lg shadow-red-500/40'
-                    : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/20'}
-              `}
-              title={deleteMode ? "Exit clear mode" : "Enter clear mode"}
-            >
-              ✕
-            </motion.button>
-          </div>
-
-          {/* Place Bets button */}
-          <button
-            onClick={handleSubmitBets}
-            disabled={phase !== "betting"}
-            className={`
-              px-6 py-2 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] transition-all
-              ${phase === 'betting'
-                ? 'bg-[#c9a44c] text-black shadow-lg shadow-[#c9a44c]/40 hover:scale-105 active:scale-95'
-                : 'bg-white/5 text-white/20 border border-white/10 cursor-not-allowed'}
-            `}
-          >
-            {phase === "betting" ? "Place Bets" : "Bets Placed"}
-          </button>
         </div>
       </footer>
 

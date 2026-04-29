@@ -58,38 +58,38 @@ export default function ProfilePage() {
       )}
 
       {/* ═══ TOP NAVBAR ═══ */}
-      <nav className="p-8 flex items-center justify-between z-10 relative">
+      <nav className="p-4 sm:p-8 flex items-center justify-between z-10 relative">
         <Link href="/" className="group flex items-center gap-2">
            <div className="w-10 h-10 bg-gold rounded-xl flex items-center justify-center text-black shadow-[0_0_15px_rgba(201,164,76,0.5)] transition-transform group-hover:rotate-12">
              <Trophy size={20} />
            </div>
-           <span className="font-black tracking-widest text-lg uppercase italic">Roulette <span className="text-gold">PRO</span></span>
+             <span className="font-black tracking-widest text-base sm:text-lg uppercase italic">Roulette <span className="text-gold">PRO</span></span>
         </Link>
         <div className="flex items-center gap-4">
            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl">
               <Star className="text-gold w-4 h-4 fill-gold" />
               <span className="text-xs font-black tracking-widest text-gold">{profile.season?.points || 0} SEASON XP</span>
            </div>
-           <Link href="/lobby" className="px-6 py-3 bg-gold text-black font-black uppercase tracking-widest rounded-xl text-xs hover:scale-105 active:scale-95 transition-all shadow-lg">
+           <Link href="/lobby" className="px-4 sm:px-6 py-2 sm:py-3 bg-gold text-black font-black uppercase tracking-widest rounded-xl text-[10px] sm:text-xs hover:scale-105 active:scale-95 transition-all shadow-lg">
              Enter Lobby
            </Link>
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 mt-8 relative">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-4 sm:mt-8 relative">
         
         {/* Floating background glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-gold/10 rounded-full blur-[120px] -z-10" />
 
         {/* ═══ HEADER SECTION ═══ */}
-        <header className="flex flex-col md:flex-row items-center gap-10 mb-16">
+        <header className="flex flex-col items-center gap-6 sm:gap-10 md:flex-row mb-10 sm:mb-16">
           <motion.div 
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="relative"
           >
-            <div className="w-40 h-40 rounded-[2.5rem] border-4 border-gold p-1 shadow-[0_0_40px_rgba(201,164,76,0.3)]">
-              <img src={profile.avatar_url || '/avatars/default.png'} alt={profile.username} className="w-full h-full object-cover rounded-[2.2rem]" />
+            <div className="w-28 h-28 sm:w-40 sm:h-40 rounded-[2rem] sm:rounded-[2.5rem] border-4 border-gold p-1 shadow-[0_0_40px_rgba(201,164,76,0.3)]">
+              <img src={profile.avatar_url || '/avatars/default.png'} alt={profile.username} className="w-full h-full object-cover rounded-[1.5rem] sm:rounded-[2.2rem]" />
             </div>
             <div className="absolute -bottom-4 -right-4 bg-[#0a0a0a] border-2 border-gold rounded-2xl px-4 py-2 flex items-center gap-2">
                <Shield size={16} className="text-gold" />
@@ -98,7 +98,7 @@ export default function ProfilePage() {
           </motion.div>
 
           <div className="text-center md:text-left">
-            <h1 className="text-5xl font-black tracking-tighter uppercase mb-2">{profile.name || profile.username}</h1>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase mb-2">{profile.name || profile.username}</h1>
             <p className="text-white/40 font-bold uppercase tracking-[0.4em] text-xs flex items-center justify-center md:justify-start gap-2">
                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                Global Player ID: {profile._id.slice(-6).toUpperCase()}
@@ -107,7 +107,7 @@ export default function ProfilePage() {
         </header>
 
         {/* ═══ STATS GRID ═══ */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-16">
           <StatCard icon={<PlayCircle className="text-white/40" />} label="Tournaments" value={profile.stats?.tournaments_played || 0} sub="Played" />
           <StatCard icon={<Trophy className="text-gold" />} label="Victories" value={profile.stats?.tournaments_won || 0} sub="1st Place" highlight />
           <StatCard icon={<Target className="text-blue-400" />} label="Best Finish" value={profile.stats?.best_finish === 7 ? 'N/A' : `#${profile.stats?.best_finish}`} sub="Peak Rank" />
@@ -181,9 +181,9 @@ export default function ProfilePage() {
               <h3 className="text-xs font-black text-white/40 uppercase tracking-[0.3em]">Recent Tournaments</h3>
               <History size={16} className="text-white/40" />
             </div>
-            <div className="bg-black/40 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl space-y-4">
+            <div className="bg-black/40 border border-white/5 rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-8 backdrop-blur-xl space-y-3 sm:space-y-4">
                {profile.history?.length > 0 ? profile.history.map((t: any) => (
-                 <div key={t.id} className="group flex items-center justify-between p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all cursor-pointer">
+                 <div key={t.id} className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all cursor-pointer gap-3 sm:gap-0">
                     <div className="flex items-center gap-6">
                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl shadow-lg ${
                          t.position === 1 ? 'bg-gold text-black' : 
@@ -230,12 +230,12 @@ function StatCard({ icon, label, value, sub, highlight }: any) {
   return (
     <motion.div 
       whileHover={{ y: -5 }}
-      className={`bg-black/40 border ${highlight ? 'border-gold/30 ring-1 ring-gold/10' : 'border-white/5'} rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden`}
+      className={`bg-black/40 border ${highlight ? 'border-gold/30 ring-1 ring-gold/10' : 'border-white/5'} rounded-2xl sm:rounded-3xl p-4 sm:p-8 backdrop-blur-xl relative overflow-hidden`}
     >
       {highlight && <div className="absolute top-0 right-0 w-16 h-16 bg-gold/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />}
       <div className="flex flex-col items-center gap-1 text-center relative z-10">
         <div className="mb-4">{icon}</div>
-        <div className={`text-4xl font-black ${highlight ? 'text-gold drop-shadow-[0_0_15px_rgba(201,164,76,0.2)]' : 'text-white'}`}>{value}</div>
+        <div className={`text-2xl sm:text-4xl font-black ${highlight ? 'text-gold drop-shadow-[0_0_15px_rgba(201,164,76,0.2)]' : 'text-white'}`}>{value}</div>
         <div className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">{label}</div>
         <div className="text-[8px] font-black text-white/20 uppercase tracking-widest">{sub}</div>
       </div>

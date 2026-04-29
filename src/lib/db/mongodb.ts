@@ -28,7 +28,7 @@ async function createClientPromise(): Promise<MongoClient> {
       const { MongoMemoryServer } = await import('mongodb-memory-server');
       const mongod = await MongoMemoryServer.create();
       uri = mongod.getUri();
-      try { writeFileSync(URI_CACHE_FILE, uri); } catch { }
+      try { writeFileSync(URI_CACHE_FILE, uri); } catch {}
     }
   }
 
@@ -42,7 +42,7 @@ async function createClientPromise(): Promise<MongoClient> {
     if (isMemory && existsSync(URI_CACHE_FILE)) {
       console.warn('[MongoDB] Cached URI failed, retrying with fresh server...');
       const { unlinkSync } = await import('fs');
-      try { unlinkSync(URI_CACHE_FILE); } catch { }
+      try { unlinkSync(URI_CACHE_FILE); } catch {}
       return createClientPromise();
     }
     throw err;

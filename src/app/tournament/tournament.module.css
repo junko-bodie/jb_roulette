@@ -342,3 +342,171 @@
   font-size: 14px;
   line-height: 0;
 }
+
+/* ── Mobile Responsive ── */
+@media (max-width: 768px) {
+  .page {
+    padding: 0;
+  }
+
+  .windowFrame {
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .header {
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .logoGroup {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .logoText {
+    font-size: 13px;
+  }
+
+  .main {
+    padding: 0 12px 12px;
+  }
+
+  .ivoryCardInner {
+    padding: 20px 16px;
+  }
+
+  .cardContent {
+    transform: none;
+    max-width: 100%;
+  }
+
+  .title {
+    font-size: 28px;
+    letter-spacing: -0.01em;
+  }
+
+  .topLabel {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+
+  .playerBanner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 16px;
+    gap: 16px;
+    margin-bottom: 24px;
+    clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  }
+
+  .bannerLeft {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bannerDivider {
+    width: 80%;
+    height: 1px;
+    margin: 0;
+  }
+
+  .bannerRight {
+    align-items: center;
+    text-align: center;
+  }
+
+  .playerName {
+    font-size: 20px;
+  }
+
+  .readyText {
+    font-size: 20px;
+  }
+
+  .enterButton {
+    height: 48px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .footerText {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .separator {
+    margin: 14px 0;
+  }
+
+  .sepLine {
+    width: 40px;
+  }
+
+  .cornerTL,
+  .cornerTR,
+  .cornerBL,
+  .cornerBR {
+    width: 14px;
+    height: 14px;
+  }
+
+  .cornerTL { top: -7px; left: -7px; }
+  .cornerTR { top: -7px; right: -7px; }
+  .cornerBL { bottom: -7px; left: -7px; }
+  .cornerBR { bottom: -7px; right: -7px; }
+
+  .watermark {
+    width: 250px;
+    height: 250px;
+    right: -50px;
+    bottom: -50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 22px;
+  }
+
+  .playerName {
+    font-size: 18px;
+  }
+
+  .readyText {
+    font-size: 16px;
+  }
+
+  .trophyIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ivoryCardInner {
+    padding: 16px 12px;
+  }
+
+  .enterButton {
+    height: 44px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+}

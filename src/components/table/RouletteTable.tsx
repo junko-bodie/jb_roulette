@@ -183,67 +183,69 @@ const RouletteTable = memo(function RouletteTable({
             />
 
             {/* Wheel type toggle — overlaid at bottom center of wheel */}
-            <div
-              className="absolute flex items-center gap-2 text-[13px] z-30"
-              style={{
-                fontFamily: 'var(--font-inter)',
-                bottom: isMobile ? '-20px' : '-40px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.75)',
-                borderRadius: '9999px',
-                padding: '5px 10px',
-                backdropFilter: 'blur(8px)',
-                border: '1.5px solid rgba(201, 164, 76, 0.4)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-                opacity: isBettingDisabled ? 0.5 : 1,
-                pointerEvents: isBettingDisabled ? 'none' : 'auto',
-                transition: 'opacity 0.3s ease'
-              }}
-            >
-              <button
-                onClick={() => setWheelType('american')}
-                className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
+            {!tournamentMode && (
+              <div
+                className="absolute flex items-center gap-2 text-[13px] z-30"
                 style={{
-                  background: wheelType === 'american'
-                    ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
-                    : 'rgba(255,255,255,0.05)',
-                  color: wheelType === 'american' ? '#000' : '#c2d7d580',
-                  fontWeight: 900,
-                  fontSize: '14px',
-                  letterSpacing: '0.05em',
-                  border: '2px solid',
-                  borderColor: wheelType === 'american' ? '#f5edd5' : 'transparent',
-                  boxShadow: wheelType === 'american'
-                    ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
-                    : 'none',
-                  textTransform: 'uppercase'
+                  fontFamily: 'var(--font-inter)',
+                  bottom: isMobile ? '-20px' : '-40px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: 'rgba(0,0,0,0.75)',
+                  borderRadius: '9999px',
+                  padding: '5px 10px',
+                  backdropFilter: 'blur(8px)',
+                  border: '1.5px solid rgba(201, 164, 76, 0.4)',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+                  opacity: isBettingDisabled ? 0.5 : 1,
+                  pointerEvents: isBettingDisabled ? 'none' : 'auto',
+                  transition: 'opacity 0.3s ease'
                 }}
               >
-                American
-              </button>
-              <button
-                onClick={() => setWheelType('european')}
-                className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
-                style={{
-                  background: wheelType === 'european'
-                    ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
-                    : 'rgba(255,255,255,0.05)',
-                  color: wheelType === 'european' ? '#000' : '#c2d7d580',
-                  fontWeight: 900,
-                  fontSize: '14px',
-                  letterSpacing: '0.05em',
-                  border: '2px solid',
-                  borderColor: wheelType === 'european' ? '#f5edd5' : 'transparent',
-                  boxShadow: wheelType === 'european'
-                    ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
-                    : 'none',
-                  textTransform: 'uppercase'
-                }}
-              >
-                European
-              </button>
-            </div>
+                <button
+                  onClick={() => setWheelType('american')}
+                  className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
+                  style={{
+                    background: wheelType === 'american'
+                      ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
+                      : 'rgba(255,255,255,0.05)',
+                    color: wheelType === 'american' ? '#000' : '#c2d7d580',
+                    fontWeight: 900,
+                    fontSize: '14px',
+                    letterSpacing: '0.05em',
+                    border: '2px solid',
+                    borderColor: wheelType === 'american' ? '#f5edd5' : 'transparent',
+                    boxShadow: wheelType === 'american'
+                      ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
+                      : 'none',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  American
+                </button>
+                <button
+                  onClick={() => setWheelType('european')}
+                  className="px-8 py-2.5 rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
+                  style={{
+                    background: wheelType === 'european'
+                      ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
+                      : 'rgba(255,255,255,0.05)',
+                    color: wheelType === 'european' ? '#000' : '#c2d7d580',
+                    fontWeight: 900,
+                    fontSize: '14px',
+                    letterSpacing: '0.05em',
+                    border: '2px solid',
+                    borderColor: wheelType === 'european' ? '#f5edd5' : 'transparent',
+                    boxShadow: wheelType === 'european'
+                      ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 1px 2px rgba(255,255,255,0.3)'
+                      : 'none',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  European
+                </button>
+              </div>
+            )}
           </motion.div>
 
           {/* Table Section (Right) */}
@@ -263,7 +265,7 @@ const RouletteTable = memo(function RouletteTable({
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Junko Bodie Title & Tournament Rules */}
-            <div className="flex flex-col items-center mb-0.5 -mt-24" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
+            <div className="hidden sm:flex flex-col items-center mb-0.5 -mt-24" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
               <h1
                 className="text-2xl md:text-3xl tracking-wider"
                 style={{
@@ -348,7 +350,7 @@ const RouletteTable = memo(function RouletteTable({
             {/* ═══ BUTTONS — directly below betting grid (hidden in tournament mode) ═══ */}
             {!tournamentMode && (
               <div
-                className={`flex items-center justify-end ${!tournamentMode ? 'gap-6 mt-12 mb-6' : 'gap-3 mt-2'} w-full pr-8`}
+                className={`flex flex-wrap items-center justify-end ${!tournamentMode ? 'gap-3 sm:gap-6 mt-4 sm:mt-12 mb-3 sm:mb-6' : 'gap-3 mt-2'} w-full pr-2 sm:pr-8`}
                 style={{ transform: 'scaleX(1.0) scaleY(1.0)' }}
               >
                 {/* Timer UI - only show if betting and timer enabled */}

@@ -232,7 +232,7 @@ export default function GamePage() {
 
       {/* ═══ FOOTER — Chips left, Stats right ═══ */}
       <footer
-        className="flex-shrink-0 w-full px-4 flex items-center justify-between z-10 mobile-footer-compact"
+        className="flex-shrink-0 w-full px-2 sm:px-4 flex flex-col sm:flex-row items-center justify-between z-10 mobile-footer-compact gap-1 sm:gap-0"
         style={{
           background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
           borderTop: '1px solid rgba(201, 164, 76, 0.3)',
@@ -240,7 +240,7 @@ export default function GamePage() {
           padding: '8px 16px',
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
           <ChipTray
             selectedChip={game.selectedChip}
             onSelectChip={game.setSelectedChip}
@@ -254,22 +254,24 @@ export default function GamePage() {
         <div className="hidden md:block w-[300px]" /> 
 
         {/* Right: Balance + Stats */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 w-full sm:w-auto justify-center overflow-x-auto flex-nowrap py-1 sm:py-0">
           {/* Balance */}
-          <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner">
-            <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold">Balance</span>
-            <span className="text-sm font-black text-[#f4fbfb]" style={{ fontFamily: 'var(--font-playfair)' }}>
+          <div className="flex flex-col items-center px-2 sm:px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner min-w-[60px]">
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold">Balance</span>
+            <span className="text-xs sm:text-sm font-black text-[#f4fbfb]" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.balance.toLocaleString()}
             </span>
           </div>
 
           {/* Session Stats (Last Bet, Last Win, Session) */}
-          <SessionStats {...game.sessionStats} />
+          <div className="hidden sm:flex">
+            <SessionStats {...game.sessionStats} />
+          </div>
 
           {/* Total Bet */}
-          <div className="flex flex-col items-center px-4 py-1 rounded-lg bg-black/40 border border-[#c9a44c]/30 shadow-inner">
-            <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold">Total Bet</span>
-            <span className="text-sm font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
+          <div className="flex flex-col items-center px-2 sm:px-4 py-1 rounded-lg bg-black/40 border border-[#c9a44c]/30 shadow-inner min-w-[60px]">
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold">Total Bet</span>
+            <span className="text-xs sm:text-sm font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.totalBet.toLocaleString()}
             </span>
           </div>

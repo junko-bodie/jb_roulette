@@ -48,7 +48,7 @@ export default function RankingsPage() {
     <div className="min-h-screen bg-[#050d0a] text-white pb-24" style={{ background: `radial-gradient(circle at 50% 0%, #1a4d3c 0%, #050d0a 100%)` }}>
       
       {/* ═══ HEADER ═══ */}
-      <header className="pt-20 pb-16 px-6 text-center relative overflow-hidden">
+      <header className="pt-10 sm:pt-20 pb-8 sm:pb-16 px-4 sm:px-6 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 pointer-events-none" />
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
@@ -59,23 +59,23 @@ export default function RankingsPage() {
             <Star size={16} className="text-gold fill-gold" />
             <span className="text-xs font-black uppercase tracking-[0.3em] text-gold">Season {year} Hall of Fame</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase mb-6 italic">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter uppercase mb-4 sm:mb-6 italic">
             WORLD <span className="text-gold">RANKINGS</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-white/40 font-bold uppercase tracking-widest text-sm leading-loose">
+          <p className="max-w-2xl mx-auto text-white/40 font-bold uppercase tracking-widest text-xs sm:text-sm leading-loose">
             The top 50 players at year-end qualify for the <span className="text-white">Junko Bodie Annual Championship.</span>
           </p>
         </motion.div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6">
+      <main className="max-w-5xl mx-auto px-3 sm:px-6">
         
         {/* ═══ USER STATUS CARD ═══ */}
         {user && (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mb-12 p-8 bg-black/40 border border-white/10 rounded-[2.5rem] backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl"
+            className="mb-8 sm:mb-12 p-4 sm:p-8 bg-black/40 border border-white/10 rounded-[1.5rem] sm:rounded-[2.5rem] backdrop-blur-xl flex flex-col items-center sm:flex-row sm:items-center justify-between gap-4 sm:gap-8 shadow-2xl"
           >
             <div className="flex items-center gap-6">
               <div className="w-20 h-20 bg-gold/20 rounded-3xl flex items-center justify-center text-gold border border-gold/30">
@@ -89,7 +89,7 @@ export default function RankingsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-12">
+            <div className="flex items-center gap-4 sm:gap-12 flex-wrap justify-center">
                <div className="text-center md:text-right">
                  <div className="text-2xl font-black text-white">{myEntry?.points || 0}</div>
                  <div className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Total Points</div>
@@ -121,15 +121,15 @@ export default function RankingsPage() {
         )}
 
         {/* ═══ LEADERBOARD TABLE ═══ */}
-        <div className="bg-black/40 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl">
+        <div className="bg-black/40 border border-white/5 rounded-[1.5rem] sm:rounded-[2.5rem] overflow-x-auto backdrop-blur-xl">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-white/5 border-b border-white/10">
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Rank</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Competitor</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center">Played</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center">Won</th>
-                <th className="p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-right">Points</th>
+                <th className="p-3 sm:p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Rank</th>
+                <th className="p-3 sm:p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Competitor</th>
+                <th className="p-3 sm:p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center hidden sm:table-cell">Played</th>
+                <th className="p-3 sm:p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-center hidden sm:table-cell">Won</th>
+                <th className="p-3 sm:p-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 text-right">Points</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -145,7 +145,7 @@ export default function RankingsPage() {
                     }`}
                     style={isTop50 ? { borderLeft: '4px solid #c9a44c' } : {}}
                   >
-                    <td className="p-6">
+                    <td className="p-3 sm:p-6">
                        <div className="flex items-center gap-3">
                           <span className={`text-xl font-black italic ${entry.rank <= 3 ? 'text-gold' : 'text-white/60'}`}>
                             #{entry.rank}
@@ -153,7 +153,7 @@ export default function RankingsPage() {
                           {entry.rank === 1 && <Crown size={16} className="text-gold animate-bounce" />}
                        </div>
                     </td>
-                    <td className="p-6">
+                    <td className="p-3 sm:p-6">
                        <div className="flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border ${isMe ? 'border-gold' : 'border-white/10'}`}>
                             <User size={20} className={isMe ? 'text-gold' : 'text-white/40'} />
@@ -166,9 +166,9 @@ export default function RankingsPage() {
                           </div>
                        </div>
                     </td>
-                    <td className="p-6 text-center text-sm font-bold text-white/40">{entry.tournaments_played}</td>
-                    <td className="p-6 text-center text-sm font-bold text-white/40">{entry.tournaments_won}</td>
-                    <td className="p-6 text-right">
+                    <td className="p-3 sm:p-6 text-center text-sm font-bold text-white/40 hidden sm:table-cell">{entry.tournaments_played}</td>
+                    <td className="p-3 sm:p-6 text-center text-sm font-bold text-white/40 hidden sm:table-cell">{entry.tournaments_won}</td>
+                    <td className="p-3 sm:p-6 text-right">
                        <span className={`text-xl font-black ${isTop50 ? 'text-gold' : 'text-white'}`}>
                          {entry.points.toLocaleString()}
                        </span>
@@ -202,8 +202,8 @@ export default function RankingsPage() {
       </main>
 
       {/* ═══ FOOTER NAV ═══ */}
-      <footer className="fixed bottom-0 left-0 w-full p-8 flex justify-center pointer-events-none z-20">
-         <div className="bg-black/60 backdrop-blur-2xl border border-white/10 px-8 py-4 rounded-3xl flex items-center gap-10 pointer-events-auto shadow-2xl">
+      <footer className="fixed bottom-0 left-0 w-full p-3 sm:p-8 flex justify-center pointer-events-none z-20">
+         <div className="bg-black/60 backdrop-blur-2xl border border-white/10 px-4 sm:px-8 py-3 sm:py-4 rounded-2xl sm:rounded-3xl flex items-center gap-4 sm:gap-10 pointer-events-auto shadow-2xl flex-wrap justify-center">
             <Link href="/" className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-gold transition-colors">Home</Link>
             <Link href="/lobby" className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-gold transition-colors">Lobby</Link>
             <Link href="/profile" className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-gold transition-colors">My Profile</Link>

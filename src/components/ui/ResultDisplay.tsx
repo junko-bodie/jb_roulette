@@ -128,7 +128,7 @@ export default function ResultDisplay({
                   ease: [0.2, 0.8, 0.2, 1],
                   delay: 0.05,
                 }}
-                className="relative w-72 h-72 rounded-full flex items-center justify-center" 
+                className="relative w-48 h-48 sm:w-72 sm:h-72 rounded-full flex items-center justify-center" 
                 style={{
                   background: getResultBg(result.color),
                   border: `8px solid ${COLORS.gold}`, 
@@ -149,7 +149,7 @@ export default function ResultDisplay({
                   style={{
                     fontFamily: '"Cinzel Decorative", "Georgia", serif',
                     fontWeight: 900,
-                    fontSize: result.displayNumber.length > 2 ? '90px' : result.displayNumber.length > 1 ? '120px' : '140px',
+                    fontSize: result.displayNumber.length > 2 ? '50px' : result.displayNumber.length > 1 ? '70px' : '80px',
                     letterSpacing: result.displayNumber.length > 1 ? '0.02em' : '0.05em',
                     textShadow: '0 10px 20px rgba(0,0,0,0.8), 0 0 40px rgba(255,255,255,0.2)',
                   } as React.CSSProperties}
@@ -169,7 +169,7 @@ export default function ResultDisplay({
                  style={{ willChange: 'transform, opacity' }}
                >
                 {/* Glass Result Card */}
-                <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 min-w-[320px] flex flex-col gap-4 shadow-2xl">
+                <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-6 min-w-[260px] sm:min-w-[320px] flex flex-col gap-3 sm:gap-4 shadow-2xl">
                   {/* Row: Total Won */}
                   <div className="flex justify-between items-center border-b border-white/5 pb-3">
                     <span className="text-white/40 uppercase text-[10px] font-black tracking-widest">Total Won</span>
@@ -192,8 +192,8 @@ export default function ResultDisplay({
                       {payout.netResult >= 0 ? 'Net Profit' : 'Net Loss'}
                     </span>
                     <div className="flex items-center gap-2">
-                       <span 
-                        className="text-5xl font-black tracking-tight" 
+                    <span 
+                        className="text-3xl sm:text-5xl font-black tracking-tight" 
                         style={{ 
                           color: payout.netResult > 0 ? COLORS.gold : payout.netResult === 0 ? 'rgba(255,255,255,0.6)' : '#ff4d4d',
                           fontFamily: 'var(--font-playfair)',

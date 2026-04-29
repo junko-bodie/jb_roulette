@@ -23,4 +23,5 @@ export interface Tournament {
   current_round: number;
   winner_id: ObjectId | null;
   players: TournamentPlayer[];
+  wheel_type?: 'american' | 'european';
 }

@@ -32,6 +32,7 @@ export const COLORS = {
 
   /** Chip denominations */
   chipWhite: '#f5f5f5',
+  chipOrange: '#e67e22', // Orange $2
   chipBlue: '#2b52a2', // Royal Blue $10
   chipRed: '#c0392b',
   chipGreen: '#27ae60',
@@ -84,6 +85,7 @@ export const SHADOWS = {
 /** Chip denomination config — ordered by value */
 export const CHIP_DENOMINATIONS = [
   { value: 1, label: '$1', color: COLORS.chipWhite, textColor: COLORS.black },
+  { value: 2, label: '$2', color: COLORS.chipOrange, textColor: COLORS.textPrimary },
   { value: 5, label: '$5', color: COLORS.chipRed, textColor: COLORS.textPrimary },
   { value: 10, label: '$10', color: COLORS.chipBlue, textColor: COLORS.textPrimary },
   { value: 25, label: '$25', color: COLORS.chipGreen, textColor: COLORS.textPrimary },

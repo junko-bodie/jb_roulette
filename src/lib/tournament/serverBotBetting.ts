@@ -1,7 +1,7 @@
 import { TournamentPlayer } from '@/lib/models/Tournament';
 import { ALL_OUTSIDE_BETS, ALL_STRAIGHT_BETS, ALL_SPLIT_BETS, ALL_CORNER_BETS } from '../bets';
 
-const CHIP_VALUES = [1, 5, 25, 100, 500, 1000];
+const CHIP_VALUES = [1, 2, 5, 25, 100, 500, 1000];
 
 export function generateServerBotBets(bot: TournamentPlayer, spinNumber: number = 1) {
   const bets: any[] = [];
