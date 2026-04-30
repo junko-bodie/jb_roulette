@@ -84,10 +84,14 @@ export default function TournamentPage() {
   const [showResult, setShowResult] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
   const [tournamentWheelSize, setTournamentWheelSize] = useState(420);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Responsive wheel sizing (same logic as solo game page)
   useEffect(() => {
     const updateWheelSize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      
       const isMobilePortrait =
         window.innerWidth <= 900 &&
         window.matchMedia('(orientation: portrait)').matches;
@@ -719,13 +723,13 @@ export default function TournamentPage() {
 
   return (
     <div
-      className="flex flex-col h-screen w-full overflow-hidden sm:overflow-hidden select-none mobile-root-scroll"
+      className="flex flex-col h-screen h-[100dvh] w-full overflow-y-auto md:overflow-hidden select-none mobile-root-scroll"
       style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
     >
 
       {/* ═══ TOP HEADER — TOURNAMENT INFO + TIMER ═══ */}
       <header
-        className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2 z-10 gap-2"
+        className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2 z-10 gap-2 tournament-header-mobile"
         style={{
           background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
           borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
@@ -789,7 +793,7 @@ export default function TournamentPage() {
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 relative px-1 sm:px-2 py-0 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row items-stretch justify-center gap-2 sm:gap-4">
+      <main className="flex-1 min-h-0 relative px-1 sm:px-2 py-0 overflow-y-auto md:overflow-hidden flex flex-col lg:flex-row items-stretch justify-between gap-2 sm:gap-4 tournament-main-mobile h-full">
 
 
         {/* Roulette Table — takes most of the space */}
@@ -909,14 +913,14 @@ export default function TournamentPage() {
       {/* ═══ FOOTER — CHIP TRAY LEFT, BUTTONS RIGHT ═══ */}
       {/* ═══ PREMIUM FOOTER DESIGN ═══ */}
       <footer
-        className="flex-shrink-0 w-full z-10 px-4 sm:px-8 py-3.5"
+        className="flex-shrink-0 w-full z-10 px-2 sm:px-8 py-2 sm:py-3.5 tournament-footer-mobile"
         style={{
           background: 'linear-gradient(to top, #0d0805 0%, #1a110a 100%)',
           borderTop: '1px solid rgba(201, 164, 76, 0.4)',
           boxShadow: '0 -12px 50px rgba(0,0,0,0.9)',
         }}
       >
-        <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6">
           
           {/* Left: Chip Tray */}
           <div className="flex-shrink-0 order-1">
@@ -932,23 +936,23 @@ export default function TournamentPage() {
           </div>
 
           {/* Right: Betting Controls & Financials */}
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 sm:gap-6 order-2">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 sm:gap-6 order-2 tournament-controls-mobile">
             
             {/* Total Bet Display */}
-            <div className="flex flex-col items-center px-5 py-2 rounded-2xl bg-black/60 border border-[#c9a44c]/30 shadow-[inset_0_0_20px_rgba(0,0,0,0.7)] min-w-[100px]">
-              <span className="text-[10px] uppercase tracking-[0.3em] text-[#c9a44c]/60 font-black leading-none mb-2">Total Bet</span>
-              <span className="text-xl font-black text-white tabular-nums tracking-tighter" style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}>
+            <div className="flex flex-col items-center px-3 sm:px-5 py-1 sm:py-2 rounded-xl sm:rounded-2xl bg-black/60 border border-[#c9a44c]/30 shadow-[inset_0_0_20px_rgba(0,0,0,0.7)] min-w-[80px] sm:min-w-[100px]">
+              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#c9a44c]/60 font-black leading-none mb-1 sm:mb-2">Total Bet</span>
+              <span className="text-sm sm:text-xl font-black text-white tabular-nums tracking-tighter" style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}>
                 ${totalBet.toLocaleString()}
               </span>
             </div>
 
             {/* Controls Group */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <motion.button
                 onClick={handleRebet}
                 disabled={phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal}
                 whileTap={{ scale: 0.95 }}
-                className={`h-11 px-6 rounded-xl flex items-center justify-center font-black text-[11px] uppercase tracking-[0.2em] border-2 transition-all
+                className={`h-9 sm:h-11 px-3 sm:px-6 rounded-lg sm:rounded-xl flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider sm:tracking-[0.2em] border-2 transition-all
                   ${(phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal)
                     ? 'bg-black/20 border-white/5 text-white/10'
                     : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c]/50 text-[#c9a44c] shadow-lg shadow-black/40 hover:border-[#c9a44c] hover:shadow-[#c9a44c]/20'}`}
@@ -956,24 +960,24 @@ export default function TournamentPage() {
                 REBET
               </motion.button>
 
-              <div className="flex items-center bg-black/40 rounded-xl border-2 border-white/10 p-1 gap-1">
+              <div className="flex items-center bg-black/40 rounded-lg sm:rounded-xl border-2 border-white/10 p-0.5 sm:p-1 gap-0.5 sm:gap-1">
                 <motion.button
                   onClick={handleClearLastBet}
                   disabled={phase !== "betting" || betPlacementHistory.length === 0}
                   whileTap={{ scale: 0.95 }}
-                  className={`h-9 px-4 rounded-lg flex items-center justify-center font-black text-[11px] uppercase tracking-wider transition-all
+                  className={`h-7 sm:h-9 px-2 sm:px-4 rounded flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all
                     ${(phase !== "betting" || betPlacementHistory.length === 0)
                       ? 'text-white/10'
                       : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
                 >
                   UNDO
                 </motion.button>
-                <div className="w-px h-5 bg-white/10 mx-1" />
+                <div className="w-px h-4 sm:h-5 bg-white/10 mx-0.5 sm:mx-1" />
                 <motion.button
                   onClick={handleClearBets}
                   disabled={phase !== "betting" || bets.size === 0}
                   whileTap={{ scale: 0.95 }}
-                  className={`h-9 px-4 rounded-lg flex items-center justify-center font-black text-[11px] uppercase tracking-wider transition-all
+                  className={`h-7 sm:h-9 px-2 sm:px-4 rounded flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all
                     ${(phase !== "betting" || bets.size === 0)
                       ? 'text-white/10'
                       : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
@@ -986,7 +990,7 @@ export default function TournamentPage() {
                 onClick={handleDoubleAllBets}
                 disabled={phase !== "betting" || myChips < totalBet * 2 || totalBet === 0}
                 whileTap={{ scale: 0.95 }}
-                className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-xs border-2 transition-all
+                className={`w-9 sm:w-11 h-9 sm:h-11 rounded-full flex items-center justify-center font-black text-[10px] sm:text-xs border-2 transition-all
                   ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0)
                     ? 'bg-black/20 border-white/5 text-white/10'
                     : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#ffedb3] text-black shadow-[0_0_20px_rgba(201,164,76,0.3)] hover:scale-105'}`}
@@ -998,7 +1002,7 @@ export default function TournamentPage() {
                 onClick={() => { soundEngine?.playSwoosh(); setDeleteMode(!deleteMode); }}
                 disabled={phase !== "betting"}
                 whileTap={{ scale: 0.95 }}
-                className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-xl border-2 transition-all
+                className={`w-9 sm:w-11 h-9 sm:h-11 rounded-full flex items-center justify-center font-black text-base sm:text-xl border-2 transition-all
                   ${phase !== "betting"
                     ? 'bg-black/20 border-white/5 text-white/10'
                     : deleteMode
@@ -1010,9 +1014,9 @@ export default function TournamentPage() {
             </div>
 
             {/* Balance Display */}
-            <div className="flex flex-col items-center px-6 py-2 rounded-2xl bg-gradient-to-b from-[#2d1a10] to-[#0d0805] border border-[#c9a44c]/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] min-w-[130px]">
-              <span className="text-[10px] uppercase tracking-[0.3em] text-[#c9a44c] font-black leading-none mb-2 opacity-80">Balance</span>
-              <span className="text-xl font-black text-white tabular-nums tracking-tighter">
+            <div className="flex flex-col items-center px-4 sm:px-6 py-1 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#2d1a10] to-[#0d0805] border border-[#c9a44c]/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] min-w-[100px] sm:min-w-[130px]">
+              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#c9a44c] font-black leading-none mb-1 sm:mb-2 opacity-80">Balance</span>
+              <span className="text-sm sm:text-xl font-black text-white tabular-nums tracking-tighter">
                 ${myChips.toLocaleString()}
               </span>
             </div>
@@ -1024,17 +1028,17 @@ export default function TournamentPage() {
                 disabled={phase !== "betting"}
                 whileHover={phase === 'betting' && bets.size > 0 ? { scale: 1.04, filter: 'brightness(1.1)' } : {}}
                 whileTap={phase === 'betting' && bets.size > 0 ? { scale: 0.96 } : {}}
-                className={`h-14 px-12 rounded-2xl font-black text-base uppercase tracking-[0.3em] transition-all shadow-2xl relative z-10
+                className={`h-11 sm:h-14 px-6 sm:px-12 rounded-xl sm:rounded-2xl font-black text-xs sm:text-base uppercase tracking-widest sm:tracking-[0.3em] transition-all shadow-2xl relative z-10 tournament-submit-btn
                   ${phase === 'betting'
                     ? (bets.size > 0 
                         ? 'bg-gradient-to-br from-[#c9a44c] via-[#f5d68d] to-[#c9a44c] text-black border-2 border-[#ffedb3] shadow-[0_12px_40px_rgba(201,164,76,0.4)]' 
                         : 'bg-white/5 border-2 border-white/5 text-white/10 cursor-default')
                     : 'bg-black/80 border-2 border-[#c9a44c]/20 text-[#c9a44c] animate-pulse'}`}
               >
-                {phase === "betting" ? (bets.size > 0 ? "PLACE BETS" : "BET NOW") : "PLACED"}
+                {phase === "betting" ? (bets.size > 0 ? "PLACE" : "BET") : "PLACED"}
               </motion.button>
               {phase === 'betting' && bets.size > 0 && (
-                <div className="absolute inset-0 bg-[#c9a44c] blur-[40px] opacity-25 -z-0" />
+                <div className="absolute inset-0 bg-[#c9a44c] blur-[30px] opacity-25 -z-0" />
               )}
             </div>
           </div>

@@ -31,6 +31,7 @@ export default function GamePage() {
   const wheelRef = useRef<HTMLDivElement>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -112,6 +113,9 @@ export default function GamePage() {
 
   useEffect(() => {
     const updateWheelSize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      
       const isMobilePortrait =
         window.innerWidth <= 900 &&
         window.matchMedia('(orientation: portrait)').matches;
@@ -120,7 +124,7 @@ export default function GamePage() {
         window.innerHeight <= 540 &&
         window.innerWidth <= 950;
       if (isMobilePortrait) {
-        setWheelSize(Math.min(window.innerWidth * 0.85, 360));
+        setWheelSize(Math.min(window.innerWidth * 0.58, 260));
       } else if (isLandscapeMobile) {
         setWheelSize(320);
       } else if (window.innerHeight < 600) {
@@ -151,7 +155,7 @@ export default function GamePage() {
 
   return (
     <div
-      className="flex flex-col h-screen w-full overflow-hidden sm:overflow-hidden select-none mobile-root-scroll"
+      className="flex flex-col h-screen h-[100dvh] w-full overflow-y-auto md:overflow-hidden select-none mobile-root-scroll"
       style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
     >
       {/* ═══ TOP BAR — HISTORY & SETTINGS ═══ */}
@@ -161,7 +165,7 @@ export default function GamePage() {
           background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
           borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
           boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
-          minHeight: '60px',
+          minHeight: isMobile ? '48px' : '60px',
         }}
       >
         <div className="flex items-center gap-4">
@@ -198,7 +202,7 @@ export default function GamePage() {
         </div>
       </div>
 
-      <main className="mobile-game-content mobile-landscape-main flex-1 min-h-0 relative px-0.5 md:px-1 lg:px-2 py-0 overflow-visible sm:overflow-hidden flex flex-col justify-center items-center">
+      <main className="mobile-game-content mobile-landscape-main flex-1 min-h-0 relative px-0 md:px-1 lg:px-2 py-0 overflow-y-auto md:overflow-hidden flex flex-col justify-between items-center h-full">
 
         <RouletteTable
           wheelType={game.wheelType}
@@ -237,7 +241,7 @@ export default function GamePage() {
           background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
           borderTop: '1px solid rgba(201, 164, 76, 0.3)',
           boxShadow: '0 -4px 20px rgba(0,0,0,0.5)',
-          padding: '8px 16px',
+          padding: isMobile ? '4px 10px' : '8px 16px',
         }}
       >
         <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">

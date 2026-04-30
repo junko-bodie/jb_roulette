@@ -11,9 +11,10 @@ interface ChipStackProps {
   isMine?: boolean;
   customColor?: string;
   playerInitial?: string;
+  isHovered?: boolean;
 }
 
-export default function ChipStack({ chips, phase, className = '', deleteMode = false, isMine = true, customColor, playerInitial }: ChipStackProps) {
+export default function ChipStack({ chips, phase, className = '', deleteMode = false, isMine = true, customColor, playerInitial, isHovered = false }: ChipStackProps) {
   if (chips.length === 0) return null;
 
   // Show last 4 chips visually in the stack
@@ -76,12 +77,16 @@ export default function ChipStack({ chips, phase, className = '', deleteMode = f
         );
       })}
 
-      {hiddenCount > 0 && (
-        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 px-2 py-0.5 rounded-sm border border-white/10 shadow-xl z-[100]">
+      {hiddenCount > 0 && isHovered && (
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/90 px-2 py-0.5 rounded-sm border border-[#c9a44c]/40 shadow-xl z-[100]"
+        >
           <span className="text-[9px] font-black text-white leading-tight">
             +{hiddenCount}
           </span>
-        </div>
+        </motion.div>
       )}
 
     </div>

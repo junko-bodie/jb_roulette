@@ -223,6 +223,12 @@ body {
 }
 
 /* ──────────────────────────────────────────
+   Utility: hide scrollbar
+   ────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ──────────────────────────────────────────
    Mobile & Tablet — Stacked Layout
    ────────────────────────────────────────── */
 @media (max-width: 1024px) {
@@ -239,11 +245,12 @@ body {
   .mobile-root-scroll {
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    height: auto !important;
-    min-height: 100vh !important;
-    min-height: 100dvh !important;
+    height: 100vh !important;
+    height: 100dvh !important;
     display: flex !important;
     flex-direction: column !important;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Compact header */
@@ -263,10 +270,19 @@ body {
     flex-direction: column !important;
     gap: 0 !important;
     padding: 0.25rem !important;
-    min-height: auto !important;
-    height: auto !important;
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
     overflow-y: visible !important;
     overflow-x: hidden !important;
+  }
+
+  /* Foam buffer — reduce padding & border on mobile */
+  .mx-auto.w-full.max-w-\[1500px\] {
+    max-width: 100% !important;
+    overflow-x: hidden;
   }
 
   /* Foam buffer — reduce padding & border */
@@ -300,9 +316,9 @@ body {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     min-height: auto !important;
-    zoom: 0.55;
+    zoom: 0.9;
   }
 
   /* Compact footer */
@@ -312,6 +328,44 @@ body {
     flex-direction: column !important;
     justify-content: center !important;
     gap: 4px;
+  }
+
+  /* ── Tournament-specific mobile overrides ── */
+
+  /* Tournament header — compact single row */
+  .tournament-header-mobile {
+    padding: 6px 10px !important;
+    min-height: 42px !important;
+    gap: 4px !important;
+  }
+
+  /* Tournament footer — stack vertically, tighter padding */
+  .tournament-footer-mobile {
+    padding: 8px 6px !important;
+    gap: 6px !important;
+  }
+
+  .tournament-footer-mobile .tournament-controls-mobile {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    justify-content: center !important;
+  }
+
+  /* Make tournament "Place Bets" button more compact */
+  .tournament-footer-mobile .tournament-submit-btn {
+    height: 40px !important;
+    padding: 0 20px !important;
+    font-size: 11px !important;
+    letter-spacing: 0.15em !important;
+    border-radius: 12px !important;
+  }
+
+  /* Tournament main area — allow scroll */
+  .tournament-main-mobile {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    min-height: 0 !important;
+    flex: 1 !important;
   }
 }
 
@@ -336,7 +390,12 @@ body {
   .w-\[800px\] { width: 100% !important; max-width: 100vw !important; overflow-x: hidden; }
 
   .mobile-table-section {
-    zoom: 0.5;
+    zoom: 0.95;
+  }
+
+  /* Tournament footer — extra tight on phones */
+  .tournament-footer-mobile {
+    padding: 6px 4px !important;
   }
 }
 
@@ -345,6 +404,6 @@ body {
    ────────────────────────────────────────── */
 @media (max-width: 480px) {
   .mobile-table-section {
-    zoom: 0.45;
+    zoom: 0.8;
   }
 }
