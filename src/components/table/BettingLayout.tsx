@@ -448,6 +448,7 @@ const OutsideBetCell = memo(function OutsideBetCell({
   onPopLastChip,
   onClearZone,
   isMine = true,
+  isHovered = false,
 }: {
   label: React.ReactNode;
   bet: PlacedBet | undefined;
