@@ -118,17 +118,17 @@ const RouletteTable = memo(function RouletteTable({
   const spinEnabled = canBet && hasBets;
 
   return (
-    <div className="mx-auto w-full h-full flex flex-col">
+    <div className="mx-auto w-full max-w-[1500px] h-full flex flex-col">
       {/* THE FOAM BUFFER — Unified for both wheel and table */}
       <div
-        className="relative p-0 sm:p-1 md:p-2 rounded-none sm:rounded-[12px] md:rounded-[20px] shadow-[0_40px_100px_rgba(0,0,0,1)] w-full flex-1 md:h-full overflow-visible md:overflow-hidden"
+        className="relative p-0.5 sm:p-3 md:p-5 lg:p-6 rounded-[20px] sm:rounded-[35px] md:rounded-[50px] shadow-[0_40px_100px_rgba(0,0,0,1)] w-full flex-1 md:h-full overflow-visible md:overflow-hidden"
         style={{
-          background: '#06140e',
-          border: isMobile ? 'none' : '3px solid #080808',
+          background: '#0a0a0a',
+          border: isMobile ? '3px solid #050505' : '8px solid #050505',
           boxShadow: `
-            inset 0 2px 5px rgba(255,255,255,0.03),
-            inset 0 -10px 20px rgba(0,0,0,0.6),
-            0 30px 60px rgba(0,0,0,0.8)
+            inset 0 2px 5px rgba(255,255,255,0.05),
+            inset 0 -10px 20px rgba(0,0,0,0.8),
+            0 30px 60px rgba(0,0,0,1)
           `,
           transformStyle: 'preserve-3d',
           display: 'flex',
@@ -137,24 +137,24 @@ const RouletteTable = memo(function RouletteTable({
       >
         {/* Brushed Gold Inner Frame */}
         <div
-          className="absolute rounded-none sm:rounded-[8px] md:rounded-[14px] border-[1px] sm:border-[1.5px] md:border-[2px] border-[#c9a44c]/20 pointer-events-none"
+          className="absolute rounded-[16px] sm:rounded-[28px] md:rounded-[38px] border-[1.5px] sm:border-[2px] md:border-[3px] border-[#c9a44c]/30 pointer-events-none"
           style={{
-            inset: isMobile ? '0' : '6px',
+            inset: isMobile ? '2px' : '14px',
             zIndex: 1,
-            boxShadow: 'inset 0 0 10px rgba(201, 164, 76, 0.1), 0 0 6px rgba(0,0,0,0.3)'
+            boxShadow: 'inset 0 0 15px rgba(201, 164, 76, 0.2), 0 0 10px rgba(0,0,0,0.5)'
           }}
         />
 
         {/* The green felt area — VIP Emerald Edition */}
         <div
-          className="relative rounded-none sm:rounded-[8px] md:rounded-[14px] border-b-2 border-black/30 flex flex-row items-center justify-start sm:justify-center gap-0 md:gap-2 lg:gap-4 mobile-felt-stack h-full md:h-full w-full"
+          className="relative rounded-[14px] sm:rounded-[24px] md:rounded-[32px] border-b-4 border-black/40 flex flex-row items-center justify-start sm:justify-center gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full md:h-full"
           style={{
             background: 'radial-gradient(circle at 50% 50%, #0d2e23 0%, #051410 100%)',
-            padding: isMobile ? '0 0.5rem 0 0' : '0 2rem 0 0',
+            padding: isMobile ? '0.05rem 0.2rem 0.2rem 0.2rem' : '0.02rem 1.8rem 1.2rem 0.8rem',
             zIndex: 2,
             boxShadow: `
-              inset 0 0 60px rgba(0,0,0,0.6),
-              inset 0 8px 20px rgba(0,0,0,0.4)
+              inset 0 0 80px rgba(0,0,0,0.8),
+              inset 0 10px 30px rgba(0,0,0,0.5)
             `,
             flex: 1
           }}
@@ -165,12 +165,12 @@ const RouletteTable = memo(function RouletteTable({
             className="relative flex justify-center items-center mobile-wheel-section"
             initial={{ opacity: 0, scale: 0.95, flex: 1 }}
             animate={isMobile
-              ? { opacity: 1, scale: isSpinning ? 1.1 : 1, y: 0, flex: 'none' }
+              ? { opacity: 1, scale: isSpinning ? 1.2 : 1, y: 0, flex: 'none' }
               : {
                 opacity: 1,
-                scale: isSpinning ? 1.15 : 1,
+                scale: isSpinning ? 1.2 : 1,
                 y: isSpinning ? 0 : -25,
-                flex: isSpinning ? 4 : 1
+                flex: isSpinning ? 4.5 : 1
               }
             }
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -198,8 +198,8 @@ const RouletteTable = memo(function RouletteTable({
                   backdropFilter: 'blur(8px)',
                   border: '1.5px solid rgba(201, 164, 76, 0.4)',
                   boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
-                  opacity: isSpinning ? 0 : (isBettingDisabled ? 0.5 : 1),
-                  pointerEvents: isSpinning || isBettingDisabled ? 'none' : 'auto',
+                  opacity: isBettingDisabled ? 0.5 : 1,
+                  pointerEvents: isBettingDisabled ? 'none' : 'auto',
                   transition: 'opacity 0.3s ease',
                   fontSize: isMobile ? '10px' : '13px',
                 }}
@@ -254,25 +254,24 @@ const RouletteTable = memo(function RouletteTable({
 
           {/* Table Section (Right) */}
           <motion.div
-            className="flex flex-col items-center justify-start p-0.5 sm:p-2 mobile-table-section"
-            initial={{ opacity: 0, x: 20, scale: 0.95, width: '100%' }}
+            className="flex flex-col items-center justify-start p-0.5 sm:p-2 mobile-table-section w-full"
+            initial={{ opacity: 0, x: 20, scale: 0.95, flex: 2 }}
             animate={isMobile
-              ? { opacity: isSpinning ? 0 : 1, scale: isSpinning ? 0.9 : 1, y: 0, width: isSpinning ? '0%' : '100%', overflow: isSpinning ? 'hidden' : 'visible' }
+              ? { opacity: isSpinning ? 0 : 1, scale: isSpinning ? 0.9 : 1, y: 0, flex: 'none' }
               : {
-                opacity: isSpinning ? 0 : 1,
+                opacity: isSpinning ? 0.2 : 1,
                 x: 1,
-                scaleX: isSpinning ? 0.5 : 1.08,
-                scaleY: isSpinning ? 0.5 : 1.5,
-                width: isSpinning ? '0%' : '100%',
-                overflow: isSpinning ? 'hidden' : 'visible'
+                scaleX: isSpinning ? 0.9 : 1.08,
+                scaleY: isSpinning ? 0.9 : (tournamentMode ? 2.1 : 1.7),
+                flex: isSpinning ? 0.5 : (tournamentMode ? 2.3 : 2)
               }
             }
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Junko Bodie Title & Tournament Rules */}
-            <div className="hidden md:flex flex-col items-center mb-0.5 -mt-32" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
+            <div className="hidden md:flex flex-col items-center mb-0.5 -mt-24" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
               <h1
-                className="text-3xl md:text-5xl tracking-wider"
+                className="text-2xl md:text-3xl tracking-wider"
                 style={{
                   fontFamily: "'Bodoni Moda', serif",
                   fontStyle: 'italic',
@@ -355,7 +354,7 @@ const RouletteTable = memo(function RouletteTable({
             {/* ═══ BUTTONS — directly below betting grid (hidden in tournament mode) ═══ */}
             {!tournamentMode && (
               <div
-                className={`flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 md:gap-6 mt-2 sm:mt-4 md:mt-10 mb-1 sm:mb-3 md:mb-4 w-full pr-1 sm:pr-2 md:pr-6`}
+                className={`flex flex-nowrap items-center justify-center sm:justify-end gap-2 sm:gap-4 md:gap-8 mt-12 sm:mt-24 md:mt-32 mb-4 sm:mb-8 md:mb-12 w-full pr-1 sm:pr-2 md:pr-12`}
                 style={{ transform: 'scaleX(1.0) scaleY(1.0)' }}
               >
                 {/* Timer UI - only show if betting and timer enabled */}
@@ -377,7 +376,7 @@ const RouletteTable = memo(function RouletteTable({
 
                 {/* 2X and Delete Mode Buttons — Left Side */}
                 {!isBettingDisabled && totalBet > 0 && (
-                  <div className="flex items-center gap-2 sm:gap-4 mr-1 sm:mr-2">
+                  <div className="flex flex-shrink-0 items-center gap-2 sm:gap-4 mr-1 sm:mr-2">
                     <BettingControlButtons
                       totalBet={totalBet}
                       balance={balance}
@@ -394,10 +393,10 @@ const RouletteTable = memo(function RouletteTable({
                 <button
                   onClick={onRebet}
                   disabled={!canBet || !hasLastSpin}
-                  className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
-                    fontSize: isMobile ? '14px' : '13px',
+                    fontSize: isMobile ? '13px' : '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
@@ -405,22 +404,22 @@ const RouletteTable = memo(function RouletteTable({
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
                     border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
                     borderRadius: '10px',
-                    padding: isMobile ? '12px 22px' : '12px 22px',
+                    padding: isMobile ? '10px 18px' : '8px 16px',
                     lineHeight: 1,
                     boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
                 >
-                  RE-BET
+                  REBET
                 </button>
 
                 {/* CLEAR — compact bordered box (clears all bets) */}
                 <button
                   onClick={handleClearBetsClick}
                   disabled={!canBet || !hasBets}
-                  className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
-                    fontSize: isMobile ? '14px' : '13px',
+                    fontSize: isMobile ? '13px' : '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
@@ -428,7 +427,7 @@ const RouletteTable = memo(function RouletteTable({
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
                     border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
                     borderRadius: '10px',
-                    padding: isMobile ? '12px 22px' : '12px 22px',
+                    padding: isMobile ? '10px 18px' : '8px 16px',
                     lineHeight: 1,
                     boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
@@ -440,10 +439,10 @@ const RouletteTable = memo(function RouletteTable({
                 <button
                   onClick={handleClearLastBetClick}
                   disabled={!canBet || !hasBets}
-                  className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
-                    fontSize: isMobile ? '14px' : '13px',
+                    fontSize: isMobile ? '13px' : '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
@@ -451,7 +450,7 @@ const RouletteTable = memo(function RouletteTable({
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
                     border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
                     borderRadius: '10px',
-                    padding: isMobile ? '12px 22px' : '12px 22px',
+                    padding: isMobile ? '10px 18px' : '8px 16px',
                     lineHeight: 1,
                     boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
@@ -470,7 +469,7 @@ const RouletteTable = memo(function RouletteTable({
                     boxShadow: `0 2px 0 0 #1a0f09, 0 4px 10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.2)`
                   } : {}}
                   transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                  className="relative overflow-hidden cursor-pointer disabled:cursor-not-allowed ml-1 sm:ml-4 mt-2 mb-2"
+                  className="relative overflow-hidden flex-shrink-0 cursor-pointer disabled:cursor-not-allowed ml-1 sm:ml-4"
                   style={{
                     background: spinEnabled
                       ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
@@ -479,10 +478,10 @@ const RouletteTable = memo(function RouletteTable({
                     fontFamily: "'Bodoni Moda', serif",
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: isMobile ? '1.15rem' : '1.1rem',
+                    fontSize: isMobile ? '1.05rem' : '1rem',
                     letterSpacing: '0.25em',
                     textTransform: 'uppercase' as const,
-                    padding: isMobile ? '14px 36px' : '14px 48px',
+                    padding: isMobile ? '12px 30px' : '12px 40px',
                     borderRadius: '9999px',
                     borderWidth: spinEnabled ? '3px' : '2px',
                     borderStyle: 'solid',

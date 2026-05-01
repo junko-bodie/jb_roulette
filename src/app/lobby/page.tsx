@@ -165,10 +165,10 @@ export default function Home() {
               <div className={`${styles.playIconWrap} ${styles.iconSolo}`}>
                 <Play className={styles.playIconSolo} strokeWidth={1.5} fill="currentColor" />
               </div>
-              <div className="w-full flex flex-col items-center">
-                <div className={styles.playLabel} style={{ textAlign: 'center' }}>SOLO PLAY</div>
-                <div className={styles.playDesc} style={{ textAlign: 'left', marginTop: '12px', width: '100%' }}>
-                  Classic American and European Roulette. Test Your Skill Against The House.
+              <div>
+                <div className={styles.playLabel}>SOLO PLAY</div>
+                <div className={styles.playDesc}>
+                  Classic American and European Roulette. <br /> Test Your Skill Against The House.
                 </div>
               </div>
             </motion.div>
@@ -191,9 +191,9 @@ export default function Home() {
               <div className={`${styles.playIconWrap} ${styles.iconTournament}`}>
                 <Trophy className={styles.playIconTourney} strokeWidth={1.5} />
               </div>
-              <div className="w-full flex flex-col items-center">
-                <div className={styles.playLabel} style={{ textAlign: 'center' }}>TOURNAMENT</div>
-                <div className={styles.playDesc} style={{ textAlign: 'left', marginTop: '12px', width: '100%' }}>
+              <div>
+                <div className={styles.playLabel}>TOURNAMENT</div>
+                <div className={styles.playDesc}>
                   Test Yourself Against Other Top Players In A Live Tournament Experience.
                 </div>
               </div>
@@ -266,12 +266,12 @@ export default function Home() {
       {/* Modals */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
-      <WelcomeVideoModal 
-        isOpen={isWelcomeVideoOpen} 
+      <WelcomeVideoModal
+        isOpen={isWelcomeVideoOpen}
         onClose={() => {
           setIsWelcomeVideoOpen(false);
           router.push('/tournament');
-        }} 
+        }}
       />
     </div>
   );

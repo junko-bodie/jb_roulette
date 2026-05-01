@@ -238,122 +238,89 @@
 
 /* ── Play Cards — PREMIUM BALANCED ── */
 .playCard {
-  width: min(43vw, 68vh);
-  max-width: 460px;
-  aspect-ratio: 11 / 10;
-  overflow: hidden;
-  background: linear-gradient(145deg, #0a1f16, #06140e);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  width: 100%;
+  max-width: 340px;
+  height: 300px;
+  background: #0f2e21;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(16px, 2.5vw, 28px);
+  gap: 24px;
   cursor: pointer;
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   text-align: center;
-  padding: 12%;
+  padding: 24px;
   box-sizing: border-box;
-  transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
-  flex: none;
-}
-
-.playCard::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 24px;
-  background: radial-gradient(ellipse at 30% 20%, rgba(243, 229, 171, 0.04) 0%, transparent 60%);
-  pointer-events: none;
 }
 
 .playCard:hover {
-  transform: translateY(-8px) scale(1.015);
-  box-shadow:
-    0 28px 56px rgba(0, 0, 0, 0.5),
-    inset 0 1px 2px rgba(255, 255, 255, 0.08),
-    0 0 0 1px rgba(255, 215, 0, 0.18);
-  background: linear-gradient(145deg, #0e2a1d, #091c13);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: #113626;
 }
 
-/* ── Play Icon — glassmorphic circles ── */
 .playIconWrap {
-  width: 88px;
-  height: 88px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(4px) saturate(150%);
-  -webkit-backdrop-filter: blur(4px) saturate(150%);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .playCard:hover .playIconWrap {
-  transform: scale(1.08);
-  background: rgba(255, 255, 255, 0.06);
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .playCard:hover .iconSolo {
-  box-shadow:
-    0 0 15px rgba(243, 229, 171, 0.3),
-    0 0 30px rgba(212, 188, 129, 0.15);
+  box-shadow: 0 0 20px rgba(212, 188, 129, 0.4);
 }
 
 .playCard:hover .iconTournament {
-  box-shadow:
-    0 0 15px rgba(139, 92, 246, 0.35),
-    0 0 30px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
 }
 
 .iconSolo {
-  border: 1.5px solid rgba(212, 188, 129, 0.5);
-  box-shadow: 0 0 12px rgba(243, 229, 171, 0.12);
+  border: 1.5px solid #d4bc81;
 }
 
 .iconTournament {
-  border: 1.5px solid rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.12);
+  border: 1.5px solid #8b5cf6;
 }
 
 .playIconSolo {
-  color: #f3e5ab;
-  fill: #f3e5ab;
-  width: 34px;
-  height: 34px;
-  margin-left: 3px;
-  filter: drop-shadow(0 0 6px rgba(243, 229, 171, 0.3));
+  color: #d4bc81;
+  fill: #d4bc81;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
 }
 
 .playIconTourney {
-  color: #a78bfa;
-  width: 34px;
-  height: 34px;
-  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.3));
+  color: #8b5cf6;
+  width: 24px;
+  height: 24px;
 }
 
-/* ── Play Labels — luxury serif typography ── */
 .playLabel {
-  font-family: 'Bodoni Moda', 'Playfair Display', 'Georgia', serif;
-  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  font-size: 17px;
   font-weight: 700;
-  color: #f3e5ab;
+  color: #ffffff;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  line-height: 1.2;
 }
 
 .playDesc {
-  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
+  font-size: 13.5px;
   color: rgba(255, 255, 255, 0.6);
-  line-height: 1.6;
-  margin-top: 4px;
-  letter-spacing: 0.02em;
+  line-height: 1.5;
+  margin-top: 6px;
 }
 
 /* ── Quick Actions / Bottom Nav — ENLARGED ── */

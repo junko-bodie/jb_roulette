@@ -143,7 +143,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     loadProfile();
   }, [user]);
 
-  // Save changes to DB or local storage
+  // Save changes to DB or local storage (Debounced)
   useEffect(() => {
     const settings = {
       balance,
@@ -154,35 +154,48 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       userProfile,
     };
     
+    // Always update local storage immediately for snappiness
     localStorage.setItem('roulette_settings', JSON.stringify(settings));
 
     if (user) {
-      fetch('/api/user/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: userProfile.name,
-          avatar_url: userProfile.avatar,
-          is_sound_enabled: isSoundEnabled,
-          is_timer_enabled: isTimerEnabled,
-          is_popup_enabled: isPopupEnabled,
-          starting_balance: startingBalance,
-        }),
-      }).catch(e => console.error('Failed to save DB profile', e));
-      
-      if (balance !== undefined) {
-        fetch('/api/user/balance', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: balance, action: 'set' }),
-        }).catch(e => console.error('Failed to sync DB balance', e));
-      }
+      // Debounce DB sync to avoid flooding during active gameplay
+      const syncTimer = setTimeout(async () => {
+        try {
+          // Sync profile & settings
+          await fetch('/api/user/profile', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: userProfile.name,
+              avatar_url: userProfile.avatar,
+              is_sound_enabled: isSoundEnabled,
+              is_timer_enabled: isTimerEnabled,
+              is_popup_enabled: isPopupEnabled,
+              starting_balance: startingBalance,
+            }),
+          });
+          
+          // Sync balance separately to ensure accuracy
+          if (balance !== undefined) {
+            await fetch('/api/user/balance', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ amount: balance, action: 'set' }),
+            });
+          }
+        } catch (e) {
+          // Silent catch for network flakiness
+          console.warn('DB Sync throttled or failed:', e);
+        }
+      }, 3000); // Sync after 3 seconds of stability
+
+      return () => clearTimeout(syncTimer);
     }
 
     import('@/lib/audioEngine').then(({ soundEngine }) => {
       if (soundEngine) soundEngine.setEnabled(isSoundEnabled);
     });
-  }, [balance, isSoundEnabled, isTimerEnabled, userProfile, isTournamentMode, user]);
+  }, [balance, isSoundEnabled, isTimerEnabled, userProfile, isTournamentMode, user, isPopupEnabled, startingBalance]);
 
   return (
     <GameContext.Provider

@@ -78,12 +78,12 @@ export default function GamePage() {
     }
   }, [game.lastPayout, isPopupEnabled]);
 
-  // Automatically dismiss result after 4 seconds
+  // Automatically dismiss result after 3 seconds
   useEffect(() => {
     if (showResult) {
       const timer = setTimeout(() => {
         handleDismissResult();
-      }, 3500);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [showResult, handleDismissResult]);

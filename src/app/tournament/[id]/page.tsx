@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTournament } from '@/lib/tournament/useTournament';
 import RouletteTable from '@/components/table/RouletteTable';
 import ChipTray from '@/components/chips/ChipTray';
@@ -71,13 +71,18 @@ export default function TournamentPage() {
 
       if (isVeryStart) {
         setIsStarting(true);
+        // Automatically enter the tournament as fast as possible (~2.5s)
+        const timer = setTimeout(() => {
+          setIsStarting(false);
+          hasStartedRef.current = true;
+        }, 2500);
+        return () => clearTimeout(timer);
+      } else {
+        setIsStarting(false);
+        hasStartedRef.current = true;
       }
-
-      hasStartedRef.current = true;
-      const timer = setTimeout(() => setIsStarting(false), 2500);
-      return () => clearTimeout(timer);
     }
-  }, [tournament?.status]);
+  }, [tournament?.status, currentRound, currentSpin]);
 
   const [selectedChip, setSelectedChip] = useState(10);
   const [deleteMode, setDeleteMode] = useState(false);
@@ -306,7 +311,7 @@ export default function TournamentPage() {
 
     // Add to betting feed
     addEvent({
-      username: userProfile.name,
+      username: player?.username || userProfile.name,
       amount: selectedChip,
       betId: betId,
       betZone: betId,
@@ -698,24 +703,27 @@ export default function TournamentPage() {
             ))}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 0.4 }}
-            className="flex flex-col items-center gap-2"
-          >
-            <div className="h-px w-64 bg-gradient-to-r from-transparent via-[#c9a44c]/40 to-transparent" />
-            <span className="text-white/60 font-black text-sm uppercase tracking-[0.3em]">
-              Starting Round {currentRound}
-            </span>
+          {/* Starting Info - High Speed Transition */}
+          <div className="relative h-20 flex items-center justify-center">
             <motion.div
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-              className="text-[#c9a44c] font-bold text-xs"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="flex flex-col items-center gap-2"
             >
-              Good Luck!
+              <div className="h-px w-64 bg-gradient-to-r from-transparent via-[#c9a44c]/40 to-transparent" />
+              <span className="text-white/60 font-black text-[10px] uppercase tracking-[0.3em]">
+                Round {currentRound} Starting
+              </span>
+              <motion.div
+                animate={{ opacity: [0.6, 1, 0.6] }}
+                transition={{ repeat: Infinity, duration: 1 }}
+                className="text-[#c9a44c] font-bold text-xs uppercase tracking-widest"
+              >
+                Are You Ready?
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     );
@@ -914,7 +922,7 @@ export default function TournamentPage() {
       {/* ═══ FOOTER — CHIP TRAY LEFT, BUTTONS RIGHT ═══ */}
       {/* ═══ PREMIUM FOOTER DESIGN ═══ */}
       <footer
-        className="flex-shrink-0 w-full z-10 px-2 sm:px-8 py-2 sm:py-3.5 tournament-footer-mobile"
+        className="flex-shrink-0 w-full z-10 px-2 sm:px-4 py-2 sm:py-3.5 tournament-footer-mobile"
         style={{
           background: 'linear-gradient(to top, #0d0805 0%, #1a110a 100%)',
           borderTop: '1px solid rgba(201, 164, 76, 0.4)',
@@ -937,7 +945,7 @@ export default function TournamentPage() {
           </div>
 
           {/* Right: Betting Controls & Financials */}
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 sm:gap-6 order-2 tournament-controls-mobile">
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 sm:gap-4 order-2 tournament-controls-mobile pr-2 sm:pr-4">
             
             {/* Total Bet Display */}
             <div className="flex flex-col items-center px-3 sm:px-5 py-1 sm:py-2 rounded-xl sm:rounded-2xl bg-black/60 border border-[#c9a44c]/30 shadow-[inset_0_0_20px_rgba(0,0,0,0.7)] min-w-[80px] sm:min-w-[100px]">
@@ -953,45 +961,43 @@ export default function TournamentPage() {
                 onClick={handleRebet}
                 disabled={phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal}
                 whileTap={{ scale: 0.95 }}
-                className={`h-9 sm:h-11 px-3 sm:px-6 rounded-lg sm:rounded-xl flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider sm:tracking-[0.2em] border-2 transition-all
+                className={`h-9 sm:h-11 px-3 sm:px-5 rounded-lg flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all border-2
                   ${(phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal)
                     ? 'bg-black/20 border-white/5 text-white/10'
-                    : 'bg-gradient-to-br from-[#1a2a1e] to-black border-[#c9a44c]/50 text-[#c9a44c] shadow-lg shadow-black/40 hover:border-[#c9a44c] hover:shadow-[#c9a44c]/20'}`}
+                    : 'bg-gradient-to-b from-[#2a3a2e] to-[#1a2a1e] border-[#c9a44c] text-[#e4e0d4] shadow-lg hover:border-[#f5edd5]'}`}
               >
                 REBET
               </motion.button>
 
-              <div className="flex items-center bg-black/40 rounded-lg sm:rounded-xl border-2 border-white/10 p-0.5 sm:p-1 gap-0.5 sm:gap-1">
-                <motion.button
-                  onClick={handleClearLastBet}
-                  disabled={phase !== "betting" || betPlacementHistory.length === 0}
-                  whileTap={{ scale: 0.95 }}
-                  className={`h-7 sm:h-9 px-2 sm:px-4 rounded flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all
-                    ${(phase !== "betting" || betPlacementHistory.length === 0)
-                      ? 'text-white/10'
-                      : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
-                >
-                  UNDO
-                </motion.button>
-                <div className="w-px h-4 sm:h-5 bg-white/10 mx-0.5 sm:mx-1" />
-                <motion.button
-                  onClick={handleClearBets}
-                  disabled={phase !== "betting" || bets.size === 0}
-                  whileTap={{ scale: 0.95 }}
-                  className={`h-7 sm:h-9 px-2 sm:px-4 rounded flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all
-                    ${(phase !== "betting" || bets.size === 0)
-                      ? 'text-white/10'
-                      : 'text-white/60 hover:bg-white/5 hover:text-white'}`}
-                >
-                  CLEAR
-                </motion.button>
-              </div>
+              <motion.button
+                onClick={handleClearLastBet}
+                disabled={phase !== "betting" || betPlacementHistory.length === 0}
+                whileTap={{ scale: 0.95 }}
+                className={`h-9 sm:h-11 px-2 sm:px-4 rounded-lg flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all border-2
+                  ${(phase !== "betting" || betPlacementHistory.length === 0)
+                    ? 'bg-black/20 border-white/5 text-white/10'
+                    : 'bg-gradient-to-b from-[#2a3a2e] to-[#1a2a1e] border-[#c9a44c] text-[#e4e0d4] shadow-lg hover:border-[#f5edd5]'}`}
+              >
+                UNDO
+              </motion.button>
+
+              <motion.button
+                onClick={handleClearBets}
+                disabled={phase !== "betting" || bets.size === 0}
+                whileTap={{ scale: 0.95 }}
+                className={`h-9 sm:h-11 px-2 sm:px-4 rounded-lg flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all border-2
+                  ${(phase !== "betting" || bets.size === 0)
+                    ? 'bg-black/20 border-white/5 text-white/10'
+                    : 'bg-gradient-to-b from-[#2a3a2e] to-[#1a1a1a] border-[#c9a44c] text-[#e4e0d4] shadow-lg hover:border-[#f5edd5]'}`}
+              >
+                CLEAR
+              </motion.button>
 
               <motion.button
                 onClick={handleDoubleAllBets}
                 disabled={phase !== "betting" || myChips < totalBet * 2 || totalBet === 0}
                 whileTap={{ scale: 0.95 }}
-                className={`w-9 sm:w-11 h-9 sm:h-11 rounded-full flex items-center justify-center font-black text-[10px] sm:text-xs border-2 transition-all
+                className={`w-[2.7rem] h-[2.7rem] rounded-full flex items-center justify-center font-black text-[10px] border-2 transition-all
                   ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0)
                     ? 'bg-black/20 border-white/5 text-white/10'
                     : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#ffedb3] text-black shadow-[0_0_20px_rgba(201,164,76,0.3)] hover:scale-105'}`}
@@ -1003,12 +1009,12 @@ export default function TournamentPage() {
                 onClick={() => { soundEngine?.playSwoosh(); setDeleteMode(!deleteMode); }}
                 disabled={phase !== "betting"}
                 whileTap={{ scale: 0.95 }}
-                className={`w-9 sm:w-11 h-9 sm:h-11 rounded-full flex items-center justify-center font-black text-base sm:text-xl border-2 transition-all
+                className={`w-[2.7rem] h-[2.7rem] rounded-full flex items-center justify-center font-black text-sm border-2 transition-all
                   ${phase !== "betting"
                     ? 'bg-black/20 border-white/5 text-white/10'
                     : deleteMode
-                      ? 'bg-red-600 border-red-400 text-white shadow-[0_0_25px_rgba(220,38,38,0.5)]'
-                      : 'bg-black/40 border-white/10 text-white/40 hover:border-[#c9a44c]/50 hover:text-[#c9a44c]'}`}
+                      ? 'bg-red-600 border-[#ff7777] text-white shadow-[0_0_25px_rgba(220,38,38,0.5)]'
+                      : 'bg-black/40 border-[#c9a44c] text-[#c9a44c] hover:border-[#f5edd5] hover:text-white'}`}
               >
                 ✕
               </motion.button>
@@ -1029,12 +1035,13 @@ export default function TournamentPage() {
                 disabled={phase !== "betting"}
                 whileHover={phase === 'betting' && bets.size > 0 ? { scale: 1.04, filter: 'brightness(1.1)' } : {}}
                 whileTap={phase === 'betting' && bets.size > 0 ? { scale: 0.96 } : {}}
-                className={`h-11 sm:h-14 px-6 sm:px-12 rounded-xl sm:rounded-2xl font-black text-xs sm:text-base uppercase tracking-widest sm:tracking-[0.3em] transition-all shadow-2xl relative z-10 tournament-submit-btn
+                className={`h-11 sm:h-14 px-6 sm:px-10 rounded-xl font-black text-xs sm:text-base uppercase tracking-widest transition-all shadow-2xl relative z-10 tournament-submit-btn
                   ${phase === 'betting'
                     ? (bets.size > 0 
                         ? 'bg-gradient-to-br from-[#c9a44c] via-[#f5d68d] to-[#c9a44c] text-black border-2 border-[#ffedb3] shadow-[0_12px_40px_rgba(201,164,76,0.4)]' 
                         : 'bg-white/5 border-2 border-white/5 text-white/10 cursor-default')
                     : 'bg-black/80 border-2 border-[#c9a44c]/20 text-[#c9a44c] animate-pulse'}`}
+                style={{ fontFamily: "'Bodoni Moda', serif", fontStyle: 'italic' }}
               >
                 {phase === "betting" ? (bets.size > 0 ? "PLACE" : "BET") : "PLACED"}
               </motion.button>
