@@ -1,6 +1,6 @@
 /* ──────────────────────────────────────────
    Homepage — Junko Bodie Roulette Royale
-   Clean, modern, golden casino lobby
+   Oversized square selection cards, premium lobby
    ────────────────────────────────────────── */
 
 .page {
@@ -27,11 +27,12 @@
   filter: blur(14px);
 }
 
+/* ── Lobby Card — full-screen container ── */
 .lobbyCard {
-  width: 95%;
-  max-width: 1100px;
-  height: 85vh;
-  max-height: 720px;
+  width: 96vw;
+  max-width: none;
+  height: 94vh;
+  max-height: none;
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -39,12 +40,13 @@
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
   display: flex;
   flex-direction: column;
-  padding: 32px 48px;
+  padding: clamp(16px, 3vw, 32px);
   position: relative;
   z-index: 10;
   box-sizing: border-box;
 }
 
+/* ── Header ── */
 .header {
   display: flex;
   align-items: flex-start;
@@ -52,18 +54,19 @@
   position: relative;
 }
 
+/* ── Profile Card — enlarged for high-vis ── */
 .profileCard {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 16px 6px 6px;
-  border-radius: 12px;
+  gap: 18px;
+  padding: 12px 26px 12px 12px;
+  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(8px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
   cursor: pointer;
-  height: 48px;
+  height: 68px;
   transition: all 0.2s ease;
 }
 
@@ -73,10 +76,10 @@
 }
 
 .avatarBtn {
-  width: 36px;
-  height: 36px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  border: 1px solid #c9a44c;
+  border: 1.5px solid #c9a44c;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,11 +91,11 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
 }
 
 .playerName {
-  font-size: 13px;
+  font-size: clamp(14px, 1.6vw, 18px);
   font-weight: 700;
   color: #000;
   line-height: 1;
@@ -101,19 +104,26 @@
 .chipCount {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: 5px;
+  font-size: clamp(13px, 1.4vw, 16px);
   color: #a47d25;
   font-weight: 700;
   line-height: 1;
 }
 
 .chipIcon {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   color: #c9a44c;
 }
 
+.trophyIcon {
+  width: 18px;
+  height: 18px;
+  color: #c9a44c;
+}
+
+/* ── Center Branding — ENLARGED ── */
 .headerCenter {
   display: flex;
   flex-direction: column;
@@ -123,7 +133,7 @@
 
 .logoText {
   font-family: 'Bodoni Moda', 'Georgia', serif;
-  font-size: 32px;
+  font-size: clamp(1.8rem, 4vw, 3.5rem);
   font-weight: 800;
   font-style: italic;
   letter-spacing: 0.15em;
@@ -132,7 +142,7 @@
 }
 
 .logoSub {
-  font-size: 10px;
+  font-size: clamp(10px, 1.2vw, 14px);
   letter-spacing: 0.4em;
   text-transform: uppercase;
   color: #b89047;
@@ -148,28 +158,29 @@
 }
 
 .sepLine {
-  width: 40px;
+  width: 50px;
   height: 1px;
   background: #d4bc81;
 }
 
 .separatorDiamond {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   background: #d4bc81;
   transform: rotate(45deg);
 }
 
+/* ── Header Action Buttons — ENLARGED ── */
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .headerBtn {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -186,9 +197,9 @@
 }
 
 .headerBtnDanger {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,113 +215,151 @@
   background: rgba(255, 255, 255, 0.6);
 }
 
+/* ── Main Content Area ── */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 36px;
-  margin-top: 16px;
-  margin-bottom: 24px;
+  gap: clamp(16px, 2.5vw, 28px);
+  margin-top: clamp(6px, 1.2vw, 10px);
+  margin-bottom: clamp(8px, 1.0vw, 14px);
 }
 
+/* ── Game Grid — side-by-side squares ── */
 .gameGrid {
   display: flex;
   justify-content: center;
-  gap: 24px;
+  align-items: center;
+  gap: clamp(28px, 4.5vw, 56px);
   width: 100%;
 }
 
+/* ── Play Cards — PREMIUM BALANCED ── */
 .playCard {
-  width: 100%;
-  max-width: 320px;
-  height: 280px;
-  background: #0f2e21;
-  border-radius: 20px;
+  width: min(43vw, 68vh);
+  max-width: 460px;
+  aspect-ratio: 11 / 10;
+  overflow: hidden;
+  background: linear-gradient(145deg, #0a1f16, #06140e);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 215, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: clamp(16px, 2.5vw, 28px);
   cursor: pointer;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
   text-align: center;
-  padding: 24px;
+  padding: 12%;
   box-sizing: border-box;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
+  flex: none;
+}
+
+.playCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 30% 20%, rgba(243, 229, 171, 0.04) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .playCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  background: #113626;
+  transform: translateY(-8px) scale(1.015);
+  box-shadow:
+    0 28px 56px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 215, 0, 0.18);
+  background: linear-gradient(145deg, #0e2a1d, #091c13);
 }
 
+/* ── Play Icon — glassmorphic circles ── */
 .playIconWrap {
-  width: 64px;
-  height: 64px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(4px) saturate(150%);
+  -webkit-backdrop-filter: blur(4px) saturate(150%);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .playCard:hover .playIconWrap {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .playCard:hover .iconSolo {
-  box-shadow: 0 0 20px rgba(212, 188, 129, 0.4);
+  box-shadow:
+    0 0 15px rgba(243, 229, 171, 0.3),
+    0 0 30px rgba(212, 188, 129, 0.15);
 }
 
 .playCard:hover .iconTournament {
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  box-shadow:
+    0 0 15px rgba(139, 92, 246, 0.35),
+    0 0 30px rgba(139, 92, 246, 0.15);
 }
 
 .iconSolo {
-  border: 1.5px solid #d4bc81;
+  border: 1.5px solid rgba(212, 188, 129, 0.5);
+  box-shadow: 0 0 12px rgba(243, 229, 171, 0.12);
 }
 
 .iconTournament {
-  border: 1.5px solid #8b5cf6;
+  border: 1.5px solid rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.12);
 }
 
 .playIconSolo {
-  color: #d4bc81;
-  fill: #d4bc81;
-  width: 24px;
-  height: 24px;
-  margin-left: 4px;
+  color: #f3e5ab;
+  fill: #f3e5ab;
+  width: 34px;
+  height: 34px;
+  margin-left: 3px;
+  filter: drop-shadow(0 0 6px rgba(243, 229, 171, 0.3));
 }
 
 .playIconTourney {
-  color: #8b5cf6;
-  width: 24px;
-  height: 24px;
+  color: #a78bfa;
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.3));
 }
 
+/* ── Play Labels — luxury serif typography ── */
 .playLabel {
-  font-size: 15px;
+  font-family: 'Bodoni Moda', 'Playfair Display', 'Georgia', serif;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
   font-weight: 700;
-  color: #ffffff;
+  color: #f3e5ab;
   letter-spacing: 0.15em;
   text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .playDesc {
-  font-size: 11.5px;
+  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
   color: rgba(255, 255, 255, 0.6);
-  line-height: 1.5;
-  margin-top: 6px;
+  line-height: 1.6;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
 }
 
+/* ── Quick Actions / Bottom Nav — ENLARGED ── */
 .quickActions {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: center;
 }
 
@@ -319,10 +368,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  width: 90px;
-  height: 75px;
-  border-radius: 14px;
+  gap: 8px;
+  width: 120px;
+  height: 100px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -333,19 +382,19 @@
 
 .quickBtn:hover {
   background: rgba(255, 255, 255, 0.65);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
 }
 
 .quickBtnIcon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   color: #113626;
   stroke-width: 2.5;
 }
 
 .quickBtnLabel {
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 800;
   color: #113626;
   text-transform: uppercase;
@@ -354,13 +403,16 @@
 
 .footer {
   text-align: center;
-  font-size: 10px;
+  font-size: 11px;
   color: #8b6b22;
   letter-spacing: 0.25em;
   text-transform: uppercase;
   font-weight: 700;
 }
 
+/* ──────────────────────────────────────────
+   TABLET — ≤900px
+   ────────────────────────────────────────── */
 @media (max-width: 900px) {
   .lobbyCard {
     width: 100%;
@@ -370,14 +422,14 @@
     min-height: 100dvh;
     max-height: none;
     border-radius: 0;
-    padding: 20px 16px;
+    padding: 24px 16px;
     overflow-y: auto;
   }
 
   .header {
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
   }
 
   .headerCenter {
@@ -386,7 +438,7 @@
   }
 
   .logoText {
-    font-size: 24px;
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
   }
 
   .profileCard {
@@ -398,115 +450,212 @@
     position: absolute;
     top: 16px;
     right: 16px;
+    gap: 10px;
+  }
+
+  .headerBtn,
+  .headerBtnDanger {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .main {
+    gap: 28px;
+    margin-top: 8px;
+    margin-bottom: 16px;
+  }
+
+  /* Stack cards vertically on tablet */
+  .gameGrid {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Square cards at 85vw on tablet, maintain 1:1 */
+  .playCard {
+    width: 85vw;
+    max-width: 400px;
+    min-width: auto;
+    flex: none;
+    aspect-ratio: 11 / 10;
+    border-radius: 24px;
+  }
+
+  .quickActions {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .quickBtn {
+    width: 110px;
+    height: 88px;
+    border-radius: 14px;
+  }
+
+  .quickBtnLabel {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* ──────────────────────────────────────────
+   MOBILE — ≤768px
+   ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .lobbyCard {
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: clamp(14px, 4vw, 22px);
+    border-radius: 0;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .headerActions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
     gap: 8px;
   }
 
   .headerBtn,
   .headerBtnDanger {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
   }
 
-  .main {
-    gap: 24px;
-    margin-top: 8px;
-    margin-bottom: 16px;
+  .avatarBtn {
+    width: 46px;
+    height: 46px;
+  }
+
+  .profileCard {
+    height: 62px;
+    padding: 10px 20px 10px 10px;
   }
 
   .gameGrid {
     flex-direction: column;
-    gap: 16px;
+    gap: 24px;
   }
 
   .playCard {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-    padding: 28px 24px;
+    width: 85vw;
+    max-width: none;
+    min-width: auto;
+    flex: none;
+    aspect-ratio: 11 / 10;
+    border-radius: 24px;
   }
 
-  .quickActions {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .quickBtn {
+  /* Scale icons & text proportionally on mobile */
+  .playIconWrap {
     width: 80px;
-    height: 65px;
-    border-radius: 12px;
+    height: 80px;
   }
 
-  .quickBtnLabel {
-    font-size: 8px;
-    letter-spacing: 0.1em;
+  .playIconSolo,
+  .playIconTourney {
+    width: 32px;
+    height: 32px;
+  }
+
+  .playLabel {
+    font-size: clamp(1.3rem, 5vw, 2rem);
+  }
+
+  .playDesc {
+    font-size: clamp(0.9rem, 3vw, 1.25rem);
   }
 }
 
+/* ──────────────────────────────────────────
+   SMALL PHONE — ≤480px
+   ────────────────────────────────────────── */
 @media (max-width: 480px) {
   .lobbyCard {
     padding: 16px 12px;
   }
 
   .logoText {
-    font-size: 20px;
+    font-size: clamp(1.5rem, 7vw, 2.2rem);
   }
 
   .logoSub {
-    font-size: 8px;
+    font-size: 9px;
     letter-spacing: 0.3em;
   }
 
   .playCard {
-    padding: 22px 18px;
-    border-radius: 16px;
-    gap: 18px;
+    width: 85vw;
+    padding: 12%;
+    border-radius: 24px;
+    gap: 20px;
+    aspect-ratio: 11 / 10;
   }
 
   .playIconWrap {
-    width: 52px;
-    height: 52px;
+    width: 72px;
+    height: 72px;
+  }
+
+  .playIconSolo,
+  .playIconTourney {
+    width: 28px;
+    height: 28px;
   }
 
   .playLabel {
-    font-size: 13px;
+    font-size: clamp(1.1rem, 5vw, 1.6rem);
   }
 
   .playDesc {
-    font-size: 10.5px;
+    font-size: clamp(0.85rem, 3vw, 1.1rem);
   }
 
   .quickBtn {
-    width: 72px;
-    height: 58px;
-    gap: 4px;
+    width: 94px;
+    height: 76px;
+    gap: 6px;
   }
 
   .quickBtnIcon {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .quickBtnLabel {
+    font-size: 9px;
   }
 
   .footer {
-    font-size: 8px;
+    font-size: 9px;
   }
 
   .profileCard {
-    gap: 8px;
-    padding: 4px 12px 4px 4px;
-    height: 42px;
+    gap: 12px;
+    padding: 8px 16px 8px 8px;
+    height: 56px;
   }
 
   .avatarBtn {
-    width: 32px;
-    height: 32px;
+    width: 42px;
+    height: 42px;
   }
 
   .playerName {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .chipCount {
-    font-size: 11px;
+    font-size: 12px;
   }
 }

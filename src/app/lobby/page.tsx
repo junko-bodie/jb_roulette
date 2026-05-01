@@ -8,7 +8,8 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import SettingsModal from '@/components/ui/SettingsModal';
 import ProfileModal from '@/components/ui/ProfileModal';
-import WelcomeVideoModal from '@/components/ui/WelcomeVideoModal';
+import dynamic from 'next/dynamic';
+const WelcomeVideoModal = dynamic(() => import('@/components/ui/WelcomeVideoModal'), { ssr: false, loading: () => null });
 import { User, Settings, BarChart2, LogOut, Play, Trophy } from 'lucide-react';
 
 export default function Home() {
@@ -19,12 +20,20 @@ export default function Home() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState<string | null>(null);
   const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/');
     }
   }, [isLoading, user, router]);
+
+  useEffect(() => {
+    const updateMobile = () => setIsMobile(window.innerWidth <= 768);
+    updateMobile();
+    window.addEventListener('resize', updateMobile);
+    return () => window.removeEventListener('resize', updateMobile);
+  }, []);
 
   if (isLoading) {
     return (
@@ -99,7 +108,7 @@ export default function Home() {
             onClick={() => setIsProfileOpen(true)}
           >
             <div className={styles.avatarBtn}>
-              <Trophy size={16} strokeWidth={1.5} className={styles.trophyIcon} />
+              <Trophy size={22} strokeWidth={1.5} className={styles.trophyIcon} />
             </div>
             <div className={styles.profileInfo}>
               <div className="flex items-center gap-2">
@@ -130,14 +139,14 @@ export default function Home() {
               onClick={() => setIsSettingsOpen(true)}
               title="Settings"
             >
-              <Settings size={18} strokeWidth={1.5} />
+              <Settings size={24} strokeWidth={1.5} />
             </button>
             <button
               className={styles.headerBtnDanger}
               onClick={handleSignOut}
               title="Sign Out"
             >
-              <LogOut size={18} strokeWidth={1.5} />
+              <LogOut size={24} strokeWidth={1.5} />
             </button>
           </div>
         </header>
@@ -156,10 +165,10 @@ export default function Home() {
               <div className={`${styles.playIconWrap} ${styles.iconSolo}`}>
                 <Play className={styles.playIconSolo} strokeWidth={1.5} fill="currentColor" />
               </div>
-              <div>
-                <div className={styles.playLabel}>SOLO PLAY</div>
-                <div className={styles.playDesc}>
-                  Classic European roulette.<br />Place your bets and spin the wheel.
+              <div className="w-full flex flex-col items-center">
+                <div className={styles.playLabel} style={{ textAlign: 'center' }}>SOLO PLAY</div>
+                <div className={styles.playDesc} style={{ textAlign: 'left', marginTop: '12px', width: '100%' }}>
+                  Classic American and European Roulette. Test Your Skill Against The House.
                 </div>
               </div>
             </motion.div>
@@ -182,10 +191,10 @@ export default function Home() {
               <div className={`${styles.playIconWrap} ${styles.iconTournament}`}>
                 <Trophy className={styles.playIconTourney} strokeWidth={1.5} />
               </div>
-              <div>
-                <div className={styles.playLabel}>TOURNAMENT</div>
-                <div className={styles.playDesc}>
-                  Daily high-stakes competitions.<br />Win massive chip pools and titles.
+              <div className="w-full flex flex-col items-center">
+                <div className={styles.playLabel} style={{ textAlign: 'center' }}>TOURNAMENT</div>
+                <div className={styles.playDesc} style={{ textAlign: 'left', marginTop: '12px', width: '100%' }}>
+                  Test Yourself Against Other Top Players In A Live Tournament Experience.
                 </div>
               </div>
             </motion.div>
@@ -216,7 +225,7 @@ export default function Home() {
 
         {/* Footer */}
         <div className={styles.footer}>
-          • <span className={styles.footerText}>JUNKO BODIE ROULETTE</span> •
+          &nbsp;
         </div>
       </div>
 

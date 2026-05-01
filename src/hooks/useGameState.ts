@@ -53,7 +53,7 @@ export function useGameState() {
   const { balance, setBalance } = useGame();
   const [bets, setBets] = useState<Map<string, PlacedBet>>(new Map());
   const [selectedChip, setSelectedChip] = useState(5);
-  const [wheelType, setWheelType] = useState<WheelType>('european');
+  const [wheelType, setWheelType] = useState<WheelType>('american');
   const [phase, setPhase] = useState<GamePhase>('BETTING');
   const [currentResult, setCurrentResult] = useState<SpinResult | null>(null);
   const [lastPayout, setLastPayout] = useState<PayoutResult | null>(null);

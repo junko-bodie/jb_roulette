@@ -26,25 +26,26 @@ export default function LiveBettingFeed() {
               }}
             >
               <div className="flex items-center justify-between gap-3 relative z-10">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1.5">
-                    <span 
-                      className="text-[11px] font-black tracking-tight"
-                      style={{ color: event.color || '#fff' }}
-                    >
-                      {event.username}
-                    </span>
-                    <span className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
-                      placed
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-white/60 font-bold">
+                <div className="flex flex-wrap items-baseline gap-1.5 flex-1 min-w-0">
+                  <span 
+                    className="text-[14px] font-bold truncate text-white/90 max-w-[120px]"
+                    style={{ color: event.color || '#fff' }}
+                  >
+                    {event.username}
+                  </span>
+                  <span className="text-[10px] text-white/30 font-bold uppercase tracking-widest shrink-0">
+                    placed
+                  </span>
+                  <span className="text-[12px] text-white/60 font-bold shrink-0">
                     {event.betZone ? `on ${event.betZone.replace('num-', '').toUpperCase()}` : 'a bet'}
                   </span>
                 </div>
                 
                 <div className="flex flex-col items-end">
-                  <span className="text-sm font-black text-white shadow-black drop-shadow-sm">
+                  <span 
+                    className="text-[17px] font-black tabular-nums text-white/80" 
+                    style={{ fontFamily: FONTS.primary }}
+                  >
                     ${event.amount.toLocaleString()}
                   </span>
                 </div>

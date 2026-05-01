@@ -124,17 +124,17 @@ export default function GamePage() {
         window.innerHeight <= 540 &&
         window.innerWidth <= 950;
       if (isMobilePortrait) {
-        setWheelSize(Math.min(window.innerWidth * 0.58, 260));
+        setWheelSize(Math.min(window.innerWidth * 0.62, 280));
       } else if (isLandscapeMobile) {
-        setWheelSize(320);
+        setWheelSize(360);
       } else if (window.innerHeight < 600) {
-        setWheelSize(380); // Much smaller for very short desktop screens
+        setWheelSize(420);
       } else if (window.innerHeight < 750) {
-        setWheelSize(460);
+        setWheelSize(520);
       } else if (window.innerWidth < 1300 || window.innerHeight < 900) {
-        setWheelSize(550);
+        setWheelSize(620);
       } else {
-        setWheelSize(650); // Slightly smaller max to be safe
+        setWheelSize(720);
       }
     };
 
@@ -156,7 +156,7 @@ export default function GamePage() {
   return (
     <div
       className="flex flex-col h-screen h-[100dvh] w-full overflow-y-auto md:overflow-hidden select-none mobile-root-scroll"
-      style={{ background: `radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)` }}
+      style={{ background: '#06140e' }}
     >
       {/* ═══ TOP BAR — HISTORY & SETTINGS ═══ */}
       <header
@@ -202,7 +202,7 @@ export default function GamePage() {
         </div>
       </div>
 
-      <main className="mobile-game-content mobile-landscape-main flex-1 min-h-0 relative px-0 md:px-1 lg:px-2 py-0 overflow-y-auto md:overflow-hidden flex flex-col justify-between items-center h-full">
+      <main className="mobile-game-content mobile-landscape-main flex-1 min-h-0 relative px-0 py-0 overflow-y-auto md:overflow-hidden flex flex-col justify-between items-center h-full">
 
         <RouletteTable
           wheelType={game.wheelType}

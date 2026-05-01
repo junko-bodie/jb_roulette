@@ -849,10 +849,11 @@ export default function TournamentPage() {
           </div>
 
           <div className="flex-1 min-h-0 flex flex-col bg-black/40 rounded-[2.5rem] border border-white/5 backdrop-blur-md overflow-hidden pt-12 pb-8 px-10 shadow-2xl">
-            <div className="flex-shrink-0 flex items-center justify-center gap-3 mb-6">
-              <div className="h-px w-10 bg-gradient-to-l from-[#c9a44c]/30 to-transparent" />
-              <span className="text-[10px] font-black text-[#c9a44c] uppercase tracking-[0.4em] whitespace-nowrap">Live Feed</span>
-              <div className="h-px w-10 bg-gradient-to-r from-[#c9a44c]/30 to-transparent" />
+            <div className="relative z-10 px-6 pt-2 pb-6 flex flex-col items-center">
+              <h2 className="text-3xl font-black text-white uppercase tracking-[0.2em] text-center w-full" style={{ fontFamily: "'Bodoni Moda', serif" }}>
+                Live Feed
+              </h2>
+              <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-[#c9a44c]/60 to-transparent mt-4" />
             </div>
             <div className="flex-1 overflow-hidden">
               <LiveBettingFeed />

@@ -90,7 +90,7 @@ export default function Scoreboard() {
         </div>
 
         {/* Players List */}
-        <div className="relative z-10 px-4 pb-8 space-y-2 max-h-[60vh] overflow-y-auto no-scrollbar">
+        <div className="relative z-10 px-4 pb-8 flex flex-col gap-3 max-h-[60vh] overflow-y-auto no-scrollbar">
           <AnimatePresence>
             {scores.map((s, idx) => {
               const pid = s.player_id.toString();
