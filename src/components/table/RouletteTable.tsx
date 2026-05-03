@@ -478,10 +478,10 @@ const RouletteTable = memo(function RouletteTable({
                     fontFamily: "'Bodoni Moda', serif",
                     fontStyle: 'italic',
                     fontWeight: 900,
-                    fontSize: isMobile ? '1.05rem' : '1rem',
+                    fontSize: isMobile ? '0.95rem' : '0.9rem',
                     letterSpacing: '0.25em',
                     textTransform: 'uppercase' as const,
-                    padding: isMobile ? '12px 30px' : '12px 40px',
+                    padding: isMobile ? '10px 24px' : '10px 32px',
                     borderRadius: '9999px',
                     borderWidth: spinEnabled ? '3px' : '2px',
                     borderStyle: 'solid',
@@ -490,7 +490,7 @@ const RouletteTable = memo(function RouletteTable({
                       ? `0 8px 0 0 #1a0f09, 0 12px 25px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -5px 0 rgba(0,0,0,0.3), 0 0 40px rgba(201, 168, 76, 0.3)`
                       : 'none',
                     textShadow: spinEnabled ? '0 2px 4px rgba(0,0,0,0.6)' : 'none',
-                    marginTop: '16px',
+                    marginTop: '11px',
                   } as React.CSSProperties}
                 >
                   {/* Shimmer overlay */}
