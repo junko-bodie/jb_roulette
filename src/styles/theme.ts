@@ -28,7 +28,7 @@ export const COLORS = {
   /** Roulette black */
   rouletteBlack: '#1a1a1a',
   /** Roulette green (0 / 00) */
-  rouletteGreen: '#27ae60',
+  rouletteGreen: '#267b4bff',
 
   /** Chip denominations */
   chipWhite: '#f5f5f5',

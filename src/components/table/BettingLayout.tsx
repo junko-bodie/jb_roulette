@@ -202,7 +202,7 @@ const NumberCell = memo(function NumberCell({
       onMouseEnter={() => !disabled && onNumberHover?.(num)}
       onMouseLeave={() => !disabled && onNumberHoverEnd?.()}
       className="relative flex items-center justify-center cursor-pointer select-none text-[11px] sm:text-[11px] md:text-sm min-h-[24px] sm:min-h-[30px] md:min-h-[44px] group"
-      initial={{ borderColor: '#5ea896' }}
+      initial={{ borderColor: (style as any)?.borderColor || '#5ea896' }}
       style={{
         background: getCellBg(num),
         borderWidth: 0,
@@ -238,7 +238,7 @@ const NumberCell = memo(function NumberCell({
               scale: 1.02,
             }
             : {
-              borderColor: '#5ea896',
+              borderColor: (style as any)?.borderColor || '#5ea896',
               boxShadow: 'none',
               scale: 1
             }
@@ -592,7 +592,7 @@ const OutsideBetCell = memo(function OutsideBetCell({
               hover: { opacity: 1, transition: { duration: 0.2 } }
             }}
             initial={{ opacity: 0 }}
-            className="absolute bottom-full mb-1 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none"
+            className="absolute top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none"
           >
             ${bet.amount.toLocaleString()}
           </motion.div>
@@ -665,7 +665,7 @@ const BettingLayout = memo(function BettingLayout({
         style={{ boxShadow: '0 0 30px rgba(0,0,0,0.5)' }}
       >
         {/* ZEROS BLOCK */}
-        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-t border-l border-b border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
+        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-t border-l border-b border-[#a5f3e0] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
           <NumberCell
             num={0}
             bet={bets.get('straight-0')}
@@ -674,7 +674,10 @@ const BettingLayout = memo(function BettingLayout({
             disabled={disabled}
             isWinner={isWinningNumber(0) || isBetWinner('straight-0')}
             phase={phase}
-            style={{ borderWidth: '0 1px 1px 0' }}
+            style={{
+              borderWidth: '0 1px 1px 0',
+              borderColor: '#a5f3e0', // Even brighter teal for maximum definition
+            }}
             isHovered={hoveredNumbers.includes(0)}
             onNumberHover={handleNumberHover}
             onNumberHoverEnd={handleNumberHoverEnd}
@@ -695,7 +698,10 @@ const BettingLayout = memo(function BettingLayout({
               onClearZone={onClearZone}
               isWinner={isWinningNumber(37) || isBetWinner('straight-00')}
               phase={phase}
-              style={{ borderWidth: '0 1px 1px 0' }}
+              style={{
+                borderWidth: '0 1px 1px 0',
+                borderColor: '#a5f3e0'
+              }}
               isHovered={hoveredNumbers.includes(37)}
               onNumberHover={handleNumberHover}
               onNumberHoverEnd={handleNumberHoverEnd}
@@ -810,14 +816,15 @@ const BettingLayout = memo(function BettingLayout({
         </div>
 
         {/* COLUMNS BLOCK */}
-        <div className="grid grid-rows-3 gap-0 border-t border-r border-b border-[#5ea896] rounded-tr-lg overflow-hidden bg-black/10">
+        <div className="grid grid-rows-3 gap-0 border-t border-r border-b border-[#5ea896] rounded-tr-lg bg-black/10">
           {[
-            { id: 'column-3rd', label: '2-1', nums: COLUMN_3RD },
-            { id: 'column-2nd', label: '2-1', nums: COLUMN_2ND },
-            { id: 'column-1st', label: '2-1', nums: COLUMN_1ST }
+            { id: 'column-3rd', label: <span className="whitespace-nowrap leading-none normal-case" style={{ letterSpacing: '0' }}>2 to 1</span>, nums: COLUMN_3RD },
+            { id: 'column-2nd', label: <span className="whitespace-nowrap leading-none normal-case" style={{ letterSpacing: '0' }}>2 to 1</span>, nums: COLUMN_2ND },
+            { id: 'column-1st', label: <span className="whitespace-nowrap leading-none normal-case" style={{ letterSpacing: '0' }}>2 to 1</span>, nums: COLUMN_1ST }
           ].map((item) => (
             <OutsideBetCell
               key={item.id}
+              className={item.id === 'column-3rd' ? 'rounded-tr-lg' : ''}
               label={item.label}
               bet={bets.get(item.id)}
               onPlace={() => onPlaceBet(item.id)}
@@ -852,10 +859,10 @@ const BettingLayout = memo(function BettingLayout({
       </div>
 
       {/* SECTION 3: Even Chances */}
-      <div className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full rounded-b-lg overflow-hidden bg-black/10">
+      <div className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full rounded-b-lg bg-black/10">
         <div className="bg-transparent" />
         <div className="grid grid-cols-6 gap-0 border-l border-b border-[#5ea896]">
-          <OutsideBetCell label="1-18" bet={bets.get('low')} onPlace={() => onPlaceBet('low')} onRemove={() => onRemoveBet('low')} disabled={disabled} isWinner={isBetWinner('low')} phase={phase} numbers={LOW_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="low" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('low') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && LOW_NUMBERS.every(n => hoveredNumbers.includes(n))} />
+          <OutsideBetCell label="1-18" bet={bets.get('low')} onPlace={() => onPlaceBet('low')} onRemove={() => onRemoveBet('low')} disabled={disabled} isWinner={isBetWinner('low')} phase={phase} numbers={LOW_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="low" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('low') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && LOW_NUMBERS.every(n => hoveredNumbers.includes(n))} className="rounded-bl-lg" />
           <OutsideBetCell label="Even" bet={bets.get('even')} onPlace={() => onPlaceBet('even')} onRemove={() => onRemoveBet('even')} disabled={disabled} isWinner={isBetWinner('even')} phase={phase} numbers={EVEN_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="even" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('even') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && EVEN_NUMBERS.every(n => hoveredNumbers.includes(n))} />
           <OutsideBetCell
             label={
@@ -900,7 +907,7 @@ const BettingLayout = memo(function BettingLayout({
             isHovered={hoveredNumbers.length === 18 && BLACK_NUMBERS.every(n => hoveredNumbers.includes(n))}
           />
           <OutsideBetCell label="Odd" bet={bets.get('odd')} onPlace={() => onPlaceBet('odd')} onRemove={() => onRemoveBet('odd')} disabled={disabled} isWinner={isBetWinner('odd')} phase={phase} numbers={ODD_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="odd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('odd') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && ODD_NUMBERS.every(n => hoveredNumbers.includes(n))} />
-          <OutsideBetCell label="19-36" bet={bets.get('high')} onPlace={() => onPlaceBet('high')} onRemove={() => onRemoveBet('high')} disabled={disabled} isWinner={isBetWinner('high')} phase={phase} numbers={HIGH_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="high" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('high') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && HIGH_NUMBERS.every(n => hoveredNumbers.includes(n))} />
+          <OutsideBetCell label="19-36" bet={bets.get('high')} onPlace={() => onPlaceBet('high')} onRemove={() => onRemoveBet('high')} disabled={disabled} isWinner={isBetWinner('high')} phase={phase} numbers={HIGH_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="high" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('high') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && HIGH_NUMBERS.every(n => hoveredNumbers.includes(n))} className="rounded-br-lg" />
         </div>
         <div className="bg-transparent" />
       </div>

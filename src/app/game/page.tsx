@@ -115,7 +115,7 @@ export default function GamePage() {
     const updateWheelSize = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
-      
+
       const isMobilePortrait =
         window.innerWidth <= 900 &&
         window.matchMedia('(orientation: portrait)').matches;
@@ -184,10 +184,10 @@ export default function GamePage() {
           {/* Settings Button */}
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-[#c9a44c] transition-all"
+            className="p-3.5 mr-16 sm:mr-32 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:scale-110 text-[#c9a44c] transition-all shadow-lg"
             title="Settings"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7.5 w-7.5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
             </svg>
           </button>
@@ -255,14 +255,14 @@ export default function GamePage() {
         </div>
 
         {/* Center space is now empty in flex-justify, but we will place the floating card absolutely */}
-        <div className="hidden md:block w-[300px]" /> 
+        <div className="hidden md:block w-[300px]" />
 
         {/* Right: Balance + Stats */}
         <div className="flex items-center gap-1.5 sm:gap-3 w-full sm:w-auto justify-center overflow-x-auto flex-nowrap py-1 sm:py-0">
           {/* Balance */}
-          <div className="flex flex-col items-center px-2 sm:px-4 py-1 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner min-w-[60px]">
-            <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold">Balance</span>
-            <span className="text-xs sm:text-sm font-black text-[#f4fbfb]" style={{ fontFamily: 'var(--font-playfair)' }}>
+          <div className="flex flex-col items-center px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner min-w-[70px]">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold">Balance</span>
+            <span className="text-sm sm:text-base font-black text-[#f4fbfb]" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.balance.toLocaleString()}
             </span>
           </div>
@@ -273,9 +273,9 @@ export default function GamePage() {
           </div>
 
           {/* Total Bet */}
-          <div className="flex flex-col items-center px-2 sm:px-4 py-1 rounded-lg bg-black/40 border border-[#c9a44c]/30 shadow-inner min-w-[60px]">
-            <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold">Total Bet</span>
-            <span className="text-xs sm:text-sm font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
+          <div className="flex flex-col items-center px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg bg-black/40 border border-[#c9a44c]/30 shadow-inner min-w-[70px]">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold">Total Bet</span>
+            <span className="text-sm sm:text-base font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.totalBet.toLocaleString()}
             </span>
           </div>
@@ -283,7 +283,7 @@ export default function GamePage() {
       </footer>
 
       {/* ═══ FLOATING PLAYER CARD — Bridges Footer & Table ═══ */}
-      <div 
+      <div
         onClick={() => {
           soundEngine?.playClick();
           setIsProfileOpen(true);

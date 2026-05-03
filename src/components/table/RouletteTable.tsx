@@ -261,7 +261,7 @@ const RouletteTable = memo(function RouletteTable({
               : {
                 opacity: isSpinning ? 0.2 : 1,
                 x: 1,
-                scaleX: isSpinning ? 0.9 : 1.08,
+                scaleX: isSpinning ? 0.9 : 1.119,
                 scaleY: isSpinning ? 0.9 : (tournamentMode ? 2.1 : 1.7),
                 flex: isSpinning ? 0.5 : (tournamentMode ? 2.3 : 2)
               }
@@ -354,7 +354,7 @@ const RouletteTable = memo(function RouletteTable({
             {/* ═══ BUTTONS — directly below betting grid (hidden in tournament mode) ═══ */}
             {!tournamentMode && (
               <div
-                className={`flex flex-nowrap items-center justify-center sm:justify-end gap-2 sm:gap-4 md:gap-8 mt-12 sm:mt-24 md:mt-32 mb-4 sm:mb-8 md:mb-12 w-full pr-1 sm:pr-2 md:pr-12`}
+                className={`flex flex-nowrap items-center justify-center sm:justify-end gap-2 sm:gap-4 md:gap-8 mt-24 sm:mt-40 md:mt-56 mb-4 sm:mb-8 md:mb-12 w-full pr-1 sm:pr-2 md:pr-12`}
                 style={{ transform: 'scaleX(1.0) scaleY(1.0)' }}
               >
                 {/* Timer UI - only show if betting and timer enabled */}
@@ -490,6 +490,7 @@ const RouletteTable = memo(function RouletteTable({
                       ? `0 8px 0 0 #1a0f09, 0 12px 25px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -5px 0 rgba(0,0,0,0.3), 0 0 40px rgba(201, 168, 76, 0.3)`
                       : 'none',
                     textShadow: spinEnabled ? '0 2px 4px rgba(0,0,0,0.6)' : 'none',
+                    marginTop: '16px',
                   } as React.CSSProperties}
                 >
                   {/* Shimmer overlay */}

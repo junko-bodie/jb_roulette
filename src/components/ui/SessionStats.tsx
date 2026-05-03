@@ -12,9 +12,9 @@ interface SessionStatsProps {
 export default function SessionStats({ lastBet, lastWin, sessionWin }: SessionStatsProps) {
   const StatItem = ({ label, value, color = '#f4fbfb' }: { label: string; value: number, color?: string }) => (
     <div 
-      className="flex flex-col items-center px-2 sm:px-4 py-0.5 rounded-lg bg-black/40 border border-white/10 shadow-inner min-w-[60px] sm:min-w-[80px]"
+      className="flex flex-col items-center px-3 sm:px-5 py-1 sm:py-1.5 rounded-lg bg-black/40 border border-white/10 shadow-inner min-w-[70px] sm:min-w-[90px]"
     >
-      <span className="text-[9px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold mb-0">
+      <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold mb-0">
         {label}
       </span>
       <AnimatePresence mode="wait">
@@ -23,7 +23,7 @@ export default function SessionStats({ lastBet, lastWin, sessionWin }: SessionSt
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 5 }}
-          className="text-xs font-black tracking-tight"
+          className="text-sm sm:text-base font-black tracking-tight"
           style={{ color, fontFamily: 'var(--font-inter)' }}
         >
           {value < 0 ? '-' : ''}${Math.abs(value).toLocaleString()}
