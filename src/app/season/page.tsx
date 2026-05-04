@@ -73,7 +73,7 @@ export default function GlobalLeaderboard() {
     >
       
       {/* ═══ TOP NAVIGATION BAR ═══ */}
-      <nav className="w-full bg-black/40 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 flex justify-center">
+      <nav className="w-full bg-black/60 backdrop-blur-2xl border-b border-white/5 sticky top-0 z-50 flex justify-center">
         <div className="w-full max-w-7xl px-12 h-20 flex items-center justify-between">
           <Link href="/lobby" className="flex items-center gap-4 text-white/40 hover:text-white transition-colors group min-w-[120px]">
             <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
@@ -116,7 +116,7 @@ export default function GlobalLeaderboard() {
           </div>
         </div>
 
-        {/* ═══ DATA TABLE (COMPACT ROWS & HORIZONTAL LAYOUT) ═══ */}
+        {/* ═══ DATA TABLE ═══ */}
         <div className="w-full bg-white/[0.02] border border-white/10 rounded-2xl shadow-[0_50px_100px_rgba(0,0,0,0.7)] backdrop-blur-md overflow-hidden mb-20">
           <table className="w-full border-collapse">
             <thead>
@@ -206,8 +206,8 @@ export default function GlobalLeaderboard() {
           </table>
         </div>
 
-        {/* ═══ FOOTER INFO (CENTERED) ═══ */}
-        <div className="flex flex-col items-center gap-10 text-center pb-40 w-full opacity-30 hover:opacity-100 transition-opacity">
+        {/* ═══ FOOTER INFO (MASSIVE PADDING TO AVOID FOOTER OVERLAP) ═══ */}
+        <div className="flex flex-col items-center gap-10 text-center pb-[300px] w-full opacity-30 hover:opacity-100 transition-opacity">
            <p className="text-[11px] font-black text-white uppercase tracking-[0.5em] max-w-xl leading-loose">
              Authorized and maintained by the Junko Bodie Global Protocol.
            </p>
@@ -224,12 +224,15 @@ export default function GlobalLeaderboard() {
         </div>
       </main>
 
-      {/* ═══ FLOATING ACTION BAR (CENTERED) ═══ */}
+      {/* ═══ BOTTOM GRADIENT FOG (Hides content behind footer) ═══ */}
+      <div className="fixed bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-40" />
+
+      {/* ═══ FLOATING ACTION BAR ═══ */}
       <footer className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50">
          <motion.div 
            initial={{ y: 50, opacity: 0 }}
            animate={{ y: 0, opacity: 1 }}
-           className="bg-black/80 backdrop-blur-3xl border border-white/10 px-12 py-6 rounded-2xl flex items-center gap-12 shadow-[0_40px_80px_rgba(0,0,0,0.9)]"
+           className="bg-black/80 backdrop-blur-3xl border border-white/20 px-12 py-6 rounded-2xl flex items-center gap-12 shadow-[0_40px_80px_rgba(0,0,0,0.9)]"
          >
             <div className="flex items-center gap-4">
                <Star size={18} className="text-gold animate-pulse" />
