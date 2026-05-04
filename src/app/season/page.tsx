@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Trophy, Medal, Crown, ArrowLeft, Users, Zap, TrendingUp, Star } from 'lucide-react';
+import { Trophy, Crown, ChevronLeft, Users, Zap, TrendingUp, Globe, User, ShieldCheck, Award, ArrowRight, Star } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
+import { COLORS, FONTS } from '@/styles/theme';
+import Link from 'next/link';
 
 interface LeaderboardEntry {
   rank: number;
@@ -39,185 +41,190 @@ export default function GlobalLeaderboard() {
 
   useEffect(() => {
     fetchLeaderboard();
-    // Very fast update tick as requested (every 2 seconds)
-    const interval = setInterval(fetchLeaderboard, 2000);
+    const interval = setInterval(fetchLeaderboard, 10000);
     return () => clearInterval(interval);
   }, []);
 
+  if (isLoading && entries.length === 0) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center" 
+        style={{ background: COLORS.black }}
+      >
+        <div className="w-12 h-12 border-4 border-white/10 border-t-gold rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#050a08] text-white p-3 sm:p-4 md:p-8 font-sans selection:bg-[#c9a44c]/30">
-      {/* Background Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#c9a44c]/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px]" />
-      </div>
+    <div 
+      className="min-h-screen w-full flex flex-col items-center selection:bg-gold/20 selection:text-gold pb-60"
+      style={{ 
+        background: `radial-gradient(circle at 50% -20%, ${COLORS.deepGreen} 0%, ${COLORS.black} 100%)`
+      }}
+    >
+      
+      {/* ═══ TOP NAVIGATION BAR ═══ */}
+      <nav className="w-full bg-black/40 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 flex justify-center">
+        <div className="w-full max-w-7xl px-12 h-24 flex items-center justify-between">
+          <Link href="/lobby" className="flex items-center gap-4 text-white/40 hover:text-white transition-colors group min-w-[120px]">
+            <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="text-[14px] font-black uppercase tracking-[0.3em]">Lobby</span>
+          </Link>
 
-      <div className="max-w-6xl mx-auto relative z-10">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => router.push('/lobby')}
-              className="p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-            >
-              <ArrowLeft className="w-6 h-6 text-[#c9a44c]" />
-            </button>
-            <div>
-              <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter mb-1 italic" style={{ fontFamily: "'Bodoni Moda', serif" }}>
-                World <span className="text-[#c9a44c]">Rankings</span>
-              </h1>
-              <div className="flex items-center gap-2 opacity-40">
-                <Users className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Global Player Database</span>
-              </div>
-            </div>
+          <div className="flex flex-col items-center text-center">
+             <h1 className="text-[14px] font-black uppercase tracking-[0.6em] text-white/40 mb-1">Global Wealth</h1>
+             <div className="flex items-center gap-3">
+               <Globe size={14} className="text-gold/50" />
+               <span className="text-[12px] font-black text-gold uppercase tracking-[0.4em]">Worldwide Registry</span>
+             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-            <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center min-w-[120px]">
-              <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Status</span>
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-black text-emerald-500 uppercase tracking-widest">Live Sync</span>
-              </div>
-            </div>
-            <div className="px-6 py-3 rounded-2xl bg-[#c9a44c]/10 border border-[#c9a44c]/30 flex flex-col items-center min-w-[120px]">
-              <span className="text-[10px] font-bold text-[#c9a44c]/60 uppercase tracking-widest mb-1">Next Reset</span>
-              <span className="text-xs font-black text-white uppercase tracking-widest">24:00:00</span>
+          <div className="flex items-center gap-10 min-w-[120px] justify-end">
+            <Link href="/rankings" className="text-[14px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-gold transition-colors">Season Pts</Link>
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+               <User size={24} className="text-white/20" />
             </div>
           </div>
         </div>
+      </nav>
 
-        {/* Podium / Top 3 */}
-        {!isLoading && entries.length >= 3 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
-            {[entries[1], entries[0], entries[2]].map((player, idx) => {
-              const displayIdx = [2, 1, 3][idx];
-              const isFirst = displayIdx === 1;
-              return (
-                <motion.div
-                  key={player.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: displayIdx * 0.1 }}
-                  className={`relative p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border flex flex-col items-center ${
-                    isFirst 
-                      ? 'bg-gradient-to-b from-[#c9a44c]/20 to-transparent border-[#c9a44c]/50 sm:scale-110 z-20 shadow-[0_30px_100px_rgba(201,164,76,0.15)]' 
-                      : 'bg-white/5 border-white/10 sm:mt-6'
-                  }`}
-                >
-                  {isFirst && <Crown className="w-10 h-10 text-[#c9a44c] absolute -top-5" />}
-                  <div className={`w-16 h-16 sm:w-24 sm:h-24 rounded-full border-4 flex items-center justify-center mb-4 sm:mb-6 relative overflow-hidden ${
-                    isFirst ? 'border-[#c9a44c]' : 'border-white/20'
-                  }`}>
-                    <img src={player.avatar || '/avatars/default.png'} alt={player.name} className="w-full h-full object-cover" />
-                  </div>
-                  <h3 className="text-xl font-black text-center mb-1">{player.name}</h3>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-[10px] font-bold text-[#c9a44c] uppercase tracking-[0.2em]">Rank #{displayIdx}</span>
-                    <div className="w-1 h-1 rounded-full bg-white/20" />
-                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">{player.tournaments_won} Wins</span>
-                  </div>
-                  <div className="text-3xl font-black tabular-nums" style={{ fontFamily: "'Bodoni Moda', serif" }}>
-                    ${player.balance.toLocaleString()}
-                  </div>
-                </motion.div>
-              );
-            })}
+      <main className="w-full max-w-5xl px-10 py-24 flex flex-col items-center">
+        
+        {/* ═══ LEADERBOARD HEADER (CENTERED) ═══ */}
+        <div className="flex flex-col items-center mb-24 text-center w-full">
+          <div className="flex items-center gap-6 mb-6 justify-center">
+             <Users size={40} className="text-gold/40" />
+             <h2 className="text-4xl font-black uppercase tracking-[0.6em] text-white/95 leading-none">Wealth Registry</h2>
           </div>
-        )}
-
-        {/* Table List */}
-        <div className="bg-white/[0.03] border border-white/5 rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden backdrop-blur-3xl">
-          <div className="p-4 sm:p-8 border-b border-white/5 bg-white/5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Star className="w-5 h-5 text-[#c9a44c]" />
-              <span className="text-sm font-black uppercase tracking-widest text-white/60">Elite Contenders</span>
-            </div>
-            <div className="flex items-center gap-6">
-              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest hidden md:block">Win Rate</span>
-              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Total Wealth</span>
-            </div>
+          <div className="flex flex-col items-center gap-5">
+             <p className="text-[14px] font-black text-white/20 uppercase tracking-[0.4em] max-w-xl leading-loose">
+               Registry of verified asset equity across the global network.
+             </p>
+             <div className="flex items-center gap-4 mt-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+                <span className="text-[13px] font-black text-emerald-500/80 uppercase tracking-[0.5em]">Protocol Sync Active</span>
+             </div>
           </div>
+        </div>
 
-          <div className="p-4 space-y-2">
-            <AnimatePresence mode="popLayout">
-              {entries.slice(3).map((player, idx) => (
-                <motion.div
-                  key={player.id}
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="group flex items-center justify-between p-3 sm:p-4 rounded-2xl sm:rounded-3xl hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300"
-                >
-                  <div className="flex items-center gap-3 sm:gap-6">
-                    <span className="w-8 text-xl font-black text-white/20 italic tabular-nums">
-                      {player.rank}
-                    </span>
-                    <div className="flex items-center gap-2 sm:gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/10 overflow-hidden">
-                        <img src={player.avatar || '/avatars/default.png'} alt={player.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="text-base font-bold text-white/90 group-hover:text-white transition-colors">
-                            {player.name}
-                          </span>
-                          {player.is_pro && (
-                            <Zap className="w-3 h-3 text-emerald-500 fill-emerald-500" />
-                          )}
+        {/* ═══ DATA TABLE (CENTERED CONTENT & FIXED CLIPPING) ═══ */}
+        <div className="w-full bg-white/[0.02] border border-white/10 rounded-2xl shadow-[0_50px_100px_rgba(0,0,0,0.7)] backdrop-blur-md overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/[0.05]">
+                {/* Increased px-20 to prevent corner clipping */}
+                <th className="py-12 px-20 text-[14px] font-black uppercase tracking-[0.6em] text-white/40 w-32 text-center">Rank</th>
+                <th className="py-12 px-10 text-[14px] font-black uppercase tracking-[0.6em] text-white/40 text-center">Contender</th>
+                <th className="py-12 px-10 text-[14px] font-black uppercase tracking-[0.6em] text-white/40 text-center">Tier</th>
+                <th className="py-12 px-10 text-[14px] font-black uppercase tracking-[0.6em] text-white/40 text-center hidden sm:table-cell">Status</th>
+                <th className="py-12 px-20 text-[14px] font-black uppercase tracking-[0.6em] text-white/40 text-center">Net Worth</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.05]">
+              {entries.map((player, idx) => {
+                const isMe = player.name === userProfile?.name;
+                const isGold = player.rank === 1;
+                const isSilver = player.rank === 2;
+                const isBronze = player.rank === 3;
+
+                return (
+                  <motion.tr 
+                    key={player.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: Math.min(idx * 0.05, 1) }}
+                    className={`group transition-all ${
+                      isMe ? 'bg-gold/[0.08]' : 'hover:bg-white/[0.05]'
+                    }`}
+                  >
+                    <td className="py-12 px-20 text-center">
+                       <span className={`text-5xl font-black italic tabular-nums leading-none ${
+                         isGold ? 'text-gold drop-shadow-[0_0_15px_rgba(201,168,76,0.6)]' : 
+                         isSilver ? 'text-slate-300' : 
+                         isBronze ? 'text-amber-600' : 
+                         isMe ? 'text-gold' : 'text-white/20'
+                       }`} style={{ fontFamily: FONTS.primary }}>
+                         {player.rank}
+                       </span>
+                    </td>
+                    <td className="py-12 px-10">
+                      <div className="flex flex-col items-center gap-10 justify-center">
+                        <div className={`w-20 h-20 rounded-2xl bg-white/[0.05] border-2 flex items-center justify-center transition-all overflow-hidden ${
+                          isMe ? 'border-gold shadow-[0_0_20px_rgba(201,168,76,0.3)]' : 'border-white/10 group-hover:border-white/40'
+                        }`}>
+                          <img src={player.avatar || '/avatars/default.png'} alt={player.name} className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-0.5">
-                          Tier: {player.balance > 100000 ? 'Diamond' : player.balance > 10000 ? 'Platinum' : 'Silver'}
-                        </span>
+                        <div className="flex flex-col items-center">
+                          <div className="flex items-center gap-4">
+                            <span className={`text-2xl font-black uppercase tracking-widest ${isMe ? 'text-gold' : 'text-white/95'}`}>
+                              {player.name}
+                            </span>
+                            {player.is_pro && (
+                              <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                            )}
+                          </div>
+                          <span className="text-[13px] font-black text-white/20 uppercase tracking-[0.4em] mt-2 text-center">
+                            {player.tournaments_won > 0 ? `${player.tournaments_won} Season Wins` : 'Verified Asset Holder'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </td>
+                    <td className="py-12 px-10 text-center">
+                       <div className="flex justify-center">
+                         {player.balance > 100000 ? (
+                            <div className="px-6 py-3 bg-gold/10 border border-gold/30 rounded-xl text-[12px] font-black text-gold uppercase tracking-[0.3em] shadow-[0_0_15px_rgba(201,168,76,0.1)]">Grandmaster</div>
+                         ) : player.balance > 10000 ? (
+                            <div className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[12px] font-black text-white/40 uppercase tracking-[0.3em]">Veteran</div>
+                         ) : (
+                            <div className="px-6 py-3 bg-white/[0.02] border border-white/[0.03] rounded-xl text-[12px] font-black text-white/10 uppercase tracking-[0.3em]">Rookie</div>
+                         )}
+                       </div>
+                    </td>
+                    <td className="py-12 px-10 text-center hidden sm:table-cell">
+                       <div className="flex items-center justify-center gap-3.5 opacity-20 group-hover:opacity-40 transition-opacity">
+                          <TrendingUp size={20} className="text-emerald-500" />
+                          <span className="text-[12px] font-black tabular-nums tracking-[0.3em] uppercase">Stable</span>
+                       </div>
+                    </td>
+                    <td className="py-12 px-20 text-center">
+                       <span className={`text-5xl font-black tabular-nums leading-none ${isMe ? 'text-gold' : 'text-white'}`} style={{ fontFamily: FONTS.primary }}>
+                         ${player.balance.toLocaleString()}
+                       </span>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
 
-                  <div className="flex items-center gap-4 sm:gap-12">
-                    <div className="hidden md:flex flex-col items-end">
-                       <span className="text-xs font-bold text-emerald-500/60">+{(Math.random() * 5).toFixed(1)}%</span>
-                       <TrendingUp className="w-3 h-3 text-emerald-500/30 mt-1" />
-                    </div>
-                    <div className="text-right min-w-[120px]">
-                      <span className="text-lg font-black tabular-nums text-white" style={{ fontFamily: "'Bodoni Moda', serif" }}>
-                        ${player.balance.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          {entries.length === 0 && (
+            <div className="py-48 text-center flex flex-col items-center gap-12">
+               <Globe size={80} className="text-white/5 animate-pulse" />
+               <span className="text-[16px] font-black uppercase tracking-[0.7em] text-white/20 italic">Synchronizing Global Registry...</span>
+            </div>
+          )}
         </div>
+      </main>
 
-        {/* User's Current Rank Card */}
-        {userProfile && !entries.some(e => e.name === userProfile.name) && (
-          <motion.div 
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="mt-12 p-6 rounded-3xl bg-[#c9a44c] text-black flex items-center justify-between"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-black/10 flex items-center justify-center font-black text-xl">
-                ?
-              </div>
-              <div>
-                <span className="text-xs font-black uppercase tracking-widest opacity-60">Your Position</span>
-                <h3 className="text-xl font-black uppercase tracking-tighter">Ineligible (Guest or Unranked)</h3>
-              </div>
+      {/* ═══ FLOATING ACTION BAR (CENTERED) ═══ */}
+      <footer className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50">
+         <motion.div 
+           initial={{ y: 50, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           className="bg-black/80 backdrop-blur-3xl border-t border-white/20 border-x border-white/10 px-20 py-10 rounded-2xl flex items-center gap-20 shadow-[0_40px_80px_rgba(0,0,0,0.9)]"
+         >
+            <div className="flex items-center gap-6">
+               <Star size={24} className="text-gold animate-pulse" />
+               <span className="text-[14px] font-black uppercase tracking-[0.6em] text-white/50 italic leading-none">Network Assets</span>
             </div>
-            <div className="text-right">
-              <span className="text-xs font-black uppercase tracking-widest opacity-60">Chips Required</span>
-              <div className="text-2xl font-black">$5,000</div>
-            </div>
-          </motion.div>
-        )}
-      </div>
-
-      <div className="mt-24 text-center pb-12">
-        <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em]">Junko Bodie Global Protocol</span>
-      </div>
+            <div className="h-8 w-px bg-white/10" />
+            <Link href="/rankings" className="group flex items-center gap-6">
+               <span className="text-[14px] font-black uppercase tracking-[0.6em] text-gold group-hover:text-white transition-colors leading-none">Season Rankings</span>
+               <ArrowRight size={24} className="text-gold group-hover:translate-x-1 transition-all" />
+            </Link>
+         </motion.div>
+      </footer>
     </div>
   );
 }

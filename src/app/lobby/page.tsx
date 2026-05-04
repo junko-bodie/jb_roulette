@@ -216,7 +216,7 @@ export default function Home() {
               <span className={styles.quickBtnLabel}>SETTINGS</span>
             </div>
 
-            <div className={styles.quickBtn} onClick={() => router.push('/season')}>
+            <div className={styles.quickBtn} onClick={() => router.push('/rankings')}>
               <BarChart2 className={styles.quickBtnIcon} strokeWidth={1.5} />
               <span className={styles.quickBtnLabel}>RANKINGS</span>
             </div>
