@@ -223,11 +223,11 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.03)',
                           border: active ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.05)',
-                          color: active ? 'rgba(212,175,55,1)' : 'rgba(255,255,255,0.2)',
+                          color: active ? 'rgba(212,175,55,1)' : 'rgba(212,175,55,0.45)',
                           cursor: 'pointer', transition: 'all 0.15s',
                         }}
-                        onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; } }}
-                        onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; } }}
+                        onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(212,175,55,0.8)'; } }}
+                        onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(212,175,55,0.45)'; } }}
                       >
                         <AvatarIcon type={avatar} size={14} color="currentColor" />
                       </button>

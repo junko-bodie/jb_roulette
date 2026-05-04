@@ -11,8 +11,8 @@ interface SessionStatsProps {
 
 export default function SessionStats({ lastBet, lastWin, sessionWin }: SessionStatsProps) {
   const StatItem = ({ label, value, color = '#f4fbfb' }: { label: string; value: number, color?: string }) => (
-    <div 
-      className="flex flex-col items-center px-3 sm:px-5 py-1 sm:py-1.5 rounded-lg bg-black/40 border border-white/10 shadow-inner min-w-[70px] sm:min-w-[90px]"
+    <div
+      className="flex flex-col items-center px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg bg-black/40 border border-white/10 shadow-inner min-w-[75px] sm:min-w-[95px]"
     >
       <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold mb-0">
         {label}
@@ -35,15 +35,15 @@ export default function SessionStats({ lastBet, lastWin, sessionWin }: SessionSt
   return (
     <div className="flex items-center gap-1 sm:gap-1.5">
       <StatItem label="Last Bet" value={lastBet} />
-      <StatItem 
-        label="Last Win" 
-        value={lastWin} 
-        color={lastWin > 0 ? '#10b981' : lastWin < 0 ? '#ef4444' : '#f4fbfb'} 
+      <StatItem
+        label="Last Win"
+        value={lastWin}
+        color={lastWin > 0 ? '#10b981' : lastWin < 0 ? '#ef4444' : '#f4fbfb'}
       />
-      <StatItem 
-        label="Session Win" 
-        value={sessionWin} 
-        color={sessionWin > 0 ? '#10b981' : sessionWin < 0 ? '#ef4444' : '#f4fbfb'} 
+      <StatItem
+        label="Session Win"
+        value={sessionWin}
+        color={sessionWin > 0 ? '#10b981' : sessionWin < 0 ? '#ef4444' : '#f4fbfb'}
       />
     </div>
   );

@@ -850,22 +850,14 @@ export default function TournamentPage() {
             x: phase === "spinning" ? 100 : 0
           }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="hidden lg:flex flex-shrink-0 flex-col gap-4 py-6 max-h-[85vh] overflow-hidden"
+          className="hidden lg:flex flex-shrink-0 flex-col gap-4 py-6 h-full overflow-hidden"
         >
-          <div className="flex-shrink-0">
+          <div className="flex-1 flex flex-col min-h-0 h-full">
             <Scoreboard />
           </div>
 
-          <div className="flex-1 min-h-0 flex flex-col bg-black/40 rounded-[2.5rem] border border-white/5 backdrop-blur-md overflow-hidden pt-12 pb-8 px-10 shadow-2xl">
-            <div className="relative z-10 px-6 pt-2 pb-6 flex flex-col items-center">
-              <h2 className="text-3xl font-black text-white uppercase tracking-[0.2em] text-center w-full" style={{ fontFamily: "'Bodoni Moda', serif" }}>
-                Live Feed
-              </h2>
-              <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-[#c9a44c]/60 to-transparent mt-4" />
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <LiveBettingFeed />
-            </div>
+          <div className="flex-1 flex flex-col min-h-0 h-full">
+            <LiveBettingFeed />
           </div>
         </motion.div>
 
@@ -877,7 +869,8 @@ export default function TournamentPage() {
               <span className="text-[8px] font-black text-[#c9a44c] uppercase tracking-[0.3em]">Rankings</span>
               <div className="flex-1 h-px bg-[#c9a44c]/20" />
             </div>
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            {/* Players List */}
+            <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar divide-y divide-white/[0.04]">
               {scores.filter(s => s.status === 'active').map((s) => {
                 const isMe = !s.is_bot;
                 return (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTournament } from '@/lib/tournament/useTournament';
-import { ChevronUp, ChevronDown, User, Bot, Skull, Trophy } from 'lucide-react';
+import { ChevronUp, ChevronDown, User, Skull, Trophy } from 'lucide-react';
 import { COLORS, FONTS } from '@/styles/theme';
 
 const RankMovement = memo(({ direction }: { direction: 'up' | 'down' }) => (
@@ -12,9 +12,9 @@ const RankMovement = memo(({ direction }: { direction: 'up' | 'down' }) => (
     className="flex items-center"
   >
     {direction === 'up' ? (
-      <ChevronUp className="w-4 h-4 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]" />
+      <ChevronUp className="w-3.5 h-3.5 text-emerald-400" />
     ) : (
-      <ChevronDown className="w-4 h-4 text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.6)]" />
+      <ChevronDown className="w-3.5 h-3.5 text-rose-400" />
     )}
   </motion.div>
 ));
@@ -34,7 +34,7 @@ export default function Scoreboard() {
 
     scores.forEach(s => {
       if (s.status !== "active") return;
-      
+
       const pid = s.player_id.toString();
       const prevRank = prevRanks[pid];
       if (prevRank !== undefined) {
@@ -51,13 +51,13 @@ export default function Scoreboard() {
     if (changed) {
       setMovement(newMovement);
       const timer = setTimeout(() => setMovement({}), 3000);
-      
+
       const newRanks: Record<string, number> = {};
       scores.forEach(s => {
         if (s.status === "active") newRanks[s.player_id.toString()] = s.rank;
       });
       setPrevRanks(newRanks);
-      
+
       return () => clearTimeout(timer);
     } else if (Object.keys(prevRanks).length === 0) {
       const newRanks: Record<string, number> = {};
@@ -69,28 +69,35 @@ export default function Scoreboard() {
   }, [scores, prevRanks]);
 
   return (
-    <div className="relative z-40 w-full flex flex-col">
+    <div className="relative z-40 w-full h-full flex flex-col">
       <motion.div
         initial={{ x: 50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="relative overflow-hidden rounded-[2.5rem] border border-[#c9a44c]/20 backdrop-blur-2xl shadow-[0_50px_100px_rgba(0,0,0,0.95)]"
+        className="relative flex flex-col h-full overflow-hidden rounded-2xl border border-white/[0.06] backdrop-blur-xl"
         style={{
-          background: 'linear-gradient(165deg, rgba(8, 18, 15, 0.99), rgba(2, 6, 4, 1))',
+          background: 'rgba(10, 12, 16, 0.97)',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
         }}
       >
-        {/* Luxury Glow */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#c9a44c]/5 rounded-full blur-[80px] pointer-events-none" />
-        
-        {/* Header Section */}
-        <div className="relative z-10 px-6 pt-10 pb-6 flex flex-col items-center">
-          <h2 className="text-3xl font-black text-white uppercase tracking-[0.2em] text-center w-full" style={{ fontFamily: FONTS.primary }}>
-            Rankings
-          </h2>
-          <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-[#c9a44c]/60 to-transparent mt-4" />
+        {/* Header */}
+        <div className="px-5 pt-5 pb-4 flex items-center justify-between border-b border-white/[0.05]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-1 h-5 rounded-full bg-amber-400" />
+            <span
+              className="text-[15px] font-semibold uppercase tracking-[0.2em] text-white/40"
+              style={{ fontFamily: FONTS.primary }}
+            >
+              Leaderboard
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] text-white/30 font-medium uppercase tracking-wider">Live</span>
+          </div>
         </div>
 
         {/* Players List */}
-        <div className="relative z-10 px-4 pb-8 flex flex-col gap-3 max-h-[60vh] overflow-y-auto no-scrollbar">
+        <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar divide-y divide-white/[0.04] pb-8">
           <AnimatePresence>
             {scores.map((s, idx) => {
               const pid = s.player_id.toString();
@@ -101,125 +108,125 @@ export default function Scoreboard() {
               const isDanger = !isEliminated && s.rank >= Math.max(3, scores.filter(p => p.status === 'active').length - 1);
               const isBetting = s.currentWager > 0 && phase === 'betting';
 
+              // Rank badge color
+              const rankColors: Record<number, string> = {
+                1: '#F59E0B',
+                2: '#94A3B8',
+                3: '#CD7C2F',
+              };
+              const rankColor = rankColors[s.rank] ?? s.color ?? '#4B5563';
+
               return (
                 <motion.div
                   key={pid}
                   layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ 
-                    opacity: isEliminated ? 0.35 : 1,
-                    scale: isMe ? 1.02 : 1,
-                    zIndex: isMe ? 20 : 10,
-                    // Pulse or flash when moving
-                    backgroundColor: m === 'up' 
-                      ? 'rgba(74, 222, 128, 0.15)'   // Green flash
-                      : m === 'down' 
-                      ? 'rgba(248, 113, 113, 0.15)'  // Red flash
-                      : isBetting
-                      ? 'rgba(201, 164, 76, 0.08)' // Betting glow
-                      : isMe 
-                      ? 'rgba(201, 164, 76, 0.2)' 
-                      : 'rgba(255, 255, 255, 0.03)',
-                    boxShadow: isFirst ? 'inset 0 0 20px rgba(201, 164, 76, 0.1)' : 'none'
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    opacity: isEliminated ? 0.3 : 1,
+                    backgroundColor:
+                      m === 'up'
+                        ? 'rgba(16, 185, 129, 0.06)'
+                        : m === 'down'
+                          ? 'rgba(239, 68, 68, 0.06)'
+                          : isBetting
+                            ? 'rgba(245, 158, 11, 0.04)'
+                            : isMe
+                              ? 'rgba(245, 158, 11, 0.05)'
+                              : 'rgba(0,0,0,0)',
                   }}
                   transition={{
-                    layout: { type: 'spring', stiffness: 350, damping: 35 }, // Faster, more responsive
-                    backgroundColor: { duration: 0.4 }
+                    layout: { type: 'spring', stiffness: 400, damping: 38 },
+                    backgroundColor: { duration: 0.3 },
                   }}
-                  className={`group relative flex items-center justify-between p-4 rounded-3xl transition-all duration-500 border ${
-                    isFirst
-                      ? 'border-[#c9a44c]/60 shadow-[0_0_15px_rgba(201,164,76,0.2)]'
-                    : isMe 
-                      ? 'border-[#c9a44c]/40' 
-                      : isEliminated
-                      ? 'border-white/5 grayscale'
-                      : isDanger
-                      ? 'border-red-400/30'
-                      : m === 'up'
-                      ? 'border-green-400/50'
-                      : m === 'down'
-                      ? 'border-red-400/50'
-                      : isBetting
-                      ? 'border-[#c9a44c]/30 animate-pulse'
-                      : 'border-white/5 hover:border-[#c9a44c]/30'
-                  }`}
+                  className={`relative flex-1 flex items-center gap-3 px-5 py-5 min-h-[55px] transition-colors ${isEliminated ? 'grayscale' : ''
+                    } ${isMe ? '' : 'hover:bg-white/[0.02]'}`}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Rank Circle */}
-                    <motion.div 
-                      layout
-                      className={`w-10 h-10 flex-shrink-0 rounded-2xl flex items-center justify-center relative shadow-xl border border-white/10`}
-                      style={{ 
-                        background: isFirst 
-                          ? 'linear-gradient(135deg, #fef08a 0%, #c9a44c 50%, #856114 100%)' 
-                          : `linear-gradient(135deg, ${s.color} 0%, ${s.color}dd 100%)`,
-                        boxShadow: isFirst 
-                          ? '0 0 20px rgba(201, 164, 76, 0.4), inset 0 0 10px rgba(255,255,255,0.4)' 
-                          : `0 8px 15px -3px ${s.color}40, inset 0 0 8px rgba(255,255,255,0.2)`
-                      }}
-                    >
-                      {isEliminated ? (
-                        <Skull className="w-4 h-4 text-white/50" />
-                      ) : (
-                        <span 
-                          className={`text-lg font-black tabular-nums filter drop-shadow-sm ${isFirst ? 'text-[#3e2b00]' : 'text-white'}`} 
-                          style={{ fontFamily: FONTS.primary }}
-                        >
-                          {s.rank}
-                        </span>
-                      )}
-                      
-                      {/* Glossy Sheen */}
-                      <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
-                    </motion.div>
-                    
-                    <div className="flex flex-col min-w-0">
-                      <span className={`text-[14px] font-bold truncate ${isMe ? 'text-[#c9a44c]' : 'text-white/90'}`}>
-                        {s.username}
+                  {/* Left accent bar for current user */}
+                  {isMe && !isEliminated && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-6 rounded-r-full bg-amber-400" />
+                  )}
+
+                  {/* Rank */}
+                  <div
+                    className="w-7 flex-shrink-0 flex items-center justify-center"
+                  >
+                    {isEliminated ? (
+                      <Skull className="w-3.5 h-3.5 text-white/20" />
+                    ) : (
+                      <span
+                        className="text-[13px] font-bold tabular-nums"
+                        style={{
+                          color: rankColors[s.rank] ?? 'rgba(255,255,255,0.35)',
+                          fontFamily: FONTS.primary,
+                        }}
+                      >
+                        {s.rank}
                       </span>
-                      <div className="flex items-center gap-1.5 opacity-30">
-                        {s.is_bot ? <Bot className="w-2.5 h-2.5" /> : <User className="w-2.5 h-2.5" />}
-                        <span className="text-[8px] font-black uppercase tracking-widest">
-                          {isEliminated ? `POS #${s.final_position}` : isMe ? 'PRO' : 'BOT'}
+                    )}
+                  </div>
+
+                  {/* Color dot */}
+                  <div
+                    className="w-2 h-2 rounded-full flex-shrink-0 ring-1 ring-white/10"
+                    style={{ backgroundColor: rankColor }}
+                  />
+
+                  {/* Name + meta */}
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span
+                      className={`text-[13px] font-semibold truncate leading-tight ${isEliminated
+                        ? 'text-white/25'
+                        : isMe
+                          ? 'text-amber-300'
+                          : 'text-white/85'
+                        }`}
+                    >
+                      {s.username}
+                    </span>
+
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {isEliminated ? (
+                        <span className="text-[10px] text-white/20 font-medium">
+                          Eliminated · #{s.final_position}
                         </span>
-                      </div>
-                      
-                      {/* Current Wager Status */}
-                      {!isEliminated && s.currentWager > 0 && (
-                        <motion.div 
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center gap-1 mt-1"
-                        >
-                          <div className="w-1 h-1 rounded-full bg-[#c9a44c] animate-ping" />
-                          <span className="text-[9px] font-bold text-[#c9a44c] uppercase tracking-wider">
-                            At Risk: ${s.currentWager.toLocaleString()}
-                          </span>
-                        </motion.div>
+                      ) : isBetting && s.currentWager > 0 ? (
+                        <span className="text-[10px] text-amber-400/70 font-medium">
+                          At risk: ${s.currentWager.toLocaleString()}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-white/25 font-medium uppercase tracking-wider">
+                          Active
+                        </span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 pl-2">
+                  {/* Movement + Chips */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <AnimatePresence>
                       {m && !isEliminated && (
                         <motion.div
-                          initial={{ opacity: 0, x: 10 }}
+                          initial={{ opacity: 0, x: 6 }}
                           animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          className="flex items-center"
+                          exit={{ opacity: 0, x: -6 }}
                         >
                           <RankMovement direction={m} />
                         </motion.div>
                       )}
                     </AnimatePresence>
-                    <motion.span 
+
+                    <motion.span
                       key={s.chips}
                       initial={{ scale: 1 }}
-                      animate={{ scale: [1, 1.1, 1] }}
-                      className={`text-[17px] font-black tabular-nums ${
-                        isEliminated ? 'text-white/20' : isMe ? 'text-white' : 'text-white/80'
-                      }`} style={{ fontFamily: FONTS.primary }}
+                      animate={{ scale: [1, 1.06, 1] }}
+                      transition={{ duration: 0.25 }}
+                      className={`text-[14px] font-bold tabular-nums ${isEliminated
+                        ? 'text-white/15'
+                        : isMe
+                          ? 'text-white'
+                          : 'text-white/70'
+                        }`}
+                      style={{ fontFamily: FONTS.primary }}
                     >
                       ${s.chips.toLocaleString()}
                     </motion.span>
@@ -230,18 +237,15 @@ export default function Scoreboard() {
           </AnimatePresence>
         </div>
 
-        {/* Status Line */}
-        <div className="relative h-1 bg-black/60 overflow-hidden">
-           <motion.div 
-             className="absolute inset-0 bg-[#c9a44c]/20"
-             animate={{ x: ['-100%', '100%'] }}
-             transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-           />
+        {/* Bottom shimmer bar */}
+        <div className="relative h-px bg-white/[0.04] overflow-hidden">
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: 'linear' }}
+          />
         </div>
       </motion.div>
     </div>
   );
 }
-
-
-
