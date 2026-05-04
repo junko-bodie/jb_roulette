@@ -4,6 +4,8 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
 import { createClient } from '@/lib/supabase/client';
+import { Trophy, Star, ShieldCheck, User, X, Camera, Zap, ChevronRight } from 'lucide-react';
+import { COLORS, FONTS } from '@/styles/theme';
 import styles from './modal.module.css';
 
 interface ProfileModalProps {
@@ -53,14 +55,13 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type and size (2MB)
     if (!file.type.startsWith('image/')) {
-        alert('Please upload an image file.');
-        return;
+      alert('Please upload an image file.');
+      return;
     }
     if (file.size > 2 * 1024 * 1024) {
-        alert('File size exceeds 2MB limit.');
-        return;
+      alert('File size exceeds 2MB limit.');
+      return;
     }
 
     setIsUploading(true);
@@ -89,197 +90,304 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   };
 
   const isCustomAvatar = selectedAvatar.startsWith('http') || selectedAvatar.startsWith('/');
-  const isPresetAvatar = AVAILABLE_AVATARS.includes(selectedAvatar);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <div className={styles.overlay}>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0"
+            className="absolute inset-0 bg-black/70 backdrop-blur-md"
             onClick={onClose}
           />
 
+          {/* Modal */}
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 30 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 30 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={styles.cardProfile}
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+            className="relative w-full max-w-[420px] rounded-2xl overflow-hidden"
+            style={{
+              background: '#0d0d0d',
+              border: '1px solid rgba(255,255,255,0.07)',
+              boxShadow: '0 32px 64px rgba(0,0,0,0.7)',
+            }}
           >
-            <div className={styles.header}>
-              <div>
-                <h2 className={styles.headerTitle}>Your Profile</h2>
-                <p className={styles.headerSub}>Casino Identity</p>
-              </div>
-              <button onClick={onClose} className={styles.closeBtn}>
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            {/* Top accent line */}
+            <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent)' }} />
 
-            <div className={styles.content}>
-              <div className={styles.field}>
-                <label className={styles.label}>Player Handle</label>
-                <input
-                  type="text"
-                  maxLength={20}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={styles.input}
-                  placeholder="High Roller"
-                />
-              </div>
-
-              <div className={styles.field}>
-                <div className="flex items-center justify-between">
-                  <label className={styles.label}>Choose your Avatar</label>
-                  <button 
-                    onClick={handleFileClick} 
-                    disabled={isUploading}
-                    className="text-[10px] font-black text-[#c9a44c] hover:text-white transition-colors uppercase tracking-widest flex items-center gap-1.5"
-                  >
-                    {isUploading ? 'Uploading...' : 'Upload Custom'}
-                    {!isUploading && (
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                        <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-                
-                <div className={styles.avatarGrid}>
-                  {/* Custom Avatar Preview (Only if selected) */}
-                  {(isCustomAvatar && !isPresetAvatar) && (
-                    <button
-                      onClick={() => setSelectedAvatar(selectedAvatar)}
-                      className={styles.avatarOptionActive}
-                    >
-                      <img src={selectedAvatar} alt="custom" className="w-full h-full object-cover rounded-full" />
-                    </button>
-                  )}
-
-                  {AVAILABLE_AVATARS.map((avatar) => (
-                    <button
-                      key={avatar}
-                      onClick={() => setSelectedAvatar(avatar)}
-                      className={selectedAvatar === avatar ? styles.avatarOptionActive : styles.avatarOption}
-                    >
-                      <AvatarIcon type={avatar} className={styles.avatarIcon} />
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Junko Bodie Status</label>
-                <div className="bg-black/40 rounded-2xl p-4 border border-white/5 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-white/40 uppercase tracking-widest font-black">Season Points</span>
-                      <div className="text-xl font-black text-[#c9a44c]">{userProfile.season?.points || 0}</div>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-white/40 uppercase tracking-widest font-black">Season Rank</span>
-                      <div className="text-xl font-black text-white">{userProfile.season?.rank ? `#${userProfile.season.rank}` : 'Unranked'}</div>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-white/5">
-                    <span className="text-[10px] text-white/40 uppercase tracking-widest font-black block mb-2">Tournament History</span>
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs text-white/60">Played: <span className="text-white font-bold">{userProfile.stats?.tournaments_played || 0}</span></div>
-                      <div className="text-xs text-white/60">Won: <span className="text-[#c9a44c] font-bold">{userProfile.stats?.tournaments_won || 0}</span></div>
-                      <div className="text-xs text-white/60">Best: <span className="text-white font-bold">{userProfile.stats?.best_finish ? `#${userProfile.stats.best_finish}` : '-'}</span></div>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-white/5">
-                    <span className="text-[10px] text-white/40 uppercase tracking-widest font-black block mb-2">Earned Badges</span>
-                    <div className="flex gap-3">
-                      <BadgeIcon 
-                        active={userProfile.badges?.champion} 
-                        type="champion" 
-                        label="Tournament Winner" 
-                      />
-                      <BadgeIcon 
-                        active={userProfile.badges?.elite_status} 
-                        type="elite" 
-                        label="Elite Status" 
-                      />
-                      <BadgeIcon 
-                        active={userProfile.badges?.all_time_champion} 
-                        type="all_time" 
-                        label="All-Time Champion" 
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.footer}>
-              <button onClick={onClose} className={styles.btnCancel}>Discard</button>
+            {/* Header */}
+            <div className="flex items-center justify-between px-7 pt-6 pb-5">
+              <span style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.3)', fontWeight: 700, textTransform: 'uppercase' }}>
+                Profile
+              </span>
               <button
-                onClick={handleSave}
-                disabled={isSaving || isUploading || !name.trim()}
-                className={styles.btnConfirm}
+                onClick={onClose}
+                style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'color 0.15s'
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}
               >
-                {isSaving ? 'Saving...' : 'Confirm'}
+                <X size={13} />
               </button>
             </div>
+
+            {/* Body */}
+            <div className="px-7 pb-7 flex flex-col gap-6">
+
+              {/* Avatar + Name */}
+              <div className="flex items-center gap-5">
+                {/* Avatar */}
+                <div className="relative flex-shrink-0">
+                  <div
+                    style={{
+                      width: 72, height: 72, borderRadius: 16,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      overflow: 'hidden', position: 'relative',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                    className="group"
+                  >
+                    {isCustomAvatar ? (
+                      <img src={selectedAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <AvatarIcon type={selectedAvatar} size={24} color="rgba(212,175,55,0.6)" />
+                    )}
+                    <button
+                      onClick={handleFileClick}
+                      style={{
+                        position: 'absolute', inset: 0,
+                        background: 'rgba(0,0,0,0.65)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        opacity: 0, transition: 'opacity 0.15s', color: 'white', cursor: 'pointer'
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
+                    >
+                      <Camera size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Name input */}
+                <div className="flex flex-col flex-1 gap-1">
+                  <label style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700 }}>
+                    Display Name
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={20}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: 10, padding: '10px 12px',
+                      color: 'white', fontSize: '14px', fontWeight: 600,
+                      outline: 'none', width: '100%',
+                      fontFamily: FONTS.primary,
+                      transition: 'border-color 0.15s',
+                    }}
+                    onFocus={e => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.4)')}
+                    onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+                    placeholder="Enter name…"
+                  />
+                </div>
+              </div>
+
+              {/* Avatar Picker */}
+              <div>
+                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 10 }}>
+                  Icon
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6 }}>
+                  {AVAILABLE_AVATARS.map((avatar) => {
+                    const active = selectedAvatar === avatar;
+                    return (
+                      <button
+                        key={avatar}
+                        onClick={() => setSelectedAvatar(avatar)}
+                        style={{
+                          aspectRatio: '1',
+                          borderRadius: 10,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.03)',
+                          border: active ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.05)',
+                          color: active ? 'rgba(212,175,55,1)' : 'rgba(255,255,255,0.2)',
+                          cursor: 'pointer', transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; } }}
+                        onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.2)'; } }}
+                      >
+                        <AvatarIcon type={avatar} size={14} color="currentColor" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.05)' }} />
+
+              {/* Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                <StatCell label="Points" value={userProfile.season?.points ?? 0} />
+                <StatCell label="Global Rank" value={userProfile.season?.rank ? `#${userProfile.season.rank}` : '—'} accent />
+              </div>
+
+              <div style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                borderRadius: 12, padding: '14px 20px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <MiniStat label="Played" value={userProfile.stats?.tournaments_played ?? 0} />
+                <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.06)' }} />
+                <MiniStat label="Won" value={userProfile.stats?.tournaments_won ?? 0} accent />
+                <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.06)' }} />
+                <MiniStat label="Best" value={userProfile.stats?.best_finish ? `#${userProfile.stats.best_finish}` : '—'} />
+              </div>
+
+              {/* Badges */}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                <BadgeIcon active={userProfile.badges?.champion} type="champion" />
+                <BadgeIcon active={userProfile.badges?.elite_status} type="elite" />
+                <BadgeIcon active={userProfile.badges?.all_time_champion} type="all_time" />
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 2 }}>
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving || isUploading || !name.trim()}
+                  style={{
+                    width: '100%', padding: '13px 20px',
+                    background: (isSaving || isUploading || !name.trim()) ? 'rgba(255,255,255,0.08)' : 'white',
+                    color: (isSaving || isUploading || !name.trim()) ? 'rgba(255,255,255,0.2)' : 'black',
+                    borderRadius: 12, fontSize: '11px', fontWeight: 800,
+                    letterSpacing: '0.15em', textTransform: 'uppercase',
+                    cursor: (isSaving || isUploading || !name.trim()) ? 'not-allowed' : 'pointer',
+                    border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    transition: 'background 0.15s, color 0.15s',
+                  }}
+                  onMouseEnter={e => { if (!isSaving && !isUploading && name.trim()) e.currentTarget.style.background = 'rgba(212,175,55,1)'; }}
+                  onMouseLeave={e => { if (!isSaving && !isUploading && name.trim()) e.currentTarget.style.background = 'white'; }}
+                >
+                  <span>{isSaving ? 'Saving…' : isUploading ? 'Uploading…' : 'Save Profile'}</span>
+                  {!isSaving && !isUploading && <ChevronRight size={13} />}
+                </button>
+
+                <button
+                  onClick={onClose}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em',
+                    textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)',
+                    padding: '6px', transition: 'color 0.15s'
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.18)')}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom accent line */}
+            <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.15), transparent)' }} />
           </motion.div>
+
+          <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
         </div>
       )}
     </AnimatePresence>
   );
 }
 
-function BadgeIcon({ active, type, label }: { active?: boolean; type: string; label: string }) {
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function StatCell({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(255,255,255,0.05)',
+      borderRadius: 12, padding: '14px 16px',
+      display: 'flex', flexDirection: 'column', gap: 4,
+    }}>
+      <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700 }}>
+        {label}
+      </span>
+      <span style={{
+        fontSize: '18px', fontWeight: 800, lineHeight: 1,
+        color: accent ? 'rgba(212,175,55,1)' : 'white',
+      }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function MiniStat({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+      <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700 }}>
+        {label}
+      </span>
+      <span style={{ fontSize: '14px', fontWeight: 700, color: accent ? 'rgba(212,175,55,1)' : 'white' }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function BadgeIcon({ active, type }: { active?: boolean; type: string }) {
   const getIcon = () => {
     switch (type) {
-      case 'champion': return <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" /></svg>;
-      case 'elite': return <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" /></svg>;
-      case 'all_time': return <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-2h2v2zm0-4h-2V7.5h2v5z" /></svg>;
+      case 'champion': return <Trophy size={14} />;
+      case 'elite': return <ShieldCheck size={14} />;
+      case 'all_time': return <Star size={14} />;
       default: return null;
     }
   };
 
   return (
-    <div 
-      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${active ? 'bg-[#c9a44c]/20 text-[#c9a44c] border border-[#c9a44c]/30' : 'bg-white/5 text-white/10 border border-transparent'}`}
-      title={label}
-    >
-      <div className="w-5 h-5">
-        {getIcon()}
-      </div>
+    <div style={{
+      width: 36, height: 36, borderRadius: 10,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: active ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)',
+      border: active ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.05)',
+      color: active ? 'rgba(212,175,55,1)' : 'rgba(255,255,255,0.08)',
+    }}>
+      {getIcon()}
     </div>
   );
 }
 
-function AvatarIcon({ type, className }: { type: string; className?: string }) {
+function AvatarIcon({ type, size, color }: { type: string; size: number; color: string }) {
+  const style = { color, fontSize: size - 2 };
+  const iconProps = { size, color };
   switch (type) {
-    case 'default': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" /></svg>;
-    case 'crown': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z" /></svg>;
-    case 'diamond': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 2L4.5 9.5L12 17l7.5-7.5L12 2zM19,11H5c-1.1,0-2,0.9-2,2v5c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2v-5C21,11.9,20.1,11,19,11z" /></svg>;
-    case 'star': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>;
-    case 'spade': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 2C9 2 7 4.5 7 7s2 6 5 10c3-4 5-7.5 5-10s-2-5-5-5zM7 19h10v2H7v-2z" /></svg>;
-    case 'heart': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>;
-    case 'club': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 2a4 4 0 00-4 4 4 4 0 004 4 4 4 0 004-4 4 4 0 00-4-4zm-4 8a4 4 0 00-4 4 4 4 0 004 4 4 4 0 004-4 4 4 0 00-4-4zm8 0a4 4 0 00-4 4 4 4 0 004 4 4 4 0 004-4 4 4 0 00-4-4zM10 22h4v-2h-4v2z" /></svg>;
-    case 'dice': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm10 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm0-10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM7 19c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5-5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" /></svg>;
-    case 'chip': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" /></svg>;
-    case 'trophy': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M18 2H6c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 12.9V18H9v2h6v-2h-2v-5.1a5.01 5.01 0 003.61-2.96C19.08 6.63 21 4.55 21 2V2c0-1.1-.9-2-2-2h-1zm-6 8c-1.65 0-3-1.35-3-3V4h6v3c0 1.65-1.35 3-3 3z" /></svg>;
-    case 'bolt': return <svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8H7z" /></svg>;
-    default: return <div className={className + " font-bold flex items-center justify-center uppercase"}>{type[0]}</div>;
+    case 'default': return <User {...iconProps} />;
+    case 'crown': return <Trophy {...iconProps} />;
+    case 'diamond': return <Star {...iconProps} />;
+    case 'star': return <Star {...iconProps} />;
+    case 'spade': return <span style={style}>♠</span>;
+    case 'heart': return <span style={style}>♥</span>;
+    case 'club': return <span style={style}>♣</span>;
+    case 'dice': return <Zap {...iconProps} />;
+    case 'chip': return <Zap {...iconProps} />;
+    case 'trophy': return <Trophy {...iconProps} />;
+    case 'bolt': return <Zap {...iconProps} />;
+    default: return <span style={{ ...style, fontWeight: 700 }}>{type[0].toUpperCase()}</span>;
   }
 }

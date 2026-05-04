@@ -4,7 +4,8 @@ import React, { useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
-import { Trophy, Medal, Award, ChevronRight, Play } from 'lucide-react';
+import { Trophy, Medal, Award, ChevronRight, Play, Star, ShieldCheck, User, ArrowRight } from 'lucide-react';
+import { COLORS, FONTS } from '@/styles/theme';
 
 interface WinnerScreenProps {
   tournament: any;
@@ -16,13 +17,6 @@ interface WinnerScreenProps {
     eliminated_round: number;
   };
 }
-
-const LaurelIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M6 19C6 19 3 17 3 12C3 7 6 5 6 5M18 19C18 19 21 17 21 12C21 7 18 5 18 5M12 17L10 19L12 21L14 19L12 17Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M7 14L8 15M7 10L8 9M17 14L16 15M17 10L16 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
 
 export default function WinnerScreen({ tournament, player }: WinnerScreenProps) {
   useEffect(() => {
@@ -42,7 +36,7 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
     if (isWinner) {
       const duration = 5 * 1000;
       const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 300 };
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
       const interval: any = setInterval(() => {
@@ -68,166 +62,182 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
   const pointsEarned = (7 - player.final_position) * 250 + Math.floor(player.final_chips / 10);
 
   return (
-    <div className="fixed inset-0 z-[200] overflow-y-auto bg-[#050d0a] flex flex-col items-center py-24 px-4 selection:bg-gold/30">
-      {/* ═══ LUXURY BACKGROUND ═══ */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,#1a5c43_0%,#050d0a_100%)]" />
-        
-        {/* Blurred Chip Stacks */}
-        <motion.img 
-          initial={{ opacity: 0, x: -50 }} 
-          animate={{ opacity: 0.4, x: 0 }} 
-          src="/images/casino/winner_bg.png" 
-          className="absolute -bottom-20 -left-40 w-[700px] blur-sm rotate-12" 
-        />
-        <motion.img 
-          initial={{ opacity: 0, x: 50 }} 
-          animate={{ opacity: 0.4, x: 0 }} 
-          src="/images/casino/winner_bg.png" 
-          className="absolute -bottom-40 -right-40 w-[800px] blur-md -rotate-12 scale-x-[-1]" 
-        />
-        
-        {/* Grain Overlay */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: `url('https://grainy-gradients.vercel.app/noise.svg')` }} />
+    <div 
+      className="fixed inset-0 z-[250] overflow-y-auto flex flex-col items-center selection:bg-gold/30"
+      style={{ 
+        background: `radial-gradient(circle at 50% 30%, ${COLORS.deepGreen} 0%, ${COLORS.black} 100%)`
+      }}
+    >
+      {/* ═══ LUXURY OVERLAYS ═══ */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-20">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
       </div>
 
-      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center">
-        {/* ═══ TOP ICON ═══ */}
+      <div className="relative z-10 w-full max-w-5xl flex flex-col items-center pt-24 pb-48 px-6">
+        
+        {/* ═══ TOP TROPHY ICON ═══ */}
         <motion.div 
-          initial={{ scale: 0, rotate: -20 }}
+          initial={{ scale: 0, rotate: -45 }}
           animate={{ scale: 1, rotate: 0 }}
-          className="relative mb-12"
+          className="relative mb-16"
         >
-          <div className="absolute inset-0 bg-gold/20 blur-3xl rounded-full" />
-          <div className="relative w-28 h-28 rounded-full bg-gradient-to-b from-[#c9a44c] to-[#a67c2e] p-[2px] shadow-[0_0_50px_rgba(201,164,76,0.3)]">
-            <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-              <Award className="w-14 h-14 text-gold" />
-            </div>
+          <div className="absolute inset-0 bg-gold/30 blur-[80px] rounded-full" />
+          <div className="relative w-32 h-32 rounded-3xl bg-gradient-to-br from-gold/40 to-gold/5 border border-gold/40 flex items-center justify-center backdrop-blur-xl shadow-[0_0_60px_rgba(201,168,76,0.2)]">
+             <Trophy size={64} className="text-gold" />
           </div>
-          {/* Circular Glow Effect */}
+          {/* Animated Orbiting Ring */}
           <motion.div 
-            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 4, repeat: Infinity }}
-            className="absolute -inset-6 border border-gold/30 rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute -inset-8 border border-gold/10 rounded-full border-dashed"
           />
         </motion.div>
 
-        {/* ═══ TITLE SECTION ═══ */}
+        {/* ═══ HEADER SECTION ═══ */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
+          className="text-center mb-24"
         >
-          <h1 className="text-8xl font-black text-white uppercase tracking-tight mb-4" style={{ fontFamily: 'var(--font-inter)' }}>
+          <h1 className="text-8xl font-black text-white uppercase tracking-tighter mb-4 italic" style={{ fontFamily: FONTS.primary }}>
             Final Standings
           </h1>
-          <p className="text-gold font-bold uppercase tracking-[0.5em] text-xl">
-            Ranked #{player.final_position} Overall
-          </p>
+          <div className="flex items-center gap-6 justify-center">
+             <div className="h-px w-16 bg-gradient-to-l from-gold/50 to-transparent" />
+             <span className="text-[14px] font-black text-gold uppercase tracking-[0.8em]">Ranked #{player.final_position} Overall</span>
+             <div className="h-px w-16 bg-gradient-to-r from-gold/50 to-transparent" />
+          </div>
         </motion.div>
 
-        {/* ═══ STATS CARDS ═══ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-16">
+        {/* ═══ SUMMARY STATS GRID ═══ */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-24">
           {[
-            { label: 'Final Rank', value: `#${player.final_position}`, color: 'text-gold' },
-            { label: 'Chips Collected', value: `$${player.final_chips.toLocaleString()}`, color: 'text-white' },
-            { label: 'Global XP Earned', value: `+${pointsEarned}`, color: 'text-[#4ade80]' }
+            { label: 'Final Position', value: `#${player.final_position}`, color: 'text-white' },
+            { label: 'Chips Secured', value: `$${player.final_chips.toLocaleString()}`, color: 'text-gold' },
+            { label: 'Season Points', value: `+${pointsEarned}`, color: 'text-emerald-500' }
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + (i * 0.1) }}
-              className="bg-[#0a1612]/80 border border-white/5 rounded-3xl p-10 flex flex-col items-center justify-center group hover:border-gold/20 transition-all shadow-2xl relative overflow-hidden"
+              transition={{ delay: 0.3 + (i * 0.1) }}
+              className="bg-white/[0.03] border border-white/10 rounded-2xl p-12 flex flex-col items-center justify-center group relative overflow-hidden backdrop-blur-md"
             >
-              <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-              <span className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-6 group-hover:text-gold/50 transition-colors">
+              <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.5em] mb-6">
                 {stat.label}
               </span>
-              <div className={`text-6xl font-black ${stat.color} tracking-tight`}>
+              <div className={`text-6xl font-black ${stat.color} leading-none tracking-tighter`} style={{ fontFamily: FONTS.primary }}>
                 {stat.value}
               </div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </motion.div>
           ))}
         </div>
 
-        {/* ═══ CLASSIFICATION TABLE ═══ */}
+        {/* ═══ CLASSIFICATION TABLE (MATCHING ELITE REGISTRY STYLE) ═══ */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="w-full bg-[#0a1410] border border-[#c9a44c]/30 rounded-[3rem] p-4 shadow-[0_60px_150px_rgba(0,0,0,0.9)] mb-16 relative"
+          transition={{ delay: 0.6 }}
+          className="w-full bg-white/[0.02] border border-white/10 rounded-2xl shadow-[0_50px_100px_rgba(0,0,0,0.7)] backdrop-blur-3xl overflow-hidden"
         >
-          {/* Inner Border Glow */}
-          <div className="absolute inset-0 rounded-[3rem] border border-white/5 pointer-events-none" />
+          <div className="p-8 border-b border-white/5 bg-white/[0.03]">
+             <h3 className="text-[12px] font-black text-white/30 uppercase tracking-[0.6em] text-center">
+               Tournament Classification Protocol
+             </h3>
+          </div>
           
-          <div className="p-10">
-            <h3 className="text-[12px] font-black text-gold/40 uppercase tracking-[0.6em] mb-12 text-center">
-              Final Tournament Classification
-            </h3>
-            
-            <div className="space-y-4">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/[0.02]">
+                <th className="py-8 px-16 text-[12px] font-black uppercase tracking-[0.5em] text-white/20 w-32 text-center">Rank</th>
+                <th className="py-8 px-8 text-[12px] font-black uppercase tracking-[0.5em] text-white/20 text-left">Competitor</th>
+                <th className="py-8 px-16 text-[12px] font-black uppercase tracking-[0.5em] text-white/20 text-right">Final Stack</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.03]">
               {standings.map((s, idx) => {
-                const isMe = s.username === tournament.players.find((p: any) => !p.is_bot)?.username;
-                const isWinnerRow = idx === 0;
+                const realPlayer = tournament.players.find((p: any) => !p.is_bot);
+                const isMe = s.username === realPlayer?.username;
+                const isGold = idx === 0;
                 
                 return (
-                  <motion.div 
+                  <motion.tr 
                     key={s.player_id.toString()}
-                    className={`flex items-center justify-between p-7 rounded-2xl border transition-all ${
-                      isWinnerRow ? 'bg-[#c9a44c]/10 border-[#c9a44c]/40' : 
-                      isMe ? 'bg-white/10 border-white/20' : 'bg-[#0c1a15] border-white/5'
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8 + (idx * 0.05) }}
+                    className={`group transition-all ${
+                      isMe ? 'bg-gold/[0.08]' : 'hover:bg-white/[0.02]'
                     }`}
                   >
-                    <div className="flex items-center gap-8">
-                      {/* Rank with Laurels */}
-                      <div className="relative flex items-center justify-center">
-                        <LaurelIcon className={`w-14 h-14 ${isWinnerRow ? 'text-gold' : 'text-white/10'}`} />
-                        <span className={`absolute inset-0 flex items-center justify-center font-black text-xl ${isWinnerRow ? 'text-gold' : 'text-white/40'}`}>
-                          ({idx + 1})
-                        </span>
-                      </div>
-                      
-                      <div className="flex flex-col">
-                        <span className={`font-black text-2xl tracking-tight ${isMe ? 'text-gold' : 'text-white'}`}>
-                          {s.username}
-                        </span>
-                        <span className="text-[10px] text-white/25 uppercase tracking-widest font-black pt-1">
-                          {isMe ? 'YOU' : 'ROBOT CPU'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className="font-black text-3xl text-white tracking-tighter">
-                        ${(s.final_chips || s.current_chips || 0).toLocaleString()}
-                      </div>
-                      <div className="text-[9px] text-white/30 uppercase font-black tracking-widest mt-1">
-                        Final Chips
-                      </div>
-                    </div>
-                  </motion.div>
+                    <td className="py-8 px-16 text-center">
+                       <span className={`text-4xl font-black italic leading-none ${
+                         isGold ? 'text-gold drop-shadow-[0_0_15px_rgba(201,168,76,0.5)]' : 
+                         isMe ? 'text-gold' : 'text-white/10'
+                       }`} style={{ fontFamily: FONTS.primary }}>
+                         {idx + 1}
+                       </span>
+                    </td>
+                    <td className="py-8 px-8">
+                       <div className="flex items-center gap-8">
+                          <div className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all ${
+                            isMe ? 'bg-gold/10 border-gold shadow-[0_0_20px_rgba(201,168,76,0.3)]' : 
+                            'bg-white/5 border-white/10'
+                          }`}>
+                            {isGold ? <Award size={28} className="text-gold" /> : <User size={24} className={isMe ? 'text-gold' : 'text-white/20'} />}
+                          </div>
+                          <div className="flex flex-col">
+                             <div className="flex items-center gap-3">
+                                <span className={`text-2xl font-black uppercase tracking-wider ${isMe ? 'text-gold' : 'text-white/90'}`}>
+                                  {s.username}
+                                </span>
+                                {isMe && <ShieldCheck size={16} className="text-gold" />}
+                             </div>
+                             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest mt-1">
+                               {isMe ? 'Sanctioned Pro' : 'Tournament Field'}
+                             </span>
+                          </div>
+                       </div>
+                    </td>
+                    <td className="py-8 px-16 text-right">
+                       <div className="flex flex-col items-end">
+                          <span className={`text-4xl font-black leading-none ${isMe ? 'text-gold' : 'text-white/80'}`} style={{ fontFamily: FONTS.primary }}>
+                            ${(s.final_chips || s.current_chips || 0).toLocaleString()}
+                          </span>
+                          <span className="text-[9px] font-black text-white/10 uppercase tracking-widest mt-1">
+                            Closing Assets
+                          </span>
+                       </div>
+                    </td>
+                  </motion.tr>
                 );
               })}
-            </div>
-          </div>
+            </tbody>
+          </table>
         </motion.div>
 
-        {/* ═══ ACTION BUTTON ═══ */}
+        {/* ═══ ACTION SECTION ═══ */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="pb-24"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="mt-32 flex flex-col items-center gap-12 w-full"
         >
-          <Link 
-            href="/tournament" 
-            className="group relative flex items-center gap-6 px-16 py-8 bg-gradient-to-b from-[#e6c16a] to-[#c9a44c] text-black font-black uppercase tracking-[0.4em] rounded-3xl transition-all hover:scale-105 active:scale-95 shadow-[0_30px_70px_rgba(201,164,76,0.3)] hover:shadow-[0_40px_90px_rgba(201,164,76,0.4)] overflow-hidden text-xl"
-          >
-            {/* Gloss Highlight */}
-            <div className="absolute top-0 inset-x-0 h-1/2 bg-white/20 skew-y-[-2deg] origin-left" />
-            <Play className="w-6 h-6 fill-current" />
-            PLAY ANOTHER TOURNAMENT
+          <div className="flex flex-col items-center gap-4 opacity-30">
+             <p className="text-[11px] font-black text-white uppercase tracking-[0.5em] text-center">
+               Registry synchronized with Global Championship Protocol
+             </p>
+             <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+          </div>
+
+          <Link href="/lobby" className="group relative">
+             <div className="absolute -inset-4 bg-gold/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity rounded-full" />
+             <div className="relative flex items-center gap-10 px-20 py-10 bg-white text-black font-black uppercase tracking-[0.5em] rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_30px_70px_rgba(255,255,255,0.1)] group-hover:bg-gold transition-colors">
+                <Star size={24} className="fill-current" />
+                <span className="text-xl">Return to Lobby</span>
+                <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
+             </div>
           </Link>
         </motion.div>
 
@@ -235,4 +245,3 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
     </div>
   );
 }
-

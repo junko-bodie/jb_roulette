@@ -3,6 +3,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Award, Target, Coins, TrendingUp, ChevronRight, Home } from 'lucide-react';
+import { COLORS, FONTS } from '@/styles/theme';
 
 interface TournamentSummaryProps {
   tournament: any;
@@ -16,45 +18,65 @@ interface TournamentSummaryProps {
 }
 
 export default function TournamentSummary({ tournament, player }: TournamentSummaryProps) {
-  // Calculate points: 100 base + chips / 100 + position bonus
-  const pointsEarned = 100 + Math.floor(player.final_chips / 100) + (7 - player.final_position) * 50;
+  // Calculate points: Matching the logic in WinnerScreen or similar
+  const pointsEarned = (7 - player.final_position) * 250 + Math.floor(player.final_chips / 10);
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#050d0a]" style={{ background: `radial-gradient(circle at center, #165b45 0%, #050d0a 100%)` }}>
+    <div 
+      className="fixed inset-0 z-[350] flex items-center justify-center" 
+      style={{ background: `radial-gradient(circle at 50% 50%, ${COLORS.deepGreen} 0%, ${COLORS.black} 100%)` }}
+    >
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl bg-black/60 border border-gold/30 rounded-[2rem] p-12 backdrop-blur-2xl shadow-[0_0_100px_rgba(0,0,0,0.8)]"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-xl bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-16 backdrop-blur-3xl shadow-[0_60px_150px_rgba(0,0,0,0.9)] relative overflow-hidden"
       >
-        <div className="text-center mb-12">
+        {/* Decorative corner glow */}
+        <div className="absolute -top-20 -right-20 w-60 h-60 bg-gold/10 blur-[80px] rounded-full" />
+        
+        <div className="flex flex-col items-center text-center mb-16 relative z-10">
           <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            className="inline-block px-4 py-1 border border-gold/50 rounded-full text-[10px] uppercase tracking-[0.3em] text-gold font-bold mb-4"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/40 flex items-center justify-center mb-8"
           >
-            Tournament Result
+             <Award size={32} className="text-gold" />
           </motion.div>
-          <h1 className="text-5xl font-black text-white uppercase tracking-tighter">Summary</h1>
+          
+          <h1 className="text-6xl font-black text-white uppercase tracking-tighter italic leading-none mb-3" style={{ fontFamily: FONTS.primary }}>
+            Round Result
+          </h1>
+          <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.7em] italic">Official Classification Summary</span>
         </div>
 
-        <div className="space-y-6 mb-12">
-          <div className="flex items-center justify-between py-4 border-b border-white/5">
-            <span className="text-white/40 uppercase tracking-widest text-sm font-bold">Final Position</span>
-            <span className="text-3xl font-black text-gold">#{player.final_position}</span>
-          </div>
-          <div className="flex items-center justify-between py-4 border-b border-white/5">
-            <span className="text-white/40 uppercase tracking-widest text-sm font-bold">Final Chip Count</span>
-            <span className="text-3xl font-black text-white">${player.final_chips.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center justify-between py-4 border-b border-white/5">
-            <span className="text-white/40 uppercase tracking-widest text-sm font-bold">Points Earned</span>
-            <span className="text-3xl font-black text-green-500">+{pointsEarned}</span>
-          </div>
+        <div className="space-y-4 mb-16 relative z-10">
+          {[
+            { label: 'Final Rank', value: `#${player.final_position}`, icon: Target, color: 'text-gold' },
+            { label: 'Asset Settlement', value: `$${player.final_chips.toLocaleString()}`, icon: Coins, color: 'text-white' },
+            { label: 'Season Points', value: `+${pointsEarned}`, icon: TrendingUp, color: 'text-emerald-500' }
+          ].map((item, idx) => (
+            <div key={item.label} className="flex items-center justify-between p-7 bg-white/[0.03] border border-white/5 rounded-2xl group hover:bg-white/[0.05] transition-all">
+              <div className="flex items-center gap-6">
+                 <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/30 group-hover:text-gold transition-colors">
+                    <item.icon size={20} />
+                 </div>
+                 <span className="text-[12px] font-black text-white/30 uppercase tracking-[0.4em]">{item.label}</span>
+              </div>
+              <span className={`text-3xl font-black ${item.color} leading-none`} style={{ fontFamily: FONTS.primary }}>
+                {item.value}
+              </span>
+            </div>
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          <Link href="/tournament" className="w-full py-5 bg-gold text-black font-black uppercase tracking-[0.2em] rounded-2xl text-center transition-all hover:scale-[1.02] active:scale-95 shadow-[0_10px_30px_rgba(201,164,76,0.3)]">
+        <div className="relative z-10">
+          <Link 
+            href="/lobby" 
+            className="flex items-center justify-center gap-6 w-full py-7 bg-white text-black font-black uppercase tracking-[0.5em] rounded-2xl text-[14px] transition-all hover:scale-[1.02] active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.05)] hover:bg-gold transition-colors group"
+          >
+            <Home size={18} className="fill-current" />
             Return to Lobby
+            <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </motion.div>

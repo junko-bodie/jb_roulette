@@ -68,7 +68,7 @@ export default function GlobalLeaderboard() {
     <div 
       className="min-h-screen w-full flex flex-col items-center selection:bg-gold/20 selection:text-gold"
       style={{ 
-        background: `radial-gradient(circle at 50% -20%, ${COLORS.deepGreen} 0%, ${COLORS.black} 100%)`
+        background: `radial-gradient(circle at 50% -20%, ${COLORS.deepGreen} 0%, #08100d 100%)`
       }}
     >
       

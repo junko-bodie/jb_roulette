@@ -32,7 +32,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#0a0a0a] text-[#f5f5f5]">
+      <body className="min-h-full flex flex-col bg-[#0b2b1d] text-[#f5f5f5]">
         <Providers>
           {children}
         </Providers>
