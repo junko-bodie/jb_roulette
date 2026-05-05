@@ -13,6 +13,8 @@ export interface TournamentPlayer {
   points_earned: number | null;
   has_champion_badge?: boolean;
   pending_bets?: any[];
+  bust_spin?: number | null;
+  chips_before_bust?: number | null;
 }
 
 export interface Tournament {

@@ -2,12 +2,12 @@ import { getDb } from '@/lib/db/mongodb';
 import { ObjectId } from 'mongodb';
 
 export const TOURNAMENT_POINTS: Record<number, number> = {
-  1: 100,
-  2: 60,
-  3: 40,
-  4: 25,
-  5: 10,
-  6: 5
+  1: 1000,
+  2: 100,
+  3: 50,
+  4: -50,
+  5: -50,
+  6: -50
 };
 
 export const ELITE_THRESHOLD = 500;
@@ -42,7 +42,7 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
       username: p.username,
       is_bot: p.is_bot,
       position,
-      total_points: TOURNAMENT_POINTS[position] || 5,
+      total_points: TOURNAMENT_POINTS[position] || -50,
       final_chips: p.current_chips,
       supabase_id: p.supabase_id
     };

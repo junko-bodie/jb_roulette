@@ -96,7 +96,7 @@ export default function TournamentPage() {
     const updateWheelSize = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
-      
+
       const isMobilePortrait =
         window.innerWidth <= 900 &&
         window.matchMedia('(orientation: portrait)').matches;
@@ -150,6 +150,28 @@ export default function TournamentPage() {
   const myChips = player?.current_chips || 0;
 
   const lastSubmittedSpinRef = useRef<number>(-1);
+
+  // Navigation Guard: Warn before leaving an active tournament
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (tournament?.status === 'active' && phase !== 'completed') {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave the tournament? You will be withdrawn.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [tournament?.status, phase]);
+
+  const handleLeaveTournament = useCallback(() => {
+    if (tournament?.status === 'active' && phase !== 'completed') {
+      const confirmed = window.confirm("Are you sure you want to leave the tournament? Your current progress will be lost.");
+      if (!confirmed) return;
+    }
+    window.location.href = '/lobby';
+  }, [tournament?.status, phase]);
 
   // Sync bets to server for other players to see
   useEffect(() => {
@@ -553,7 +575,7 @@ export default function TournamentPage() {
             Searching for Players...
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginBottom: '40px', fontWeight: 500 }}>
-            Filling remaining spots with bots in <span style={{ color: '#c9a44c', fontWeight: 800 }}>{lobbyTimeRemaining}s</span>
+            Match begins automatically in <span style={{ color: '#c9a44c', fontWeight: 800 }}>{lobbyTimeRemaining}s</span>
           </p>
 
           {/* Players Grid */}
@@ -747,7 +769,7 @@ export default function TournamentPage() {
       >
         <div className="flex items-center">
           <button
-            onClick={() => window.location.href = '/lobby'}
+            onClick={handleLeaveTournament}
             className="text-[#c9a44c] hover:text-white transition-colors mr-10"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -774,11 +796,11 @@ export default function TournamentPage() {
           {/* Timer Section */}
           <div className="flex items-center gap-3">
             <div className={`
-              w-12 h-12 rounded-full flex items-center justify-center border-2 
+              w-10 h-10 rounded-full flex items-center justify-center border-2 
               ${isUrgent ? 'border-red-500 bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-[#c9a44c] bg-black/60 shadow-xl'}
               transition-all duration-300
             `}>
-              <span className={`text-xl font-black tabular-nums ${isUrgent ? 'text-red-500' : 'text-[#c9a44c]'}`}>
+              <span className={`text-lg font-black tabular-nums ${isUrgent ? 'text-red-500' : 'text-[#c9a44c]'}`}>
                 {phase === 'betting' ? displayTime : '--'}
               </span>
             </div>
@@ -877,8 +899,8 @@ export default function TournamentPage() {
                   <div
                     key={s.player_id}
                     className={`flex items-center gap-1.5 px-2 py-1 rounded-lg flex-shrink-0 border ${isMe
-                        ? 'bg-[#c9a44c]/20 border-[#c9a44c]/40'
-                        : 'bg-white/5 border-white/5'
+                      ? 'bg-[#c9a44c]/20 border-[#c9a44c]/40'
+                      : 'bg-white/5 border-white/5'
                       }`}
                   >
                     <div
@@ -913,17 +935,17 @@ export default function TournamentPage() {
       </main>
 
       {/* ═══ FOOTER — CHIP TRAY LEFT, BUTTONS RIGHT ═══ */}
-      {/* ═══ PREMIUM FOOTER DESIGN ═══ */}
       <footer
-        className="flex-shrink-0 w-full z-10 px-2 sm:px-4 py-2 sm:py-3.5 tournament-footer-mobile"
+        className="flex-shrink-0 w-full z-10 tournament-footer-mobile"
         style={{
-          background: 'linear-gradient(to top, #0d0805 0%, #1a110a 100%)',
-          borderTop: '1px solid rgba(201, 164, 76, 0.4)',
-          boxShadow: '0 -12px 50px rgba(0,0,0,0.9)',
+          background: 'linear-gradient(to top, #0a0603 0%, #160e07 100%)',
+          borderTop: '1px solid rgba(201, 164, 76, 0.25)',
+          boxShadow: '0 -16px 60px rgba(0,0,0,0.95)',
+          padding: '10px 32px',
         }}
       >
-        <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6">
-          
+        <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
+
           {/* Left: Chip Tray */}
           <div className="flex-shrink-0 order-1">
             <div className="max-w-full overflow-x-auto no-scrollbar">
@@ -938,110 +960,267 @@ export default function TournamentPage() {
           </div>
 
           {/* Right: Betting Controls & Financials */}
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 sm:gap-4 order-2 tournament-controls-mobile pr-2 sm:pr-4">
-            
-            {/* Total Bet Display */}
-            <div className="flex flex-col items-center px-3 sm:px-5 py-1 sm:py-2 rounded-xl sm:rounded-2xl bg-black/60 border border-[#c9a44c]/30 shadow-[inset_0_0_20px_rgba(0,0,0,0.7)] min-w-[80px] sm:min-w-[100px]">
-              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#c9a44c]/60 font-black leading-none mb-1 sm:mb-2">Total Bet</span>
-              <span className="text-sm sm:text-xl font-black text-white tabular-nums tracking-tighter" style={{ textShadow: '0 0 10px rgba(255,255,255,0.2)' }}>
-                ${totalBet.toLocaleString()}
-              </span>
+          <div className="flex items-center gap-3 order-2 tournament-controls-mobile" style={{ paddingRight: '8px' }}>
+
+            {/* Total Bet */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                padding: '6px 18px',
+                background: 'rgba(0,0,0,0.45)',
+                border: '1px solid rgba(201,164,76,0.15)',
+                borderRadius: '8px',
+                minWidth: '90px',
+              }}
+            >
+              <span style={{ fontSize: '8px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(201,164,76,0.45)', fontWeight: 700, marginBottom: '3px' }}>Total Bet</span>
+              <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>${totalBet.toLocaleString()}</span>
             </div>
 
-            {/* Controls Group */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Separator */}
+            <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.06)', flexShrink: 0 }} />
+
+            {/* Action buttons row — all same height and visual weight */}
+            <div className="flex items-center gap-1.5">
+
+              {/* REBET */}
               <motion.button
                 onClick={handleRebet}
                 disabled={phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal}
-                whileTap={{ scale: 0.95 }}
-                className={`h-9 sm:h-11 px-3 sm:px-5 rounded-lg flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all border-2
-                  ${(phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal)
-                    ? 'bg-black/20 border-white/5 text-white/10'
-                    : 'bg-gradient-to-b from-[#2a3a2e] to-[#1a2a1e] border-[#c9a44c] text-[#e4e0d4] shadow-lg hover:border-[#f5edd5]'}`}
+                whileTap={{ scale: 0.94 }}
+                style={{
+                  height: '36px',
+                  padding: '0 14px',
+                  borderRadius: '7px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.15s ease',
+                  border: '1px solid',
+                  ...((phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal) ? {
+                    background: 'transparent',
+                    borderColor: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(255,255,255,0.15)',
+                    cursor: 'default',
+                  } : {
+                    background: 'rgba(255,255,255,0.04)',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    color: 'rgba(255,255,255,0.55)',
+                    cursor: 'pointer',
+                  }),
+                }}
               >
-                REBET
+                Rebet
               </motion.button>
 
+              {/* UNDO */}
               <motion.button
                 onClick={handleClearLastBet}
                 disabled={phase !== "betting" || betPlacementHistory.length === 0}
-                whileTap={{ scale: 0.95 }}
-                className={`h-9 sm:h-11 px-2 sm:px-4 rounded-lg flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all border-2
-                  ${(phase !== "betting" || betPlacementHistory.length === 0)
-                    ? 'bg-black/20 border-white/5 text-white/10'
-                    : 'bg-gradient-to-b from-[#2a3a2e] to-[#1a2a1e] border-[#c9a44c] text-[#e4e0d4] shadow-lg hover:border-[#f5edd5]'}`}
+                whileTap={{ scale: 0.94 }}
+                style={{
+                  height: '36px',
+                  padding: '0 14px',
+                  borderRadius: '7px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.15s ease',
+                  border: '1px solid',
+                  ...((phase !== "betting" || betPlacementHistory.length === 0) ? {
+                    background: 'transparent',
+                    borderColor: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(255,255,255,0.15)',
+                    cursor: 'default',
+                  } : {
+                    background: 'rgba(255,255,255,0.04)',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    color: 'rgba(255,255,255,0.55)',
+                    cursor: 'pointer',
+                  }),
+                }}
               >
-                UNDO
+                Undo
               </motion.button>
 
+              {/* CLEAR */}
               <motion.button
                 onClick={handleClearBets}
                 disabled={phase !== "betting" || bets.size === 0}
-                whileTap={{ scale: 0.95 }}
-                className={`h-9 sm:h-11 px-2 sm:px-4 rounded-lg flex items-center justify-center font-black text-[9px] sm:text-[11px] uppercase tracking-wider transition-all border-2
-                  ${(phase !== "betting" || bets.size === 0)
-                    ? 'bg-black/20 border-white/5 text-white/10'
-                    : 'bg-gradient-to-b from-[#2a3a2e] to-[#1a1a1a] border-[#c9a44c] text-[#e4e0d4] shadow-lg hover:border-[#f5edd5]'}`}
+                whileTap={{ scale: 0.94 }}
+                style={{
+                  height: '36px',
+                  padding: '0 14px',
+                  borderRadius: '7px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.15s ease',
+                  border: '1px solid',
+                  ...((phase !== "betting" || bets.size === 0) ? {
+                    background: 'transparent',
+                    borderColor: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(255,255,255,0.15)',
+                    cursor: 'default',
+                  } : {
+                    background: 'rgba(255,255,255,0.04)',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    color: 'rgba(255,255,255,0.55)',
+                    cursor: 'pointer',
+                  }),
+                }}
               >
-                CLEAR
+                Clear
               </motion.button>
 
+              {/* 2× */}
               <motion.button
                 onClick={handleDoubleAllBets}
                 disabled={phase !== "betting" || myChips < totalBet * 2 || totalBet === 0}
-                whileTap={{ scale: 0.95 }}
-                className={`w-[2.7rem] h-[2.7rem] rounded-full flex items-center justify-center font-black text-[10px] border-2 transition-all
-                  ${(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0)
-                    ? 'bg-black/20 border-white/5 text-white/10'
-                    : 'bg-gradient-to-br from-[#c9a44c] to-[#e4c97b] border-[#ffedb3] text-black shadow-[0_0_20px_rgba(201,164,76,0.3)] hover:scale-105'}`}
+                whileTap={{ scale: 0.94 }}
+                style={{
+                  height: '36px',
+                  width: '44px',
+                  borderRadius: '7px',
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  letterSpacing: '0.04em',
+                  transition: 'all 0.15s ease',
+                  border: '1px solid',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...((phase !== "betting" || myChips < totalBet * 2 || totalBet === 0) ? {
+                    background: 'transparent',
+                    borderColor: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(255,255,255,0.15)',
+                    cursor: 'default',
+                  } : {
+                    background: 'rgba(201,164,76,0.08)',
+                    borderColor: 'rgba(201,164,76,0.3)',
+                    color: '#c9a44c',
+                    cursor: 'pointer',
+                  }),
+                }}
               >
-                2X
+                2×
               </motion.button>
 
+              {/* ✕ delete mode */}
               <motion.button
                 onClick={() => { soundEngine?.playSwoosh(); setDeleteMode(!deleteMode); }}
                 disabled={phase !== "betting"}
-                whileTap={{ scale: 0.95 }}
-                className={`w-[2.7rem] h-[2.7rem] rounded-full flex items-center justify-center font-black text-sm border-2 transition-all
-                  ${phase !== "betting"
-                    ? 'bg-black/20 border-white/5 text-white/10'
-                    : deleteMode
-                      ? 'bg-red-600 border-[#ff7777] text-white shadow-[0_0_25px_rgba(220,38,38,0.5)]'
-                      : 'bg-black/40 border-[#c9a44c] text-[#c9a44c] hover:border-[#f5edd5] hover:text-white'}`}
+                whileTap={{ scale: 0.94 }}
+                style={{
+                  height: '36px',
+                  width: '44px',
+                  borderRadius: '7px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  transition: 'all 0.15s ease',
+                  border: '1px solid',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...(phase !== "betting" ? {
+                    background: 'transparent',
+                    borderColor: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(255,255,255,0.15)',
+                    cursor: 'default',
+                  } : deleteMode ? {
+                    background: 'rgba(220,38,38,0.15)',
+                    borderColor: 'rgba(248,113,113,0.35)',
+                    color: '#f87171',
+                    cursor: 'pointer',
+                    boxShadow: '0 0 14px rgba(220,38,38,0.18)',
+                  } : {
+                    background: 'rgba(255,255,255,0.03)',
+                    borderColor: 'rgba(255,255,255,0.09)',
+                    color: 'rgba(255,255,255,0.3)',
+                    cursor: 'pointer',
+                  }),
+                }}
               >
                 ✕
               </motion.button>
             </div>
 
-            {/* Balance Display */}
-            <div className="flex flex-col items-center px-4 sm:px-6 py-1 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#2d1a10] to-[#0d0805] border border-[#c9a44c]/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] min-w-[100px] sm:min-w-[130px]">
-              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[#c9a44c] font-black leading-none mb-1 sm:mb-2 opacity-80">Balance</span>
-              <span className="text-sm sm:text-xl font-black text-white tabular-nums tracking-tighter">
-                ${myChips.toLocaleString()}
-              </span>
+            {/* Separator */}
+            <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.06)', flexShrink: 0 }} />
+
+            {/* Balance */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                padding: '6px 18px',
+                background: 'rgba(201,164,76,0.05)',
+                border: '1px solid rgba(201,164,76,0.18)',
+                borderRadius: '8px',
+                minWidth: '100px',
+              }}
+            >
+              <span style={{ fontSize: '8px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(201,164,76,0.55)', fontWeight: 700, marginBottom: '3px' }}>Balance</span>
+              <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>${myChips.toLocaleString()}</span>
             </div>
 
-            {/* Primary Action Button */}
-            <div className="relative">
+            {/* Place Bet — primary CTA */}
+            <div className="relative" style={{ marginRight: '8px' }}>
               <motion.button
                 onClick={handleSubmitBets}
                 disabled={phase !== "betting"}
-                whileHover={phase === 'betting' && bets.size > 0 ? { scale: 1.04, filter: 'brightness(1.1)' } : {}}
-                whileTap={phase === 'betting' && bets.size > 0 ? { scale: 0.96 } : {}}
-                className={`h-11 sm:h-14 px-6 sm:px-10 rounded-xl font-black text-xs sm:text-base uppercase tracking-widest transition-all shadow-2xl relative z-10 tournament-submit-btn
-                  ${phase === 'betting'
-                    ? (bets.size > 0 
-                        ? 'bg-gradient-to-br from-[#c9a44c] via-[#f5d68d] to-[#c9a44c] text-black border-2 border-[#ffedb3] shadow-[0_12px_40px_rgba(201,164,76,0.4)]' 
-                        : 'bg-white/5 border-2 border-white/5 text-white/10 cursor-default')
-                    : 'bg-black/80 border-2 border-[#c9a44c]/20 text-[#c9a44c] animate-pulse'}`}
-                style={{ fontFamily: "'Bodoni Moda', serif", fontStyle: 'italic' }}
+                whileHover={phase === 'betting' && bets.size > 0 ? { scale: 1.02 } : {}}
+                whileTap={phase === 'betting' && bets.size > 0 ? { scale: 0.97 } : {}}
+                className="tournament-submit-btn"
+                style={{
+                  height: '40px',
+                  padding: '0 28px',
+                  borderRadius: '9px',
+                  fontFamily: "'Bodoni Moda', serif",
+                  fontStyle: 'italic',
+                  fontSize: '13px',
+                  fontWeight: 900,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.15s ease',
+                  border: '1px solid',
+                  position: 'relative',
+                  zIndex: 10,
+                  whiteSpace: 'nowrap',
+                  ...(phase === 'betting'
+                    ? (bets.size > 0 ? {
+                      background: 'linear-gradient(150deg, #d4ab52 0%, #c9a44c 60%, #b08a38 100%)',
+                      borderColor: 'rgba(255,220,120,0.25)',
+                      color: '#1a0d00',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 20px rgba(201,164,76,0.28), inset 0 1px 0 rgba(255,255,255,0.18)',
+                    } : {
+                      background: 'transparent',
+                      borderColor: 'rgba(255,255,255,0.05)',
+                      color: 'rgba(255,255,255,0.12)',
+                      cursor: 'default',
+                    })
+                    : {
+                      background: 'rgba(0,0,0,0.35)',
+                      borderColor: 'rgba(201,164,76,0.12)',
+                      color: 'rgba(201,164,76,0.35)',
+                      cursor: 'default',
+                    }),
+                }}
               >
-                {phase === "betting" ? (bets.size > 0 ? "PLACE" : "BET") : "PLACED"}
+                {phase === "betting" ? "Place Bet" : "Placed"}
               </motion.button>
               {phase === 'betting' && bets.size > 0 && (
-                <div className="absolute inset-0 bg-[#c9a44c] blur-[30px] opacity-25 -z-0" />
+                <div style={{ position: 'absolute', inset: 0, background: '#c9a44c', filter: 'blur(18px)', opacity: 0.16, zIndex: 0, borderRadius: '9px' }} />
               )}
             </div>
+
           </div>
         </div>
       </footer>

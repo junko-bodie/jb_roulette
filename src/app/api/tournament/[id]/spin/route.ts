@@ -177,29 +177,14 @@ export async function POST(
     await db.collection('spins').insertOne(spinDoc);
 
     // 6. Update round document (increment spins_completed and set next betting deadline)
-    console.log('[Spin API] Updating round counter and setting next deadline...');
-    // Total cycle: 10s (Spinning) + 10s (Result) + 30s (Betting) = 50s
-    const nextBettingEndsAt = spin_number < 5 ? new Date(Date.now() + 50000) : null;
-    
-    await db.collection('rounds').updateOne(
-      { _id: new ObjectId(round_id) },
-      { 
-        $inc: { spins_completed: 1 },
-        $set: { 
-          betting_ends_at: nextBettingEndsAt,
-          last_spin_completed_at: nextBettingEndsAt ? new Date() : null
-        }
-      }
-    );
-
     // 7. Sync chip counts to tournament document
     console.log('[Spin API] Syncing chips to tournament...');
+    const tournamentAny = tournament as any;
     const updateOps = Object.entries(chipUpdates).map(([playerId, chips]) => {
-      // Safety: the playerId should be a valid ObjectId hex
-      if (!ObjectId.isValid(playerId)) {
-        console.warn(`[Spin API] Skipping invalid playerId: ${playerId}`);
-        return null;
-      }
+      if (!ObjectId.isValid(playerId)) return null;
+
+      // Find original player for bust tracking
+      const p = (tournamentAny.players || []).find((pl: any) => pl.player_id.toString() === playerId);
 
       return {
         updateOne: {
@@ -208,7 +193,14 @@ export async function POST(
             "players.player_id": new ObjectId(playerId) 
           },
           update: { 
-            $set: { "players.$.current_chips": chips } 
+            $set: { 
+              "players.$.current_chips": chips,
+              "players.$.pending_bets": [],
+              ...(chips <= 0 && (!p?.bust_spin) ? {
+                "players.$.bust_spin": spin_number,
+                "players.$.chips_before_bust": p?.current_chips || 0
+              } : {})
+            } 
           }
         }
       };
@@ -216,21 +208,25 @@ export async function POST(
 
     if (updateOps.length > 0) {
       console.log(`[Spin API] Executing bulk write for ${updateOps.length} updates`);
-      try {
-        await db.collection('tournaments').bulkWrite(updateOps as any);
-        
-        /* 
-        // Also clear ALL pending_bet placeholders for all players
-        await db.collection('tournaments').updateOne(
-          { _id: new ObjectId(id) },
-          { $set: { "players.$[].pending_bets": [] } }
-        );
-        */
-      } catch (bulkError: any) {
-        console.error('[Spin API] Bulk write failed:', bulkError);
-        throw new Error(`Failed to sync chips: ${bulkError.message}`);
-      }
+      await db.collection('tournaments').bulkWrite(updateOps as any);
     }
+
+    // 8. Update active round state (Do this LAST so clients see the new spin only after bets are cleared)
+    console.log('[Spin API] Updating round counter and setting next deadline...');
+    const nextBettingEndsAt = spin_number < 5 ? new Date(Date.now() + 50000) : null;
+    
+    await db.collection('rounds').updateOne(
+      { _id: new ObjectId(round_id) },
+      { 
+        $inc: { spins_completed: 1 },
+        $set: { 
+          betting_ends_at: nextBettingEndsAt,
+          last_spin_completed_at: nextBettingEndsAt ? new Date() : null,
+          ready_players: [] 
+        }
+      }
+    );
+
 
     return NextResponse.json({
       success: true,

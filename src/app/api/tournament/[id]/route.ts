@@ -12,6 +12,7 @@ const SPINNING_DURATION = 5000;  // 5s wheel animation
 const RESULT_DURATION   = 2000;  // 2s result screen
 const BETTING_DURATION  = 30000; // 30s betting window
 const ELIMINATION_DURATION = 6000; // 6s elimination show
+const BOT_AVATARS = ['default', 'crown', 'diamond', 'star', 'spade', 'heart', 'club', 'dice', 'chip', 'trophy', 'bolt'];
 // Full cycle per spin: SPINNING + RESULT + BETTING = 50s
 
 function getSpinResult(wheelType: 'american' | 'european' = 'american') {
@@ -53,12 +54,51 @@ export async function GET(
     // ──────────────────────────────────────────────────────────────
     // AUTO-START WATCHDOG: Activate lobby if time expired (>10s)
     // ──────────────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────
+    // LOBBY MANAGEMENT: Gradual bot filling & Auto-activation
+    // ──────────────────────────────────────────────────────────────
     if (tournament.status === 'waiting' && tournament.created_at) {
       const created = new Date(tournament.created_at).getTime();
+      const elapsed = (now - created) / 1000;
+      let tournamentUpdated = false;
+
+      // Gradual bot filling between 20s and 30s
+      if (elapsed > 18 && elapsed < 30) {
+        const currentPlayers = tournament.players || [];
+        if (currentPlayers.length < 6) {
+          // We start adding bots at 20s (botsToHave = 1)
+          const botsToHave = Math.floor((elapsed - 18) / 2);
+          const botPlayers = currentPlayers.filter((p: any) => p.is_bot);
+          
+          if (botPlayers.length < botsToHave) {
+            const usedNames: string[] = currentPlayers.map((p: any) => p.username);
+            const botName = getRandomBotName(usedNames);
+            const newBot = {
+              player_id: new ObjectId(),
+              username: botName,
+              avatar_url: BOT_AVATARS[Math.floor(Math.random() * BOT_AVATARS.length)],
+              is_bot: true,
+              starting_chips: 2000,
+              current_chips: 2000,
+              status: 'active',
+              eliminated_round: null,
+              final_position: null,
+              points_earned: null,
+            };
+            
+            await db.collection('tournaments').updateOne(
+              { _id: new ObjectId(id) },
+              { $push: { players: newBot } as any }
+            );
+            tournamentUpdated = true;
+          }
+        }
+      }
+
+      // Auto-activation after 30s
       if (now > created + 30000) {
         console.log(`[Watchdog] Auto-activating tournament ${id}`);
 
-        // Fill remaining spots with bots
         const currentPlayers = tournament.players || [];
         const neededBots = Math.max(0, 6 - currentPlayers.length);
         const usedNames: string[] = currentPlayers.map((p: any) => p.username);
@@ -69,7 +109,7 @@ export async function GET(
           return {
             player_id: new ObjectId(),
             username: botName,
-            avatar_url: '/avatars/bot.png',
+            avatar_url: BOT_AVATARS[Math.floor(Math.random() * BOT_AVATARS.length)],
             is_bot: true,
             starting_chips: 2000,
             current_chips: 2000,
@@ -83,11 +123,13 @@ export async function GET(
         const updateOp: any = { $set: { status: 'active' } };
         if (bots.length > 0) updateOp.$push = { players: { $each: bots } };
         await db.collection('tournaments').updateOne({ _id: new ObjectId(id) }, updateOp as any);
-
-        // Re-fetch after update
-        const updated = await db.collection('tournaments').findOne({ _id: new ObjectId(id) });
-        Object.assign(tournament, updated);
+        tournamentUpdated = true;
         phase = 'betting';
+      }
+
+      if (tournamentUpdated) {
+        const updated = await db.collection('tournaments').findOne({ _id: new ObjectId(id) });
+        if (updated) Object.assign(tournament, updated);
       }
     }
 
@@ -140,11 +182,31 @@ export async function GET(
                 (p: any) => p.player_id.toString() === player.player_id.toString()
               ),
             }))
-            .sort((a: any, b: any) =>
-              a.current_chips !== b.current_chips
-                ? a.current_chips - b.current_chips
-                : b.originalIndex - a.originalIndex
-            );
+            .sort((a: any, b: any) => {
+              // 1. Check if anyone busted (hit 0)
+              const aBusted = (a.bust_spin !== undefined && a.bust_spin !== null);
+              const bBusted = (b.bust_spin !== undefined && b.bust_spin !== null);
+
+              if (aBusted && !bBusted) return -1; // a is worse (busted)
+              if (!aBusted && bBusted) return 1;  // b is worse (busted)
+
+              if (aBusted && bBusted) {
+                // Both busted. Earlier spin is worse.
+                if (a.bust_spin !== b.bust_spin) {
+                  return a.bust_spin - b.bust_spin;
+                }
+                // Same spin bust. Lower chips before bust is worse.
+                return (a.chips_before_bust || 0) - (b.chips_before_bust || 0);
+              }
+
+              // 2. Neither busted. Use current chips.
+              if (a.current_chips !== b.current_chips) {
+                return a.current_chips - b.current_chips;
+              }
+
+              // 3. Absolute tie-break using original lobby order
+              return b.originalIndex - a.originalIndex;
+            });
 
           if (activePlayers.length > 1) {
             const loser = activePlayers[0];
@@ -219,6 +281,21 @@ export async function GET(
 
             const ins = await db.collection('rounds').insertOne(newRound as any);
             activeRound = { ...newRound, _id: ins.insertedId };
+
+            // Reset bust tracking for all players for the new round
+            await db.collection('tournaments').updateOne(
+              { _id: new ObjectId(id) },
+              { 
+                $set: { 
+                  "players.$[active].bust_spin": null,
+                  "players.$[active].chips_before_bust": null
+                }
+              },
+              { 
+                arrayFilters: [{ "active.status": "active" }] 
+              }
+            );
+
             phase = 'betting';
           } else if (existingNextRound) {
             // If next round already exists, transition to it
@@ -322,18 +399,25 @@ export async function GET(
                 // Update chip counts AND CLEAR PENDING BETS on tournament
                 const bulkOps = activePlayers.map((player: any) => {
                   const pidStr = player.player_id.toString();
+                  const newChips = chipUpdates[pidStr] ?? player.current_chips;
+                  
                   return {
                     updateOne: {
                       filter: { _id: new ObjectId(id), 'players.player_id': player.player_id },
                       update: { 
                         $set: { 
-                          'players.$.current_chips': chipUpdates[pidStr] ?? player.current_chips,
-                          'players.$.pending_bets': [] // CRITICAL: Clear for next spin
+                          'players.$.current_chips': newChips,
+                          'players.$.pending_bets': [], // CRITICAL: Clear for next spin
+                          ...(newChips <= 0 && (!player.bust_spin) ? {
+                            "players.$.bust_spin": currentSpinNumber,
+                            "players.$.chips_before_bust": player.current_chips
+                          } : {})
                         } 
                       },
                     },
                   };
                 });
+
                 
                 if (bulkOps.length > 0) await db.collection('tournaments').bulkWrite(bulkOps as any);
 

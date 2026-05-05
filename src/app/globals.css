@@ -257,7 +257,7 @@ body {
   .mobile-header-compact {
     flex-wrap: wrap;
     gap: 4px;
-    padding: 4px 10px !important;
+    padding: 4px 10px;
     min-height: 44px !important;
   }
 

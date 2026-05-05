@@ -324,6 +324,7 @@ const RouletteTable = memo(function RouletteTable({
                   onClearZone={handleClearZone}
                   wheelType={wheelType}
                   myBets={myBets}
+                  isCompact={tournamentMode}
                 />
               </div>
 
@@ -366,7 +367,7 @@ const RouletteTable = memo(function RouletteTable({
                       onTimeout={() => {
                         if (onTimeout) {
                           onTimeout();
-                        } else if (hasBets && !isSpinning) {
+                        } else if (!isSpinning) {
                           handleSpinClick();
                         }
                       }}

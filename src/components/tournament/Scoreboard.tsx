@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTournament } from '@/lib/tournament/useTournament';
+import { useGame } from '@/context/GameContext';
 import { ChevronUp, ChevronDown, User, Skull, Trophy } from 'lucide-react';
 import { COLORS, FONTS } from '@/styles/theme';
 
@@ -23,6 +24,7 @@ RankMovement.displayName = 'RankMovement';
 
 export default function Scoreboard() {
   const { scores, currentSpin, currentRound, phase, totalSpins } = useTournament();
+  const { userProfile } = useGame();
   const [prevRanks, setPrevRanks] = useState<Record<string, number>>({});
   const [movement, setMovement] = useState<Record<string, 'up' | 'down' | null>>({});
 
@@ -102,7 +104,12 @@ export default function Scoreboard() {
             {scores.map((s, idx) => {
               const pid = s.player_id.toString();
               const m = movement[pid];
-              const isMe = !s.is_bot;
+              
+              // Only highlight the actual current user
+              const isMe = userProfile?.id 
+                ? pid === userProfile.id 
+                : (!s.is_bot && s.username === userProfile?.name);
+
               const isEliminated = s.status === "eliminated";
               const isFirst = s.rank === 1 && !isEliminated;
               const isDanger = !isEliminated && s.rank >= Math.max(3, scores.filter(p => p.status === 'active').length - 1);
@@ -139,7 +146,7 @@ export default function Scoreboard() {
                     backgroundColor: { duration: 0.3 },
                   }}
                   className={`relative flex-1 flex items-center gap-3 px-5 py-5 min-h-[55px] transition-colors ${isEliminated ? 'grayscale' : ''
-                    } ${isMe ? '' : 'hover:bg-white/[0.02]'}`}
+                    } ${isMe ? 'bg-white/[0.03]' : 'hover:bg-white/[0.02]'}`}
                 >
                   {/* Left accent bar for current user */}
                   {isMe && !isEliminated && (

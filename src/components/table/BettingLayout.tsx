@@ -34,6 +34,7 @@ interface BettingLayoutProps {
   onClearZone?: (betId: string) => void;
   wheelType?: 'american' | 'european';
   myBets?: Map<string, PlacedBet>;
+  isCompact?: boolean;
 }
 
 // --- Number Mappings for Outside Bets ---
@@ -65,7 +66,7 @@ function getCellBg(num: number): string {
   const color = getNumberColor(num);
   if (color === 'red') return COLORS.rouletteRed;
   if (color === 'green') return COLORS.rouletteGreen;
-  return '#1e1e1e';
+  return COLORS.rouletteBlack;
 }
 
 function ChipIndicator({ bet, phase, deleteMode, isMine, isHovered }: { bet: PlacedBet; phase: string; deleteMode?: boolean; isMine?: boolean; isHovered?: boolean }) {
@@ -99,6 +100,7 @@ const NumberCell = memo(function NumberCell({
   onPopLastChip,
   onClearZone,
   isMine = true,
+  isCompact = false,
 }: {
   num: number;
   bet: PlacedBet | undefined;
@@ -115,6 +117,7 @@ const NumberCell = memo(function NumberCell({
   onPopLastChip?: (betId: string) => void;
   onClearZone?: (betId: string) => void;
   isMine?: boolean;
+  isCompact?: boolean;
 }) {
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isLongPress, setIsLongPress] = useState(false);
@@ -204,7 +207,7 @@ const NumberCell = memo(function NumberCell({
       className="relative flex items-center justify-center cursor-pointer select-none text-[11px] sm:text-[11px] md:text-sm min-h-[24px] sm:min-h-[30px] md:min-h-[44px] group"
       initial={{ borderColor: (style as any)?.borderColor || '#5ea896' }}
       style={{
-        background: getCellBg(num),
+        background: 'transparent',
         borderWidth: 0,
         borderStyle: 'solid',
         fontFamily: "'Bodoni Moda', serif",
@@ -245,7 +248,30 @@ const NumberCell = memo(function NumberCell({
       }
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
-      {getDisplayNumber(num)}
+      <motion.div
+        className={`${
+          isCompact 
+            ? 'w-[16px] h-[16px] sm:w-[20px] sm:h-[20px] md:w-[24px] md:h-[24px] text-[10px] sm:text-[12px] md:text-[14px]' 
+            : 'w-[22px] h-[22px] sm:w-[28px] sm:h-[28px] md:w-[36px] md:h-[36px] text-[12px] sm:text-[16px] md:text-[20px]'
+        } rounded-full flex items-center justify-center border border-white/10 shadow-lg relative z-10 flex-shrink-0`}
+        style={{
+          backgroundColor: getCellBg(num),
+        }}
+        animate={isWinner ? {
+          scale: [1, 1.15, 1],
+          boxShadow: [
+            `0 0 0px ${COLORS.gold}00`,
+            `0 0 25px ${COLORS.goldLight}`,
+            `0 0 0px ${COLORS.gold}00`,
+          ],
+        } : {
+          scale: 1,
+          boxShadow: '0 0 0px rgba(201, 164, 76, 0)'
+        }}
+        transition={isWinner ? { duration: 1, repeat: Infinity, ease: "easeInOut" } : { duration: 3.3 }}
+      >
+        {getDisplayNumber(num)}
+      </motion.div>
       {bet && (
         <>
           <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} isMine={isMine} isHovered={isHovered} />
@@ -304,6 +330,7 @@ const DropZone = memo(function DropZone({
   onPopLastChip?: (betId: string) => void;
   onClearZone?: (betId: string) => void;
   isMine?: boolean;
+  isCompact?: boolean;
 }) {
   const bet = bets.get(betId);
   const [localHovered, setLocalHovered] = useState(false);
@@ -616,6 +643,7 @@ const BettingLayout = memo(function BettingLayout({
   onClearZone,
   wheelType = 'american',
   myBets,
+  isCompact = false,
 }: BettingLayoutProps) {
   const [hoveredNumbers, setHoveredNumbers] = useState<number[]>([]);
   const [hoveredBetId, setHoveredBetId] = useState<string | null>(null);
@@ -685,6 +713,7 @@ const BettingLayout = memo(function BettingLayout({
             onPopLastChip={onPopLastChip}
             onClearZone={onClearZone}
             isMine={myBets ? myBets.has('straight-0') : true}
+            isCompact={isCompact}
           />
           {wheelType === 'american' && (
             <NumberCell
@@ -706,6 +735,7 @@ const BettingLayout = memo(function BettingLayout({
               onNumberHover={handleNumberHover}
               onNumberHoverEnd={handleNumberHoverEnd}
               isMine={myBets ? myBets.has('straight-00') : true}
+              isCompact={isCompact}
             />
           )}
           {/* Split 0-00 target (American only) */}
@@ -755,6 +785,7 @@ const BettingLayout = memo(function BettingLayout({
                     onPopLastChip={onPopLastChip}
                     onClearZone={onClearZone}
                     isMine={myBets ? myBets.has(betId) : true}
+                    isCompact={isCompact}
                   />
                 );
               })}

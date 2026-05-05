@@ -140,6 +140,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const generatedRef = useRef<string>('');
   const spinSubmittedRef = useRef<string>(''); // Tracks "round-spin" key for submissions
   const isFetchingRef = useRef(false); // Prevent concurrent polls
+  const hasRestoredBetsRef = useRef(false);
 
   const [wheelType, setWheelTypeState] = useState<'american' | 'european'>('american');
 
@@ -249,6 +250,38 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       setTournament(data);
       setCurrentRound(data.current_round || 1);
       
+      // ── Restore local bets from server if we just reloaded/reconnected ──
+      const localBets = betsRef.current;
+      if (!hasRestoredBetsRef.current && localBets.size === 0 && data.players && data.status === 'active' && phaseRef.current === 'betting') {
+        const me = data.players.find((p: any) => 
+          (userProfile.id && p.player_id.toString() === userProfile.id) ||
+          (p.username === userProfile.name && !p.is_bot)
+        );
+        
+        if (me?.pending_bets && me.pending_bets.length > 0) {
+          console.log('[Tournament] Restoring pending bets from server sync...');
+          hasRestoredBetsRef.current = true;
+          const restoredMap = new Map<string, PlacedBet>();
+          me.pending_bets.forEach((b: any) => {
+            const existing = restoredMap.get(b.betId);
+            if (existing) {
+              restoredMap.set(b.betId, {
+                ...existing,
+                amount: existing.amount + b.amount,
+                chips: [...existing.chips, ...(b.chips || [b.amount])]
+              });
+            } else {
+              restoredMap.set(b.betId, {
+                betId: b.betId,
+                amount: b.amount,
+                chips: b.chips || [b.amount]
+              });
+            }
+          });
+          setBets(restoredMap);
+        }
+      }
+      
       if (data.history) {
         setRawHistory(data.history);
       }
@@ -280,8 +313,10 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         if (newRoundId !== roundIdRef.current) {
           setRoundId(newRoundId);
           setCurrentRoundData(round);
+          hasRestoredBetsRef.current = false; // Reset on new round
         } else if (round.spins_completed !== currentRoundData?.spins_completed) {
           setCurrentRoundData(round);
+          hasRestoredBetsRef.current = false; // Reset on new spin
         }
 
         const spinsDone = round.spins_completed || 0;
@@ -472,14 +507,24 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     const key = `${currentRound}-${currentSpin}`;
     if (phase === 'betting' && lastResetKeyRef.current !== key) {
       console.log('[Tournament] Resetting board for', key);
+      
+      // Reset restoration flag so we can potentially restore for THIS spin if we refresh later
+      hasRestoredBetsRef.current = false;
+      
       setBets(new Map());
       setAllSpinBets([]);
-      setBotBets([]);
       setLastPlayerPayout(null);
       setLastSpinResult(null); // Clear previous result so wheel can re-trigger
       lastResetKeyRef.current = key;
+
+      
+      // IMPORTANT: After resetting locally, we mark as 'restored' so the poller 
+      // doesn't pull old bets from the server before it has had a chance to clear them.
+      // This will only be false again if the page is refreshed.
+      hasRestoredBetsRef.current = true;
     }
   }, [phase, currentRound, currentSpin]);
+
 
   // ── Schedule bot bet reveals ──
   useEffect(() => {
@@ -487,25 +532,28 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     const key = `${currentRound}-${currentSpin}`;
     if (generatedRef.current === key) return;
 
+    console.log('[Tournament] Scheduling bot reveals for', key);
     setBotBets([]);
     const spinBotBets = (currentRoundData.bot_bets || []).filter((b: any) => b.spin_number === currentSpin);
-    const base = new Date(currentRoundData.last_spin_completed_at || currentRoundData.created_at).getTime();
+    
+    // We use the current time as the base for new reveals to ensure they spread across the 30s window
+    // even if the result phase lasted longer than expected.
+    const base = Date.now();
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
     spinBotBets.forEach((bet: any) => {
-      const delay = Math.max(0, (base + (bet.reveal_at_ms || 0)) - Date.now());
+      // reveal_at_ms is 0-25000ms. We spread them from "Now"
+      const delay = bet.reveal_at_ms || 0;
+      
       timeouts.push(setTimeout(() => {
-        // Skip visual state updates when hidden to prevent "burst" events on focus
         if (typeof document !== 'undefined' && document.hidden) return;
         
         setBotBets(prev => {
           if (prev.some((b: any) => b.betId === bet.betId)) return prev;
           
-          // Find player color
           const playerIdx = tournament?.players?.findIndex(p => p.player_id.toString() === bet.player_id.toString()) ?? 0;
           const playerColor = PLAYER_COLORS[playerIdx % PLAYER_COLORS.length];
 
-          // Add to betting events feed
           setEvents(curr => [
             {
               id: `${bet.betId}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
@@ -515,7 +563,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
               timestamp: Date.now(),
               color: playerColor
             },
-            ...curr.slice(0, 19) // Keep last 20 events
+            ...curr.slice(0, 19)
           ]);
 
           return [...prev, { player_id: bet.player_id, username: bet.username, betId: bet.betId, amount: bet.amount, chips: bet.chips }];
@@ -524,8 +572,12 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     });
 
     generatedRef.current = key;
-    return () => timeouts.forEach(clearTimeout);
-  }, [phase, currentRound, currentSpin, currentRoundData]);
+    return () => {
+      console.log('[Tournament] Cleaning up bot reveals for', key);
+      timeouts.forEach(clearTimeout);
+    };
+  }, [phase, currentRound, currentSpin, !!currentRoundData]);
+
 
   // Consolidated dismissResult
   const dismissResult = useCallback(() => {
@@ -630,14 +682,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     }
   }, [rawHistory, phase]);
 
-  // ── Lobby countdown timer ──
-  useEffect(() => {
-    if (!tournament || tournament.status !== 'waiting') return;
-    const timer = setInterval(() => {
-      setLobbyTimeRemaining(prev => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [tournament?.status]);
+
 
   // ── declareWinner ──
   const declareWinner = useCallback(async () => {
