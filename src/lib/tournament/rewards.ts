@@ -20,16 +20,26 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
 
   const winner = sorted[0];
   const runnerUp = sorted[1];
+  const thirdPlace = sorted[2];
 
   const currentYear = new Date().getFullYear();
   const playersWithPoints = tournament.players.map((p: any) => {
-    const position = p.player_id.toString() === winner.player_id.toString() ? 1 : 
-                     (runnerUp && p.player_id.toString() === runnerUp.player_id.toString()) ? 2 : 
-                     (p.final_position || 6);
+    // Determine position from sorted list
+    const positionIndex = sorted.findIndex((sp: any) => sp.player_id.toString() === p.player_id.toString());
+    const position = positionIndex !== -1 ? positionIndex + 1 : (p.final_position || 6);
     
-    // RULE: Must have chips > 0 to receive positive points
-    const basePoints = TOURNAMENT_POINTS[position] || -100;
-    const finalPoints = p.current_chips > 0 ? basePoints : Math.min(0, basePoints);
+    // NEW RULES (May 2026):
+    // 1. Must have balance > 0 to get positive points
+    // 2. 1st: 1000, 2nd: 100, 3rd: 50
+    // 3. Positive balance but outside Top 3: 0 points
+    // 4. Zero balance (bust): -50 points, regardless of rank
+    
+    let finalPoints = 0;
+    if (p.current_chips > 0) {
+      finalPoints = TOURNAMENT_POINTS[position] || 0;
+    } else {
+      finalPoints = -50;
+    }
 
     return {
       player_id: p.player_id,

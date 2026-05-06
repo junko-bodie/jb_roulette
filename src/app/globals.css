@@ -29,9 +29,9 @@
   --color-overlay: rgba(0, 0, 0, 0.7);
 
   /* Typography */
-  --font-primary: 'Bodoni Moda', 'Playfair Display', serif;
+  --font-primary: 'Georgia', 'Crimson Pro', serif;
   --font-secondary: 'Inter', 'Helvetica Neue', sans-serif;
-  --font-playfair: 'Bodoni Moda', 'Playfair Display', serif;
+  --font-playfair: 'Georgia', 'Crimson Pro', serif;
   --font-inter: 'Inter', 'Helvetica Neue', sans-serif;
 
   /* Shadows */

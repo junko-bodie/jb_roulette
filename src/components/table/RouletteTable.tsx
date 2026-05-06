@@ -272,7 +272,7 @@ const RouletteTable = memo(function RouletteTable({
               <h1
                 className="text-2xl md:text-3xl tracking-wider"
                 style={{
-                  fontFamily: "'Bodoni Moda', serif",
+                  fontFamily: "'Georgia', serif",
                   fontStyle: 'italic',
                   fontWeight: 900,
                   letterSpacing: '0.15em',
@@ -291,7 +291,7 @@ const RouletteTable = memo(function RouletteTable({
                   className="text-[9px] uppercase tracking-[0.4em]"
                   style={{
                     color: 'rgba(201, 164, 76, 0.5)',
-                    fontFamily: "'Bodoni Moda', serif",
+                    fontFamily: "'Georgia', serif",
                     fontWeight: 700,
                   }}
                 >
@@ -340,7 +340,7 @@ const RouletteTable = memo(function RouletteTable({
                       className="px-8 py-4 rounded-xl border-4 border-[#c9a44c] bg-black/80 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col items-center gap-2"
                       style={{ transform: 'rotate(-5deg)' }}
                     >
-                      <span className="text-4xl font-black text-white tracking-[0.2em] italic" style={{ fontFamily: "'Bodoni Moda', serif" }}>
+                      <span className="text-4xl font-black text-white tracking-[0.2em] italic" style={{ fontFamily: "'Georgia', serif" }}>
                         BETS CLOSED
                       </span>
                       <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" />
@@ -475,7 +475,7 @@ const RouletteTable = memo(function RouletteTable({
                       ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
                       : 'linear-gradient(180deg, #1a1a1a 0%, #111 100%)',
                     color: spinEnabled ? '#ffffff' : '#444',
-                    fontFamily: "'Bodoni Moda', serif",
+                    fontFamily: "'Georgia', serif",
                     fontStyle: 'italic',
                     fontWeight: 900,
                     fontSize: isMobile ? '0.95rem' : '0.9rem',

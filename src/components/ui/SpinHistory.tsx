@@ -31,7 +31,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
     <div className="flex items-center gap-3 px-4 py-1 min-w-0 max-w-full">
       <span
         className="text-sm font-bold uppercase tracking-[0.2em] mr-6 whitespace-nowrap hidden sm:inline-block"
-        style={{ color: '#e0d6c2', fontFamily: "'Bodoni Moda', serif", letterSpacing: '0.2em' }}
+        style={{ color: '#e0d6c2', fontFamily: "'Georgia', serif", letterSpacing: '0.2em' }}
       >
         History
       </span>

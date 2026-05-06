@@ -132,7 +132,7 @@
 }
 
 .logoText {
-  font-family: 'Bodoni Moda', 'Georgia', serif;
+  font-family: 'Georgia', serif;
   font-size: clamp(1.8rem, 4vw, 3.5rem);
   font-weight: 800;
   font-style: italic;

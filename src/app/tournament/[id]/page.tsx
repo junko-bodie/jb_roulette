@@ -1182,7 +1182,7 @@ export default function TournamentPage() {
                   height: '40px',
                   padding: '0 28px',
                   borderRadius: '9px',
-                  fontFamily: "'Bodoni Moda', serif",
+                  fontFamily: "'Georgia', serif",
                   fontStyle: 'italic',
                   fontSize: '13px',
                   fontWeight: 900,

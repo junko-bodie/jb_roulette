@@ -47,7 +47,25 @@ export async function POST(
     const winner = candidates[0];
     const runnerUp = candidates[1];
 
-    // 3. Update Tournament document
+    // 3. Update all candidates with their final positions
+    const bulkUpdateOps = candidates.map((p: any, index: number) => ({
+      updateOne: {
+        filter: { _id: new ObjectId(id), "players.player_id": p.player_id },
+        update: { 
+          $set: { 
+            "players.$.final_position": index + 1, 
+            "players.$.status": index === 0 ? "completed" : "eliminated",
+            "players.$.eliminated_round": 5
+          } 
+        }
+      }
+    }));
+
+    if (bulkUpdateOps.length > 0) {
+      await db.collection('tournaments').bulkWrite(bulkUpdateOps);
+    }
+
+    // 4. Update Tournament document global state
     await db.collection('tournaments').updateOne(
       { _id: new ObjectId(id) },
       {
@@ -58,19 +76,6 @@ export async function POST(
         }
       }
     );
-
-    // Update positions for final remaining players
-    await db.collection('tournaments').updateOne(
-      { _id: new ObjectId(id), "players.player_id": winner.player_id },
-      { $set: { "players.$.final_position": 1, "players.$.status": "completed" } }
-    );
-
-    if (runnerUp) {
-      await db.collection('tournaments').updateOne(
-        { _id: new ObjectId(id), "players.player_id": runnerUp.player_id },
-        { $set: { "players.$.final_position": 2, "players.$.status": "eliminated", "players.$.eliminated_round": 5 } }
-      );
-    }
 
     const results = await awardTournamentRewards(id);
 

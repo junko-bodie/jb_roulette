@@ -8,7 +8,9 @@ const RULES = [
   "Elimination: Lowest score at the end of each round is cut.",
   "Last Player Standing: The final survivor takes the grand prize.",
   "30s Betting Window: Place your bets before the timer hits zero.",
-  "Round-by-Round: Your chips carry over to the next round.",
+  "Positive Balance required: Must finish with > 0 chips to earn points.",
+  "Bust Penalty: -50 points for anyone ending with 0 chips.",
+  "Points: 1st (1000), 2nd (100), 3rd (50) championship points.",
 ];
 
 export default function TournamentRules() {

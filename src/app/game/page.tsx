@@ -307,7 +307,7 @@ export default function GamePage() {
         <div className="flex flex-col">
           <span
             className="text-white font-black text-xl leading-tight tracking-tight shadow-black drop-shadow-lg group-hover:text-[#c9a44c] transition-colors"
-            style={{ fontFamily: "'Bodoni Moda', serif", fontStyle: 'italic' }}
+            style={{ fontFamily: "'Georgia', serif", fontStyle: 'italic' }}
           >
             Hello {userProfile?.name}!
           </span>
