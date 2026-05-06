@@ -24,18 +24,21 @@ function getCircleBg(color: SpinResult['color']): string {
 }
 
 export default function SpinHistory({ history }: SpinHistoryProps) {
+  // Only show the last 15 results to prevent header overflow
+  const displayedHistory = history.slice(0, 15);
+
   return (
-    <div className="flex items-center gap-3 px-4 py-1">
+    <div className="flex items-center gap-3 px-4 py-1 min-w-0 max-w-full">
       <span
-        className="text-sm font-bold uppercase tracking-[0.2em] mr-6 whitespace-nowrap"
+        className="text-sm font-bold uppercase tracking-[0.2em] mr-6 whitespace-nowrap hidden sm:inline-block"
         style={{ color: '#e0d6c2', fontFamily: "'Bodoni Moda', serif", letterSpacing: '0.2em' }}
       >
         History
       </span>
 
-      <div className="flex flex-row items-center justify-start gap-1.5 overflow-hidden">
+      <div className="flex flex-row items-center justify-start gap-1.5 overflow-hidden min-w-0">
         <AnimatePresence mode="popLayout" initial={false}>
-          {history.map((result, index) => {
+          {displayedHistory.map((result, index) => {
             const isNewest = index === 0;
             return (
               <motion.div
@@ -44,7 +47,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
                 initial={{ scale: 0, opacity: 0, x: -30 }}
                 animate={{
                   scale: 1,
-                  opacity: isNewest ? 1 : Math.max(0.4, 0.9 - (index / 25)), // Better opacity falloff
+                  opacity: isNewest ? 1 : Math.max(0.4, 0.9 - (index / 15)), // Better opacity falloff
                   x: 0,
                 }}
                 exit={{ scale: 0, opacity: 0, x: 20 }}

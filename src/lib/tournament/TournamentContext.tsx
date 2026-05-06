@@ -536,15 +536,22 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     setBotBets([]);
     const spinBotBets = (currentRoundData.bot_bets || []).filter((b: any) => b.spin_number === currentSpin);
     
-    // We use the current time as the base for new reveals to ensure they spread across the 30s window
-    // even if the result phase lasted longer than expected.
-    const base = Date.now();
+    // We calculate how much time has already passed in this 30s betting window
+    // to ensure bots reveal at the correct absolute time even after a refresh.
+    const serverNow = Date.now() + serverTimeOffset;
+    const startTime = bettingDeadline - 30000;
+    const elapsed = Math.max(0, serverNow - startTime);
+    
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
     spinBotBets.forEach((bet: any) => {
-      // reveal_at_ms is 0-25000ms. We spread them from "Now"
-      const delay = bet.reveal_at_ms || 0;
+      // reveal_at_ms is the intended delay from the START of the betting phase (0-30000ms)
+      const intendedDelay = bet.reveal_at_ms || 0;
+      const remainingDelay = Math.max(0, intendedDelay - elapsed);
       
+      // If the bet was already supposed to be revealed, show it with a tiny random jitter
+      const finalDelay = remainingDelay > 0 ? remainingDelay : (Math.random() * 1000);
+
       timeouts.push(setTimeout(() => {
         if (typeof document !== 'undefined' && document.hidden) return;
         
@@ -568,7 +575,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
 
           return [...prev, { player_id: bet.player_id, username: bet.username, betId: bet.betId, amount: bet.amount, chips: bet.chips }];
         });
-      }, delay));
+      }, finalDelay));
     });
 
     generatedRef.current = key;

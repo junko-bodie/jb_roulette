@@ -165,11 +165,11 @@ export default function GamePage() {
           justifyContent: 'center',
         }}
       >
-        <div className="flex items-center justify-between w-full px-12 md:px-24 max-w-[1200px] mx-auto">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between w-full px-12 md:px-24 max-w-[1200px] mx-auto min-w-0">
+          <div className="flex items-center gap-4 min-w-0">
             <button
               onClick={() => window.location.href = '/lobby'}
-              className="text-[#c9a44c] hover:text-white transition-colors"
+              className="text-[#c9a44c] hover:text-white transition-colors flex-shrink-0"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

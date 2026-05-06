@@ -767,17 +767,17 @@ export default function TournamentPage() {
           minHeight: '48px',
         }}
       >
-        <div className="flex items-center">
+        <div className="flex items-center min-w-0">
           <button
             onClick={handleLeaveTournament}
-            className="text-[#c9a44c] hover:text-white transition-colors mr-10"
+            className="text-[#c9a44c] hover:text-white transition-colors mr-4 sm:mr-8"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
 
-          <div className="hidden lg:block">
+          <div className="hidden lg:block min-w-0">
             <SpinHistory history={history} />
           </div>
         </div>
@@ -874,11 +874,11 @@ export default function TournamentPage() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="hidden lg:flex flex-shrink-0 flex-col gap-4 py-6 h-full overflow-hidden"
         >
-          <div className="flex-1 flex flex-col min-h-0 h-full">
+          <div className="flex-[1.21] flex flex-col min-h-0">
             <Scoreboard />
           </div>
 
-          <div className="flex-1 flex flex-col min-h-0 h-full">
+          <div className="flex-1 flex flex-col min-h-0">
             <LiveBettingFeed />
           </div>
         </motion.div>

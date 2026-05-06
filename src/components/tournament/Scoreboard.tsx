@@ -145,7 +145,7 @@ export default function Scoreboard() {
                     layout: { type: 'spring', stiffness: 400, damping: 38 },
                     backgroundColor: { duration: 0.3 },
                   }}
-                  className={`relative flex-1 flex items-center gap-3 px-5 py-5 min-h-[55px] transition-colors ${isEliminated ? 'grayscale' : ''
+                  className={`relative flex items-center gap-3 px-5 py-3 min-h-[48px] transition-colors ${isEliminated ? 'grayscale' : ''
                     } ${isMe ? 'bg-white/[0.03]' : 'hover:bg-white/[0.02]'}`}
                 >
                   {/* Left accent bar for current user */}
