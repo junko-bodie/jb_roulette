@@ -778,7 +778,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         final_position: p.final_position,
         has_champion_badge: p.has_champion_badge,
         color: PLAYER_COLORS[originalIndex % PLAYER_COLORS.length],
-        currentWager
+        currentWager,
+        points_earned: p.points_earned
       };
     });
 

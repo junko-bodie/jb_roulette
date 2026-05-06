@@ -1,16 +1,6 @@
 import { getDb } from '@/lib/db/mongodb';
 import { ObjectId } from 'mongodb';
-
-export const TOURNAMENT_POINTS: Record<number, number> = {
-  1: 1000,
-  2: 100,
-  3: 50,
-  4: -50,
-  5: -50,
-  6: -50
-};
-
-export const ELITE_THRESHOLD = 500;
+import { TOURNAMENT_POINTS } from './points';
 
 export async function awardTournamentRewards(tournamentId: string | ObjectId) {
   const db = await getDb();
@@ -37,16 +27,32 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
                      (runnerUp && p.player_id.toString() === runnerUp.player_id.toString()) ? 2 : 
                      (p.final_position || 6);
     
+    // RULE: Must have chips > 0 to receive positive points
+    const basePoints = TOURNAMENT_POINTS[position] || -100;
+    const finalPoints = p.current_chips > 0 ? basePoints : Math.min(0, basePoints);
+
     return {
       player_id: p.player_id,
       username: p.username,
       is_bot: p.is_bot,
       position,
-      total_points: TOURNAMENT_POINTS[position] || -50,
+      total_points: finalPoints,
       final_chips: p.current_chips,
       supabase_id: p.supabase_id
     };
   });
+
+  // Update Tournament document with calculated points for all players
+  const bulkUpdateOps = playersWithPoints.map((p: any) => ({
+    updateOne: {
+      filter: { _id: tId, "players.player_id": p.player_id },
+      update: { $set: { "players.$.points_earned": p.total_points } }
+    }
+  }));
+
+  if (bulkUpdateOps.length > 0) {
+    await db.collection('tournaments').bulkWrite(bulkUpdateOps);
+  }
 
   // Update Real Player Profile
   const realPlayerResult = playersWithPoints.find((p: any) => !p.is_bot);
@@ -62,7 +68,10 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
       const isWinner = realPlayerResult.position === 1;
       const newPoints = (profile.season?.points || 0) + realPlayerResult.total_points;
       const totalWins = (profile.stats?.tournaments_won || 0) + (isWinner ? 1 : 0);
-      const hasEliteStatus = newPoints >= ELITE_THRESHOLD;
+      
+      // Use threshold from points.ts if available, else 5000
+      const eliteThreshold = 5000; 
+      const hasEliteStatus = newPoints >= eliteThreshold;
 
       const updateFields: any = {
         "stats.tournaments_played": (profile.stats?.tournaments_played || 0) + 1,
@@ -73,7 +82,7 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
         "updated_at": new Date()
       };
 
-      if (isWinner) updateFields["badges.champion"] = true;
+      if (isWinner && realPlayerResult.final_chips > 0) updateFields["badges.champion"] = true;
       if (hasEliteStatus) updateFields["badges.elite_status"] = true;
 
       await db.collection('user_profiles').updateOne({ _id: profile._id }, { $set: updateFields });

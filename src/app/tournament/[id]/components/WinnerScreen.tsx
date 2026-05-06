@@ -19,16 +19,6 @@ interface WinnerScreenProps {
 }
 
 export default function WinnerScreen({ tournament, player }: WinnerScreenProps) {
-  useEffect(() => {
-    const realPlayer = tournament.players.find((p: any) => !p.is_bot);
-    if (player.username === realPlayer?.username) {
-      fetch(`/api/tournament/${tournament._id}/rewards`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => console.log('Rewards processed:', data))
-        .catch(err => console.error('Rewards error:', err));
-    }
-  }, []);
-
   const isWinner = player.final_position === 1;
 
   useEffect(() => {
@@ -56,7 +46,11 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
     });
   }, [tournament]);
 
-  const pointsEarned = (7 - player.final_position) * 250 + Math.floor(player.final_chips / 10);
+  const pointsEarned = useMemo(() => {
+    const p = tournament.players.find((p: any) => p.username === player.username);
+    return p?.points_earned ?? 0;
+  }, [tournament, player]);
+
   const realPlayer = tournament.players.find((p: any) => !p.is_bot);
   const rankColors: Record<number, string> = { 1: '#f59e0b', 2: '#94a3b8', 3: '#cd7c2f' };
 
