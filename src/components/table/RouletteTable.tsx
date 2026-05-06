@@ -150,7 +150,7 @@ const RouletteTable = memo(function RouletteTable({
           className="relative rounded-[14px] sm:rounded-[24px] md:rounded-[32px] border-b-4 border-black/40 flex flex-row items-center justify-start sm:justify-center gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full md:h-full"
           style={{
             background: 'radial-gradient(circle at 50% 50%, #0d2e23 0%, #051410 100%)',
-            padding: isMobile ? '0.05rem 0.2rem 0.2rem 0.2rem' : '0.02rem 1.8rem 1.2rem 0.8rem',
+            padding: isMobile ? '0rem 0rem 0.1rem 0rem' : '0.02rem 1.8rem 1.2rem 0.8rem',
             zIndex: 2,
             boxShadow: `
               inset 0 0 80px rgba(0,0,0,0.8),
@@ -189,7 +189,7 @@ const RouletteTable = memo(function RouletteTable({
                 className="absolute flex items-center gap-1 sm:gap-2 z-30"
                 style={{
                   fontFamily: 'var(--font-inter)',
-                  bottom: isMobile ? '-10px' : '-40px',
+                  bottom: isMobile ? '8px' : '-40px',
                   left: '50%',
                   transform: 'translateX(-50%)',
                   background: 'rgba(0,0,0,0.75)',
@@ -208,7 +208,7 @@ const RouletteTable = memo(function RouletteTable({
                   onClick={() => setWheelType('american')}
                   className="rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
                   style={{
-                    padding: isMobile ? '3px 8px' : '10px 32px',
+                    padding: isMobile ? '5px 12px' : '10px 32px',
                     background: wheelType === 'american'
                       ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
                       : 'rgba(255,255,255,0.05)',
@@ -230,7 +230,7 @@ const RouletteTable = memo(function RouletteTable({
                   onClick={() => setWheelType('european')}
                   className="rounded-full transition-all duration-300 cursor-pointer flex-1 text-center"
                   style={{
-                    padding: isMobile ? '3px 8px' : '10px 32px',
+                    padding: isMobile ? '5px 12px' : '10px 32px',
                     background: wheelType === 'european'
                       ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
                       : 'rgba(255,255,255,0.05)',
@@ -252,9 +252,8 @@ const RouletteTable = memo(function RouletteTable({
             )}
           </motion.div>
 
-          {/* Table Section (Right) */}
           <motion.div
-            className="flex flex-col items-center justify-start p-0.5 sm:p-2 mobile-table-section w-full"
+            className="flex flex-col items-center justify-start p-0.5 sm:p-2 mobile-table-section w-full min-w-0"
             initial={{ opacity: 0, x: 20, scale: 0.95, flex: 2 }}
             animate={isMobile
               ? { opacity: isSpinning ? 0 : 1, scale: isSpinning ? 0.9 : 1, y: 0, flex: 'none' }
@@ -307,7 +306,7 @@ const RouletteTable = memo(function RouletteTable({
             {/* Betting Grid Section with Blur & Overlay */}
             <div className="w-full relative">
               <div
-                className="transition-all duration-700"
+                className="transition-all duration-700 w-full"
                 style={{ filter: isLocked || isSpinning ? 'blur(8px)' : 'none' }}
               >
                 <BettingLayout
@@ -355,7 +354,7 @@ const RouletteTable = memo(function RouletteTable({
             {/* ═══ BUTTONS — directly below betting grid (hidden in tournament mode) ═══ */}
             {!tournamentMode && (
               <div
-                className={`flex flex-nowrap items-center justify-center sm:justify-end gap-2 sm:gap-4 md:gap-8 mt-24 sm:mt-40 md:mt-56 mb-4 sm:mb-8 md:mb-12 w-full pr-1 sm:pr-2 md:pr-12`}
+                className={`flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-end gap-0 sm:gap-4 md:gap-8 mt-1 sm:mt-40 md:mt-56 mb-2 sm:mb-8 md:mb-12 w-full px-0 sm:pr-12`}
                 style={{ transform: 'scaleX(1.0) scaleY(1.0)' }}
               >
                 {/* Timer UI - only show if betting and timer enabled */}
@@ -405,7 +404,7 @@ const RouletteTable = memo(function RouletteTable({
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
                     border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
                     borderRadius: '10px',
-                    padding: isMobile ? '10px 18px' : '8px 16px',
+                    padding: isMobile ? '7px 9px' : '8px 16px',
                     lineHeight: 1,
                     boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
@@ -428,7 +427,7 @@ const RouletteTable = memo(function RouletteTable({
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
                     border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
                     borderRadius: '10px',
-                    padding: isMobile ? '10px 18px' : '8px 16px',
+                    padding: isMobile ? '7px 9px' : '8px 16px',
                     lineHeight: 1,
                     boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
@@ -451,7 +450,7 @@ const RouletteTable = memo(function RouletteTable({
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
                     border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
                     borderRadius: '10px',
-                    padding: isMobile ? '10px 18px' : '8px 16px',
+                    padding: isMobile ? '7px 9px' : '8px 16px',
                     lineHeight: 1,
                     boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
@@ -482,7 +481,7 @@ const RouletteTable = memo(function RouletteTable({
                     fontSize: isMobile ? '0.95rem' : '0.9rem',
                     letterSpacing: '0.25em',
                     textTransform: 'uppercase' as const,
-                    padding: isMobile ? '10px 24px' : '10px 32px',
+                    padding: isMobile ? '7px 16px' : '10px 32px',
                     borderRadius: '9999px',
                     borderWidth: spinEnabled ? '3px' : '2px',
                     borderStyle: 'solid',

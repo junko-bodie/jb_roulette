@@ -50,7 +50,7 @@ export default function BettingControlButtons({
         disabled={!canDouble}
         whileHover={canDouble ? { scale: 1.12 } : {}}
         whileTap={canDouble ? { scale: 0.9 } : {}}
-        className="relative w-[2.7rem] h-[2.7rem] rounded-full font-black text-xs uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+        className="relative w-[2.2rem] h-[2.2rem] sm:w-[2.7rem] sm:h-[2.7rem] rounded-full font-black text-xs uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
         title="Double all bets"
         style={{
           background: canDouble
@@ -78,7 +78,7 @@ export default function BettingControlButtons({
         disabled={!canDelete}
         whileHover={canDelete ? { scale: 1.12 } : {}}
         whileTap={canDelete ? { scale: 0.9 } : {}}
-        className="relative w-[2.7rem] h-[2.7rem] rounded-full font-black text-sm uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+        className="relative w-[2.2rem] h-[2.2rem] sm:w-[2.7rem] sm:h-[2.7rem] rounded-full font-black text-sm uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
         title="Toggle delete mode (tap to remove chip, long press to clear zone)"
         style={{
           background: deleteMode

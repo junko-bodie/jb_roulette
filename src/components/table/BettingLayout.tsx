@@ -204,7 +204,7 @@ const NumberCell = memo(function NumberCell({
       onPointerLeave={deleteMode ? handlePointerLeave : undefined}
       onMouseEnter={() => !disabled && onNumberHover?.(num)}
       onMouseLeave={() => !disabled && onNumberHoverEnd?.()}
-      className="relative flex items-center justify-center cursor-pointer select-none text-[11px] sm:text-[11px] md:text-sm min-h-[24px] sm:min-h-[30px] md:min-h-[44px] group"
+      className="relative flex items-center justify-center cursor-pointer select-none text-[11px] sm:text-[11px] md:text-sm min-h-[44px] sm:min-h-[30px] md:min-h-[44px] group"
       initial={{ borderColor: (style as any)?.borderColor || '#5ea896' }}
       style={{
         background: 'transparent',
@@ -574,7 +574,7 @@ const OutsideBetCell = memo(function OutsideBetCell({
       onContextMenu={handleContextMenu}
       onMouseEnter={() => !disabled && onHover?.(numbers)}
       onMouseLeave={() => !disabled && onHoverEnd?.()}
-      className={`relative flex items-center justify-center cursor-pointer select-none text-[10px] sm:text-[9px] md:text-xs min-h-[28px] sm:min-h-[36px] md:min-h-[42px] group ${className}`}
+      className={`relative flex items-center justify-center cursor-pointer select-none text-[10px] sm:text-[9px] md:text-xs min-h-[48px] sm:min-h-[36px] md:min-h-[42px] group ${className}`}
       initial={{ borderColor: '#5ea896' }}
       style={{
         background: isRed === true ? COLORS.rouletteRed : isRed === false ? '#1e1e1e' : 'transparent',
