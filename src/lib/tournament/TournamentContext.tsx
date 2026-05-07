@@ -433,7 +433,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       await loadTournament();
       // Throttle background polling to 15s to prevent catch-up bursts on focus
       const isHidden = typeof document !== 'undefined' && document.hidden;
-      timeoutId = setTimeout(poll, isHidden ? 15000 : 2000);
+      timeoutId = setTimeout(poll, isHidden ? 15000 : 1000);
     };
 
     poll();

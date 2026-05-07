@@ -12,6 +12,7 @@ interface ResultDisplayProps {
   payout: PayoutResult | null;
   visible: boolean;
   onDismiss: () => void;
+  tournamentMode?: boolean;
 }
 
 function getNumberColor(color: SpinResult['color']): string {
@@ -44,13 +45,14 @@ function AnimatedCounter({ value, duration = 1200 }: { value: number; duration?:
   return <>{(value === 0 ? 0 : display).toLocaleString()}</>;
 }
 
-export default function ResultDisplay({ result, payout, visible, onDismiss }: ResultDisplayProps) {
+export default function ResultDisplay({ result, payout, visible, onDismiss, tournamentMode }: ResultDisplayProps) {
   useEffect(() => {
     if (visible && result) {
-      const timer = setTimeout(onDismiss, 5000);
+      const duration = tournamentMode ? 3500 : 5000;
+      const timer = setTimeout(onDismiss, duration);
       return () => clearTimeout(timer);
     }
-  }, [visible, result, onDismiss]);
+  }, [visible, result, onDismiss, tournamentMode]);
 
   return (
     <AnimatePresence>
@@ -69,31 +71,36 @@ export default function ResultDisplay({ result, payout, visible, onDismiss }: Re
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.97 }}
             transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
-            className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-white/[0.06]"
+            className={`relative w-full ${tournamentMode ? 'overflow-visible' : 'overflow-hidden'} rounded-2xl ${tournamentMode ? 'max-w-md' : 'max-w-sm'}`}
             style={{
-              background: 'rgba(10, 12, 16, 0.98)',
-              boxShadow: '0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
+              background: tournamentMode ? 'transparent' : 'rgba(10, 12, 16, 0.98)',
+              border: tournamentMode ? 'none' : '1px solid rgba(255,255,255,0.06)',
+              boxShadow: tournamentMode ? 'none' : '0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
             }}
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-6 pt-6 pb-5 flex items-center justify-between border-b border-white/[0.05]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-1 h-5 rounded-full bg-amber-400" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
-                  Result
+            {!tournamentMode && (
+              <div className="px-6 pt-6 pb-5 flex items-center justify-between border-b border-white/[0.05]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-1 h-5 rounded-full bg-amber-400" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                    Result
+                  </span>
+                </div>
+                <span className="text-[10px] text-white/25 font-medium uppercase tracking-wider">
+                  Round complete
                 </span>
               </div>
-              <span className="text-[10px] text-white/25 font-medium uppercase tracking-wider">
-                Round complete
-              </span>
-            </div>
+            )}
 
             {/* Winning Number */}
-            <div className="flex flex-col items-center py-10 gap-2 border-b border-white/[0.05]">
-              <span className="text-[10px] text-white/25 font-medium uppercase tracking-[0.2em] mb-2">
-                Winning Number
-              </span>
+            <div className={`flex flex-col items-center ${tournamentMode ? 'py-16' : 'py-10'} gap-2 ${!tournamentMode ? 'border-b border-white/[0.05]' : ''}`}>
+              {!tournamentMode && (
+                <span className="text-[10px] text-white/25 font-medium uppercase tracking-[0.2em] mb-2">
+                  Winning Number
+                </span>
+              )}
 
               <motion.div
                 initial={{ scale: 0.6, opacity: 0 }}
@@ -103,39 +110,53 @@ export default function ResultDisplay({ result, payout, visible, onDismiss }: Re
               >
                 {/* Subtle glow behind number */}
                 <div
-                  className="absolute inset-0 rounded-full blur-2xl opacity-20"
-                  style={{ backgroundColor: getNumberColor(result.color), transform: 'scale(1.8)' }}
+                  className="absolute inset-0 rounded-full blur-3xl opacity-30"
+                  style={{
+                    backgroundColor: getNumberColor(result.color),
+                    transform: tournamentMode ? 'scale(2.5)' : 'scale(1.8)'
+                  }}
                 />
                 <span
-                  className="relative text-[96px] font-black leading-none tabular-nums"
+                  className="relative font-black tabular-nums"
                   style={{
                     color: getNumberColor(result.color),
-                    fontFamily: 'var(--font-playfair)',
+                    fontFamily: "'Georgia', serif",
+                    fontSize: tournamentMode ? 'min(240px, 50vw)' : '96px',
                     letterSpacing: '-0.02em',
+                    textShadow: tournamentMode ? `0 0 40px ${getNumberColor(result.color)}44` : 'none',
+                    lineHeight: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: tournamentMode ? '280px' : 'auto',
+                    paddingTop: tournamentMode ? '20px' : '0',
+                    paddingBottom: tournamentMode ? '20px' : '0'
                   }}
                 >
                   {result.displayNumber}
                 </span>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="flex items-center gap-2 mt-1"
-              >
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: getNumberColor(result.color) }}
-                />
-                <span className="text-[11px] font-medium text-white/35 uppercase tracking-widest">
-                  {result.color}
-                </span>
-              </motion.div>
+              {!tournamentMode && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex items-center gap-2 mt-1"
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: getNumberColor(result.color) }}
+                  />
+                  <span className="text-[11px] font-medium text-white/35 uppercase tracking-widest">
+                    {result.color}
+                  </span>
+                </motion.div>
+              )}
             </div>
 
             {/* Payout rows */}
-            {payout && (
+            {payout && !tournamentMode && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -190,48 +211,50 @@ export default function ResultDisplay({ result, payout, visible, onDismiss }: Re
             )}
 
             {/* Footer */}
-            <div className="relative px-6 py-4 border-t border-white/[0.05] flex items-center justify-between">
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                className="text-[10px] font-semibold uppercase tracking-[0.2em]"
-                style={{
-                  color:
-                    payout && payout.netResult > 0
-                      ? 'rgba(245,158,11,0.6)'
-                      : 'rgba(255,255,255,0.2)',
-                }}
-              >
-                {payout
-                  ? payout.netResult > 3000
-                    ? 'Incredible streak'
-                    : payout.netResult > 0
-                      ? 'Nice win'
-                      : payout.netResult === 0
-                        ? 'Keep going'
-                        : 'Try again'
-                  : ''}
-              </motion.span>
+            {!tournamentMode && (
+              <div className="relative px-6 py-4 border-t border-white/[0.05] flex items-center justify-between">
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2 }}
+                  className="text-[10px] font-semibold uppercase tracking-[0.2em]"
+                  style={{
+                    color:
+                      payout && payout.netResult > 0
+                        ? 'rgba(245,158,11,0.6)'
+                        : 'rgba(255,255,255,0.2)',
+                  }}
+                >
+                  {payout
+                    ? payout.netResult > 3000
+                      ? 'Incredible streak'
+                      : payout.netResult > 0
+                        ? 'Nice win'
+                        : payout.netResult === 0
+                          ? 'Keep going'
+                          : 'Try again'
+                    : ''}
+                </motion.span>
 
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.4 }}
-                className="text-[10px] text-white/20 font-medium uppercase tracking-wider"
-              >
-                Tap to continue
-              </motion.span>
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.4 }}
+                  className="text-[10px] text-white/20 font-medium uppercase tracking-wider"
+                >
+                  Tap to continue
+                </motion.span>
 
-              {/* Shimmer bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-white/[0.04] overflow-hidden">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 3.5, repeat: Infinity, ease: 'linear' }}
-                />
+                {/* Shimmer bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-white/[0.04] overflow-hidden">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 3.5, repeat: Infinity, ease: 'linear' }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
         </motion.div>
       )}

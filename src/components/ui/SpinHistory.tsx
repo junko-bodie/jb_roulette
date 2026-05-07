@@ -18,7 +18,7 @@ interface SpinHistoryProps {
 function getCircleBg(color: SpinResult['color']): string {
   switch (color) {
     case 'red': return COLORS.rouletteRed;
-    case 'black': return '#1e1e1e';
+    case 'black': return '#2a2a2a'; // Lighter black for better visibility
     case 'green': return COLORS.rouletteGreen;
   }
 }
@@ -31,7 +31,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
     <div className="flex items-center gap-3 px-4 py-1 min-w-0 max-w-full">
       <span
         className="text-sm font-bold uppercase tracking-[0.2em] mr-6 whitespace-nowrap hidden sm:inline-block"
-        style={{ color: '#e0d6c2', fontFamily: "'Georgia', serif", letterSpacing: '0.2em' }}
+        style={{ color: '#f5edd5', fontFamily: "'Georgia', serif", letterSpacing: '0.2em' }}
       >
         History
       </span>
@@ -47,7 +47,7 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
                 initial={{ scale: 0, opacity: 0, x: -30 }}
                 animate={{
                   scale: 1,
-                  opacity: isNewest ? 1 : Math.max(0.4, 0.9 - (index / 15)), // Better opacity falloff
+                  opacity: isNewest ? 1 : Math.max(0.65, 1 - (index / 20)), // Significantly brighter falloff
                   x: 0,
                 }}
                 exit={{ scale: 0, opacity: 0, x: 20 }}
@@ -61,15 +61,15 @@ export default function SpinHistory({ history }: SpinHistoryProps) {
                   background: getCircleBg(result.color),
                   border: isNewest
                     ? `2px solid ${COLORS.gold}`
-                    : '1px solid rgba(255,255,255,0.1)',
+                    : '1px solid rgba(255,255,255,0.25)', // Brighter border
                   boxShadow: isNewest
                     ? `0 0 12px ${getCircleBg(result.color)}50, 0 0 4px ${COLORS.gold}40`
-                    : '0 1px 3px rgba(0,0,0,0.3)',
+                    : '0 1px 4px rgba(0,0,0,0.4)',
                 }}
               >
                 <span
-                  className="text-white font-semibold"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: '0.75rem' }}
+                  className="text-white font-bold" // Increased weight
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: '0.85rem' }} // Slightly larger font
                 >
                   {result.displayNumber}
                 </span>

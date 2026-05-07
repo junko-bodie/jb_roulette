@@ -249,11 +249,10 @@ const NumberCell = memo(function NumberCell({
       transition={isWinner ? { duration: 1, repeat: 3 } : { duration: 0.15 }}
     >
       <motion.div
-        className={`${
-          isCompact 
-            ? 'w-[16px] h-[16px] sm:w-[20px] sm:h-[20px] md:w-[24px] md:h-[24px] text-[10px] sm:text-[12px] md:text-[14px]' 
-            : 'w-[22px] h-[22px] sm:w-[28px] sm:h-[28px] md:w-[36px] md:h-[36px] text-[12px] sm:text-[16px] md:text-[20px]'
-        } rounded-full flex items-center justify-center border border-white/10 shadow-lg relative z-10 flex-shrink-0`}
+        className={`${isCompact
+          ? 'w-[16px] h-[16px] sm:w-[20px] sm:h-[20px] md:w-[24px] md:h-[24px] text-[10px] sm:text-[12px] md:text-[14px]'
+          : 'w-[22px] h-[22px] sm:w-[28px] sm:h-[28px] md:w-[36px] md:h-[36px] text-[12px] sm:text-[16px] md:text-[20px]'
+          } rounded-full flex items-center justify-center border border-white/10 shadow-lg relative z-10 flex-shrink-0`}
         style={{
           backgroundColor: getCellBg(num),
         }}
@@ -275,15 +274,17 @@ const NumberCell = memo(function NumberCell({
       {bet && (
         <>
           <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} isMine={isMine} isHovered={isHovered} />
-          <motion.div
-            variants={{
-              hover: { opacity: 1, transition: { duration: 0.2 } }
-            }}
-            initial={{ opacity: 0 }}
-            className="absolute -top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none"
-          >
-            ${bet.amount.toLocaleString()}
-          </motion.div>
+          {!isCompact && (
+            <motion.div
+              variants={{
+                hover: { opacity: 1, transition: { duration: 0.2 } }
+              }}
+              initial={{ opacity: 0 }}
+              className="absolute -top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none"
+            >
+              ${bet.amount.toLocaleString()}
+            </motion.div>
+          )}
         </>
       )}
 
@@ -311,6 +312,7 @@ const DropZone = memo(function DropZone({
   onPopLastChip,
   onClearZone,
   isMine = true,
+  isCompact = false,
 }: {
   betId: string;
   x: string;
@@ -432,16 +434,17 @@ const DropZone = memo(function DropZone({
       {bet && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} isMine={isMine} isHovered={localHovered} />
-          {/* Tooltip */}
-          <motion.div
-            variants={{
-              hover: { opacity: 1, transition: { duration: 0.2 } }
-            }}
-            initial={{ opacity: 0 }}
-            className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50"
-          >
-            ${bet.amount.toLocaleString()}
-          </motion.div>
+          {!isCompact && (
+            <motion.div
+              variants={{
+                hover: { opacity: 1, transition: { duration: 0.2 } }
+              }}
+              initial={{ opacity: 0 }}
+              className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50"
+            >
+              ${bet.amount.toLocaleString()}
+            </motion.div>
+          )}
         </div>
       )}
       {isWinner && (
@@ -476,6 +479,7 @@ const OutsideBetCell = memo(function OutsideBetCell({
   onClearZone,
   isMine = true,
   isHovered = false,
+  isCompact = false,
 }: {
   label: React.ReactNode;
   bet: PlacedBet | undefined;
@@ -496,6 +500,7 @@ const OutsideBetCell = memo(function OutsideBetCell({
   onClearZone?: (betId: string) => void;
   isMine?: boolean;
   isHovered?: boolean;
+  isCompact?: boolean;
 }) {
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isLongPress, setIsLongPress] = useState(false);
@@ -613,16 +618,17 @@ const OutsideBetCell = memo(function OutsideBetCell({
       {bet && (
         <>
           <ChipIndicator bet={bet} phase={phase} deleteMode={deleteMode} isMine={isMine} isHovered={isHovered} />
-          {/* Tooltip */}
-          <motion.div
-            variants={{
-              hover: { opacity: 1, transition: { duration: 0.2 } }
-            }}
-            initial={{ opacity: 0 }}
-            className="absolute top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none"
-          >
-            ${bet.amount.toLocaleString()}
-          </motion.div>
+          {!isCompact && (
+            <motion.div
+              variants={{
+                hover: { opacity: 1, transition: { duration: 0.2 } }
+              }}
+              initial={{ opacity: 0 }}
+              className="absolute top-1 left-1/2 -translate-x-1/2 bg-black/90 text-[#c9a44c] text-[10px] font-bold py-1 px-2 rounded shadow-xl border border-[#c9a44c]/40 backdrop-blur-sm whitespace-nowrap z-50 pointer-events-none"
+            >
+              ${bet.amount.toLocaleString()}
+            </motion.div>
+          )}
         </>
       )}
     </motion.button>
@@ -873,6 +879,7 @@ const BettingLayout = memo(function BettingLayout({
               isMine={myBets ? myBets.has(item.id) : true}
               style={{ borderBottom: '1px solid #5ea896' }}
               isHovered={hoveredNumbers.length === 12 && item.nums.every(n => hoveredNumbers.includes(n))}
+              isCompact={isCompact}
             />
           ))}
         </div>
@@ -882,9 +889,9 @@ const BettingLayout = memo(function BettingLayout({
       <div className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full bg-black/10">
         <div className="bg-transparent" />
         <div className="grid grid-cols-3 gap-0 border-l border-[#5ea896]">
-          <OutsideBetCell label="1st 12" bet={bets.get('dozen-1st')} onPlace={() => onPlaceBet('dozen-1st')} onRemove={() => onRemoveBet('dozen-1st')} disabled={disabled} isWinner={isBetWinner('dozen-1st')} phase={phase} numbers={DOZEN_1ST} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-1st" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-1st') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_1ST.every(n => hoveredNumbers.includes(n))} />
-          <OutsideBetCell label="2nd 12" bet={bets.get('dozen-2nd')} onPlace={() => onPlaceBet('dozen-2nd')} onRemove={() => onRemoveBet('dozen-2nd')} disabled={disabled} isWinner={isBetWinner('dozen-2nd')} phase={phase} numbers={DOZEN_2ND} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-2nd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-2nd') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_2ND.every(n => hoveredNumbers.includes(n))} />
-          <OutsideBetCell label="3rd 12" bet={bets.get('dozen-3rd')} onPlace={() => onPlaceBet('dozen-3rd')} onRemove={() => onRemoveBet('dozen-3rd')} disabled={disabled} isWinner={isBetWinner('dozen-3rd')} phase={phase} numbers={DOZEN_3RD} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-3rd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-3rd') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_3RD.every(n => hoveredNumbers.includes(n))} />
+          <OutsideBetCell label="1st 12" bet={bets.get('dozen-1st')} onPlace={() => onPlaceBet('dozen-1st')} onRemove={() => onRemoveBet('dozen-1st')} disabled={disabled} isWinner={isBetWinner('dozen-1st')} phase={phase} numbers={DOZEN_1ST} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-1st" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-1st') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_1ST.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
+          <OutsideBetCell label="2nd 12" bet={bets.get('dozen-2nd')} onPlace={() => onPlaceBet('dozen-2nd')} onRemove={() => onRemoveBet('dozen-2nd')} disabled={disabled} isWinner={isBetWinner('dozen-2nd')} phase={phase} numbers={DOZEN_2ND} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-2nd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-2nd') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_2ND.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
+          <OutsideBetCell label="3rd 12" bet={bets.get('dozen-3rd')} onPlace={() => onPlaceBet('dozen-3rd')} onRemove={() => onRemoveBet('dozen-3rd')} disabled={disabled} isWinner={isBetWinner('dozen-3rd')} phase={phase} numbers={DOZEN_3RD} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-3rd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-3rd') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_3RD.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
         </div>
         <div className="bg-transparent" />
       </div>
@@ -893,8 +900,8 @@ const BettingLayout = memo(function BettingLayout({
       <div className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full rounded-b-lg bg-black/10">
         <div className="bg-transparent" />
         <div className="grid grid-cols-6 gap-0 border-l border-b border-[#5ea896]">
-          <OutsideBetCell label="1-18" bet={bets.get('low')} onPlace={() => onPlaceBet('low')} onRemove={() => onRemoveBet('low')} disabled={disabled} isWinner={isBetWinner('low')} phase={phase} numbers={LOW_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="low" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('low') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && LOW_NUMBERS.every(n => hoveredNumbers.includes(n))} className="rounded-bl-lg" />
-          <OutsideBetCell label="Even" bet={bets.get('even')} onPlace={() => onPlaceBet('even')} onRemove={() => onRemoveBet('even')} disabled={disabled} isWinner={isBetWinner('even')} phase={phase} numbers={EVEN_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="even" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('even') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && EVEN_NUMBERS.every(n => hoveredNumbers.includes(n))} />
+          <OutsideBetCell label="1-18" bet={bets.get('low')} onPlace={() => onPlaceBet('low')} onRemove={() => onRemoveBet('low')} disabled={disabled} isWinner={isBetWinner('low')} phase={phase} numbers={LOW_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="low" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('low') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && LOW_NUMBERS.every(n => hoveredNumbers.includes(n))} className="rounded-bl-lg" isCompact={isCompact} />
+          <OutsideBetCell label="Even" bet={bets.get('even')} onPlace={() => onPlaceBet('even')} onRemove={() => onRemoveBet('even')} disabled={disabled} isWinner={isBetWinner('even')} phase={phase} numbers={EVEN_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="even" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('even') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && EVEN_NUMBERS.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
           <OutsideBetCell
             label={
               <span className="text-[9px] sm:text-[11px] md:text-[13px] font-black uppercase tracking-tighter">Red</span>
@@ -915,6 +922,7 @@ const BettingLayout = memo(function BettingLayout({
             isMine={myBets ? myBets.has('red') : true}
             style={{ borderRight: '1px solid #5ea896', background: '#bd222e' }}
             isHovered={hoveredNumbers.length === 18 && RED_NUMBERS.every(n => hoveredNumbers.includes(n))}
+            isCompact={isCompact}
           />
           <OutsideBetCell
             label={
@@ -936,9 +944,10 @@ const BettingLayout = memo(function BettingLayout({
             isMine={myBets ? myBets.has('black') : true}
             style={{ borderRight: '1px solid #5ea896', background: '#1e1e1e' }}
             isHovered={hoveredNumbers.length === 18 && BLACK_NUMBERS.every(n => hoveredNumbers.includes(n))}
+            isCompact={isCompact}
           />
-          <OutsideBetCell label="Odd" bet={bets.get('odd')} onPlace={() => onPlaceBet('odd')} onRemove={() => onRemoveBet('odd')} disabled={disabled} isWinner={isBetWinner('odd')} phase={phase} numbers={ODD_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="odd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('odd') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && ODD_NUMBERS.every(n => hoveredNumbers.includes(n))} />
-          <OutsideBetCell label="19-36" bet={bets.get('high')} onPlace={() => onPlaceBet('high')} onRemove={() => onRemoveBet('high')} disabled={disabled} isWinner={isBetWinner('high')} phase={phase} numbers={HIGH_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="high" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('high') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && HIGH_NUMBERS.every(n => hoveredNumbers.includes(n))} className="rounded-br-lg" />
+          <OutsideBetCell label="Odd" bet={bets.get('odd')} onPlace={() => onPlaceBet('odd')} onRemove={() => onRemoveBet('odd')} disabled={disabled} isWinner={isBetWinner('odd')} phase={phase} numbers={ODD_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="odd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('odd') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && ODD_NUMBERS.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
+          <OutsideBetCell label="19-36" bet={bets.get('high')} onPlace={() => onPlaceBet('high')} onRemove={() => onRemoveBet('high')} disabled={disabled} isWinner={isBetWinner('high')} phase={phase} numbers={HIGH_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="high" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('high') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && HIGH_NUMBERS.every(n => hoveredNumbers.includes(n))} className="rounded-br-lg" isCompact={isCompact} />
         </div>
         <div className="bg-transparent" />
       </div>

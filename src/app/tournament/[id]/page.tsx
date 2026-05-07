@@ -128,10 +128,10 @@ export default function TournamentPage() {
   useEffect(() => {
     if (phase === "result") {
       setShowResult(true);
-      // Auto-dismiss after 2 seconds to keep the game moving fast
+      // Auto-dismiss after 3.5 seconds to keep the game moving fast
       const timer = setTimeout(() => {
         handleDismissResult();
-      }, 2000);
+      }, 3500);
       return () => clearTimeout(timer);
     } else if (phase === "betting") {
       setShowResult(false);
@@ -761,8 +761,8 @@ export default function TournamentPage() {
       <header
         className="flex-shrink-0 flex items-center justify-between px-3 sm:px-6 py-2 z-10 gap-2 tournament-header-mobile"
         style={{
-          background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
-          borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
+          background: 'linear-gradient(to bottom, #4a2f1f, #26170f)',
+          borderBottom: '2px solid rgba(201, 164, 76, 0.6)',
           boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
           minHeight: '48px',
         }}
@@ -941,10 +941,10 @@ export default function TournamentPage() {
           background: 'linear-gradient(to top, #0a0603 0%, #160e07 100%)',
           borderTop: '1px solid rgba(201, 164, 76, 0.25)',
           boxShadow: '0 -16px 60px rgba(0,0,0,0.95)',
-          padding: '10px 32px',
+          padding: '10px 16px',
         }}
       >
-        <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
+        <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
 
           {/* Left: Chip Tray */}
           <div className="flex-shrink-0 order-1">
@@ -960,7 +960,7 @@ export default function TournamentPage() {
           </div>
 
           {/* Right: Betting Controls & Financials */}
-          <div className="flex items-center gap-3 order-2 tournament-controls-mobile" style={{ paddingRight: '8px' }}>
+          <div className="flex items-center gap-2 order-2 tournament-controls-mobile" style={{ paddingRight: '8px' }}>
 
             {/* Total Bet */}
             <div
@@ -968,22 +968,23 @@ export default function TournamentPage() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '6px 18px',
-                background: 'rgba(0,0,0,0.45)',
-                border: '1px solid rgba(201,164,76,0.15)',
+                padding: '5px 12px',
+                background: 'rgba(201,164,76,0.1)',
+                border: '1px solid rgba(201,164,76,0.3)',
                 borderRadius: '8px',
-                minWidth: '90px',
+                minWidth: '100px',
+                boxShadow: '0 0 12px rgba(201,164,76,0.1)',
               }}
             >
-              <span style={{ fontSize: '8px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(201,164,76,0.45)', fontWeight: 700, marginBottom: '3px' }}>Total Bet</span>
-              <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>${totalBet.toLocaleString()}</span>
+              <span style={{ fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#c9a44c', fontWeight: 900, marginBottom: '1px' }}>Total Bet</span>
+              <span style={{ fontSize: '20px', fontWeight: 950, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>${totalBet.toLocaleString()}</span>
             </div>
 
             {/* Separator */}
             <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.06)', flexShrink: 0 }} />
 
             {/* Action buttons row — all same height and visual weight */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
 
               {/* REBET */}
               <motion.button
@@ -1159,15 +1160,16 @@ export default function TournamentPage() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '6px 18px',
-                background: 'rgba(201,164,76,0.05)',
-                border: '1px solid rgba(201,164,76,0.18)',
+                padding: '5px 12px',
+                background: 'rgba(201,164,76,0.1)',
+                border: '1px solid rgba(201,164,76,0.3)',
                 borderRadius: '8px',
                 minWidth: '100px',
+                boxShadow: '0 0 12px rgba(201,164,76,0.1)',
               }}
             >
-              <span style={{ fontSize: '8px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(201,164,76,0.55)', fontWeight: 700, marginBottom: '3px' }}>Balance</span>
-              <span style={{ fontSize: '17px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>${myChips.toLocaleString()}</span>
+              <span style={{ fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#c9a44c', fontWeight: 900, marginBottom: '1px' }}>Balance</span>
+              <span style={{ fontSize: '20px', fontWeight: 950, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>${myChips.toLocaleString()}</span>
             </div>
 
             {/* Place Bet — primary CTA */}
@@ -1179,9 +1181,9 @@ export default function TournamentPage() {
                 whileTap={phase === 'betting' && bets.size > 0 ? { scale: 0.97 } : {}}
                 className="tournament-submit-btn"
                 style={{
-                  height: '40px',
-                  padding: '0 28px',
-                  borderRadius: '9px',
+                  height: '38px',
+                  padding: '0 20px',
+                  borderRadius: '8px',
                   fontFamily: "'Georgia', serif",
                   fontStyle: 'italic',
                   fontSize: '13px',
@@ -1230,6 +1232,7 @@ export default function TournamentPage() {
         onDismiss={handleDismissResult}
         result={lastSpinResult}
         payout={lastPlayerPayout}
+        tournamentMode={true}
       />
 
       <Toast

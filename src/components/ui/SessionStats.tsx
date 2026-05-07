@@ -10,11 +10,11 @@ interface SessionStatsProps {
 }
 
 export default function SessionStats({ lastBet, lastWin, sessionWin }: SessionStatsProps) {
-  const StatItem = ({ label, value, color = '#f4fbfb' }: { label: string; value: number, color?: string }) => (
+  const StatItem = ({ label, value, color = '#fdfcf7' }: { label: string; value: number, color?: string }) => (
     <div
-      className="flex flex-col items-center px-4 sm:px-6 py-1.5 sm:py-2 rounded-lg bg-black/40 border border-white/10 shadow-inner min-w-[75px] sm:min-w-[95px]"
+      className="flex flex-col items-center px-1.5 sm:px-2 py-3.5 sm:py-5 rounded-lg bg-black/60 border border-white/20 shadow-inner min-w-[70px] sm:min-w-[90px]"
     >
-      <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold mb-0">
+      <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-[#c9a44c] font-bold mb-0.5">
         {label}
       </span>
       <AnimatePresence mode="wait">
@@ -24,7 +24,7 @@ export default function SessionStats({ lastBet, lastWin, sessionWin }: SessionSt
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 5 }}
           className="text-sm sm:text-base font-black tracking-tight"
-          style={{ color, fontFamily: 'var(--font-inter)' }}
+          style={{ color, fontFamily: 'var(--font-inter)', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}
         >
           {value < 0 ? '-' : ''}${Math.abs(value).toLocaleString()}
         </motion.span>

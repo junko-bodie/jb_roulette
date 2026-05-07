@@ -71,7 +71,7 @@ export default function ChipTray({
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 480px)');
   
-  const chipSize = isSmallMobile ? 32 : isMobile ? 38 : 46;
+  const chipSize = isSmallMobile ? 32 : isMobile ? 40 : 50;
   const availableFunds = balance - totalBet;
 
   return (
@@ -79,7 +79,7 @@ export default function ChipTray({
       variants={trayVariants}
       initial="hidden"
       animate={disabled ? "hidden" : "visible"}
-      className={`flex flex-nowrap items-center justify-center gap-1.5 sm:gap-2 md:gap-3 px-2 sm:px-4 md:px-6 py-1 sm:py-2 w-full ${disabled ? 'pointer-events-none' : ''}`}
+      className={`flex flex-nowrap items-center justify-center gap-1 sm:gap-1.5 md:gap-2 px-2 sm:px-4 md:px-6 py-1 sm:py-2 w-full ${disabled ? 'pointer-events-none' : ''}`}
       style={{
         background: 'linear-gradient(to top, rgba(5, 25, 30, 0.95), rgba(8, 42, 47, 0.85))',
         backdropFilter: 'blur(12px)',

@@ -238,13 +238,34 @@ class AudioEngine {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.volume = 0.95;
-    utterance.rate = 1.1; // Fast for excitement
-    utterance.pitch = 1.05;
-
-    // Try to find a good premium voice if available
+    utterance.rate = 1.0; // Standard speed for clarity
+    utterance.pitch = 1.05; // Slightly higher for premium feelminine voice (American or British)
     const voices = window.speechSynthesis.getVoices();
-    const premiumVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Premium'));
-    if (premiumVoice) utterance.voice = premiumVoice;
+    
+    // Priority list of feminine-sounding English voices
+    const feminineVoices = voices.filter(v => {
+      const name = v.name.toLowerCase();
+      const lang = v.lang.toLowerCase();
+      const isEnglish = lang.startsWith('en');
+      const isFeminine = name.includes('female') || 
+                        name.includes('samantha') || 
+                        name.includes('victoria') || 
+                        name.includes('hazel') || 
+                        name.includes('zira') || 
+                        name.includes('serena') || 
+                        name.includes('susan') ||
+                        name.includes('moira');
+      return isEnglish && isFeminine;
+    });
+
+    // Select British (GB) first for elegance, then American (US), then any English Google voice
+    const selectedVoice = feminineVoices.find(v => v.lang.includes('gb')) || 
+                         feminineVoices.find(v => v.lang.includes('us')) ||
+                         voices.find(v => v.name.includes('Google US English') || (v.name.includes('Google') && v.lang.startsWith('en')));
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
 
     window.speechSynthesis.speak(utterance);
   }

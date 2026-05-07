@@ -16,16 +16,37 @@ export async function POST() {
       console.warn('[Tournament API] No active Supabase session. Attempting guest/dev mode...');
       profile = await db.collection('user_profiles').findOne({ name: 'Player' }); 
       if (!profile) {
-        return NextResponse.json({ error: 'Unauthorized and no guest profile found' }, { status: 401 });
+        // Create a default profile for local testing/guest mode
+        const newProfile = {
+          name: 'Player',
+          balance: 1000.00,
+          starting_balance: 1000,
+          is_sound_enabled: true,
+          is_timer_enabled: true,
+          is_popup_enabled: true,
+          stats: { tournaments_played: 0, tournaments_won: 0, best_finish: 0 },
+          badges: { champion: false, elite_status: false, all_time_champion: false },
+          season: { year: new Date().getFullYear(), points: 0, rank: 0 },
+          created_at: new Date(),
+          updated_at: new Date(),
+          provider: 'guest'
+        };
+        const result = await db.collection('user_profiles').insertOne(newProfile as any);
+        profile = { ...newProfile, _id: result.insertedId };
+        console.log('[Tournament API] Created default guest profile');
       }
     } else {
-      // Get user profile for details
-      profile = await db.collection('user_profiles').findOne({ supabase_id: user.id });
+      // Ensure user profile exists for authenticated users
+      const { ensureUserProfile } = await import('@/lib/auth');
+      profile = await ensureUserProfile(user);
     }
 
     if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+      console.error('[Tournament API] Profile not found for user:', user?.id || 'Guest');
+      return NextResponse.json({ error: 'Profile not found. Please refresh your session.' }, { status: 404 });
     }
+
+    console.log('[Tournament API] Creating/Joining tournament for player:', profile.name, profile._id);
 
     const currentPlayer: TournamentPlayer = {
       player_id: profile._id,
@@ -49,6 +70,7 @@ export async function POST() {
     });
 
     if (tournament) {
+      console.log('[Tournament API] Found existing tournament:', tournament._id);
       // Join existing tournament - with concurrency check to not exceed 6 players
       const updateResult = await db.collection('tournaments').updateOne(
         { _id: tournament._id, "players.5": { $exists: false } },
@@ -56,6 +78,7 @@ export async function POST() {
       );
       
       if (updateResult.modifiedCount === 0) {
+        console.log('[Tournament API] Tournament filled up, creating new one');
         // Someone else filled it in the meantime, create a new one instead
         const newTournament: Tournament = {
           status: "waiting",
@@ -79,6 +102,7 @@ export async function POST() {
       });
 
       if (!tournament) {
+        console.log('[Tournament API] Creating new tournament');
         // Create new tournament in waiting status
         const newTournament: Tournament = {
           status: "waiting",
@@ -91,12 +115,15 @@ export async function POST() {
 
         const result = await db.collection('tournaments').insertOne(newTournament as any);
         tournament = { ...newTournament, _id: result.insertedId } as any;
+      } else {
+        console.log('[Tournament API] Player already in waiting tournament:', tournament._id);
       }
     }
 
     return NextResponse.json(tournament);
   } catch (error: any) {
     console.error('Tournament join/create error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message, stack: error.stack }, { status: 500 });
   }
 }
+

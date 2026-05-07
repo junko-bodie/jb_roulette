@@ -156,8 +156,8 @@ export default function GamePage() {
       <header
         className="flex-shrink-0 z-10 mobile-header-compact"
         style={{
-          background: 'linear-gradient(to bottom, #3b2518, #1c100a)',
-          borderBottom: '2px solid rgba(201, 164, 76, 0.4)',
+          background: 'linear-gradient(to bottom, #4a2f1f, #26170f)',
+          borderBottom: '2px solid rgba(201, 164, 76, 0.6)',
           boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
           minHeight: isMobile ? '48px' : '60px',
           display: 'flex',
@@ -169,7 +169,7 @@ export default function GamePage() {
           <div className="flex items-center gap-4 min-w-0">
             <button
               onClick={() => window.location.href = '/lobby'}
-              className="text-[#c9a44c] hover:text-white transition-colors flex-shrink-0"
+              className="text-[#f5edd5] hover:text-white transition-colors flex-shrink-0"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -182,7 +182,7 @@ export default function GamePage() {
             {/* Settings Button */}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-3.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:scale-110 text-[#c9a44c] transition-all shadow-lg"
+              className="p-3.5 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 hover:scale-110 text-[#f5edd5] transition-all shadow-lg"
               title="Settings"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-7.5 w-7.5" viewBox="0 0 20 20" fill="currentColor">
@@ -239,8 +239,8 @@ export default function GamePage() {
       <footer
         className="flex-shrink-0 w-full px-2 sm:px-4 flex flex-col sm:flex-row items-center justify-between z-10 mobile-footer-compact gap-1 sm:gap-0"
         style={{
-          background: 'linear-gradient(to top, #1a0f09 0%, #2d1a10 100%)',
-          borderTop: '1px solid rgba(201, 164, 76, 0.3)',
+          background: 'linear-gradient(to top, #26170f 0%, #4a2f1f 100%)',
+          borderTop: '1px solid rgba(201, 164, 76, 0.5)',
           boxShadow: '0 -4px 20px rgba(0,0,0,0.5)',
           padding: isMobile ? '4px 10px' : '8px 16px',
         }}
@@ -256,14 +256,14 @@ export default function GamePage() {
         </div>
 
         {/* Center space is now empty in flex-justify, but we will place the floating card absolutely */}
-        <div className="hidden md:block w-[300px]" />
+        <div className="hidden md:block w-[100px]" />
 
         {/* Right: Balance + Stats */}
-        <div className="flex items-center gap-1.5 sm:gap-3 w-full sm:w-auto justify-center overflow-x-auto flex-nowrap py-1 sm:py-0">
+        <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto justify-center overflow-x-auto flex-nowrap py-1 sm:py-0">
           {/* Balance */}
-          <div className="flex flex-col items-center px-4 sm:px-7 py-2 sm:py-3 rounded-lg bg-gradient-to-b from-[#3b2518] to-black border border-[#c9a44c]/40 shadow-inner min-w-[80px]">
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#c9a44c]/80 font-bold">Balance</span>
-            <span className="text-sm sm:text-base font-black text-[#f4fbfb]" style={{ fontFamily: 'var(--font-playfair)' }}>
+          <div className="flex flex-col items-center px-1.5 sm:px-2 py-3.5 sm:py-5 rounded-lg bg-gradient-to-b from-[#5c3b27] to-[#1a110a] border border-[#c9a44c]/60 shadow-inner min-w-[70px] sm:min-w-[90px]">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-[#f5edd5] font-bold">Balance</span>
+            <span className="text-sm sm:text-base font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.balance.toLocaleString()}
             </span>
           </div>
@@ -274,8 +274,8 @@ export default function GamePage() {
           </div>
 
           {/* Total Bet */}
-          <div className="flex flex-col items-center px-4 sm:px-7 py-2 sm:py-3 rounded-lg bg-black/40 border border-[#c9a44c]/30 shadow-inner min-w-[80px]">
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-[#c9a44c]/70 font-bold">Total Bet</span>
+          <div className="flex flex-col items-center px-1.5 sm:px-2 py-3.5 sm:py-5 rounded-lg bg-black/60 border border-[#c9a44c]/50 shadow-inner min-w-[70px] sm:min-w-[90px]">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-[#c9a44c] font-bold">Total Bet</span>
             <span className="text-sm sm:text-base font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.totalBet.toLocaleString()}
             </span>
@@ -289,7 +289,7 @@ export default function GamePage() {
           soundEngine?.playClick();
           setIsProfileOpen(true);
         }}
-        className="hidden md:flex absolute bottom-[10px] left-1/2 -translate-x-1/2 z-[20] items-center gap-6 px-10 py-3 rounded-full bg-black/60 border-2 border-[#c9a44c]/40 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.6),0_0_20px_rgba(201,164,76,0.15)] hover:bg-black/80 hover:border-[#c9a44c] transition-all cursor-pointer group active:scale-95"
+        className="hidden md:flex absolute bottom-[10px] left-1/2 -translate-x-1/2 z-[20] items-center gap-4 px-6 py-2 rounded-full bg-black/60 border-2 border-[#c9a44c]/40 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.6),0_0_20px_rgba(201,164,76,0.15)] hover:bg-black/80 hover:border-[#c9a44c] transition-all cursor-pointer group active:scale-95"
         style={{
           boxShadow: '0 -8px 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(201, 164, 76, 0.1)',
         }}

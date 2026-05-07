@@ -162,19 +162,55 @@ const RouletteTable = memo(function RouletteTable({
           {/* Wheel Section (Left) */}
           <motion.div
             ref={wheelRef}
-            className="relative flex justify-center items-center mobile-wheel-section"
+            className={`relative flex ${tournamentMode ? 'flex-col justify-center' : 'justify-center'} items-center mobile-wheel-section`}
             initial={{ opacity: 0, scale: 0.95, flex: 1 }}
             animate={isMobile
-              ? { opacity: 1, scale: isSpinning ? 1.2 : 1, y: 0, flex: 'none' }
+              ? { opacity: 1, scale: isSpinning ? (tournamentMode ? 1.05 : 1.2) : 1, y: 0, flex: 'none' }
               : {
                 opacity: 1,
-                scale: isSpinning ? 1.2 : 1,
-                y: isSpinning ? 0 : -25,
+                scale: isSpinning ? (tournamentMode ? 1.05 : 1.2) : 1,
+                y: isSpinning ? 0 : (tournamentMode ? 8 : -25),
                 flex: isSpinning ? 4.5 : 1
               }
             }
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
+            {tournamentMode && (
+              <div className="hidden md:flex flex-col items-center mb-12">
+                <h1
+                  className="text-2xl md:text-3xl tracking-wider"
+                  style={{
+                    fontFamily: "'Georgia', serif",
+                    fontStyle: 'italic',
+                    fontWeight: 900,
+                    letterSpacing: '0.15em',
+                    background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    display: 'inline-block',
+                  }}
+                >
+                  JUNKO BODIE
+                </h1>
+                <div className="flex items-center gap-2 -mt-0.5 mb-2">
+                  <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                  <span
+                    className="text-[9px] uppercase tracking-[0.4em]"
+                    style={{
+                      color: 'rgba(201, 164, 76, 0.5)',
+                      fontFamily: "'Georgia', serif",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Roulette
+                  </span>
+                  <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                </div>
+                <TournamentRules />
+              </div>
+            )}
+
             <RouletteWheel
               wheelType={wheelType}
               spinResult={currentResult}
@@ -253,7 +289,7 @@ const RouletteTable = memo(function RouletteTable({
           </motion.div>
 
           <motion.div
-            className="flex flex-col items-center justify-start p-0.5 sm:p-2 mobile-table-section w-full min-w-0"
+            className={`flex flex-col items-center justify-start p-0.5 sm:p-2 mobile-table-section w-full min-w-0 ${tournamentMode ? '-mt-20' : ''}`}
             initial={{ opacity: 0, x: 20, scale: 0.95, flex: 2 }}
             animate={isMobile
               ? { opacity: isSpinning ? 0 : 1, scale: isSpinning ? 0.9 : 1, y: 0, flex: 'none' }
@@ -268,40 +304,61 @@ const RouletteTable = memo(function RouletteTable({
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Junko Bodie Title & Tournament Rules */}
-            <div className="hidden md:flex flex-col items-center mb-0.5 -mt-24" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
-              <h1
-                className="text-2xl md:text-3xl tracking-wider"
-                style={{
-                  fontFamily: "'Georgia', serif",
-                  fontStyle: 'italic',
-                  fontWeight: 900,
-                  letterSpacing: '0.15em',
-                  background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  display: 'inline-block',
-                }}
-              >
-                JUNKO BODIE
-              </h1>
-              <div className="flex items-center gap-2 -mt-0.5 mb-2">
-                <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
-                <span
-                  className="text-[9px] uppercase tracking-[0.4em]"
+            {!tournamentMode ? (
+              <div className="hidden md:flex flex-col items-center mb-0.5 -mt-24 relative" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
+                <h1
+                  className="text-2xl md:text-3xl tracking-wider"
                   style={{
-                    color: 'rgba(201, 164, 76, 0.5)',
                     fontFamily: "'Georgia', serif",
-                    fontWeight: 700,
+                    fontStyle: 'italic',
+                    fontWeight: 900,
+                    letterSpacing: '0.15em',
+                    background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    display: 'inline-block',
                   }}
                 >
-                  Roulette
-                </span>
-                <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
-              </div>
+                  JUNKO BODIE
+                </h1>
+                <div className="flex items-center gap-2 -mt-0.5">
+                  <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                  <span
+                    className="text-[9px] uppercase tracking-[0.4em]"
+                    style={{
+                      color: 'rgba(201, 164, 76, 0.5)',
+                      fontFamily: "'Georgia', serif",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Roulette
+                  </span>
+                  <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                </div>
 
-              {tournamentMode && <TournamentRules />}
-            </div>
+                {/* Larger Timer Section - Absolute to avoid pushing table */}
+                {isTimerEnabled && !isSpinning && phase === 'BETTING' && (
+                  <div
+                    className="absolute left-[calc(100%+60px)] top-1/2 -translate-y-1/2"
+                    style={{ transform: 'scaleX(1.136) scaleY(0.75)' }}
+                  >
+                    <BetTimer
+                      duration={45}
+                      isActive={phase === 'BETTING' && !isSpinning}
+                      onTimeout={() => {
+                        if (onTimeout) {
+                          onTimeout();
+                        } else if (!isSpinning) {
+                          handleSpinClick();
+                        }
+                      }}
+                      variant="large"
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
 
             {/* Betting Grid Section with Blur & Overlay */}
             <div className="w-full relative">
@@ -357,22 +414,7 @@ const RouletteTable = memo(function RouletteTable({
                 className={`flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-end gap-0 sm:gap-4 md:gap-8 mt-1 sm:mt-40 md:mt-56 mb-2 sm:mb-8 md:mb-12 w-full px-0 sm:pr-12`}
                 style={{ transform: 'scaleX(1.0) scaleY(1.0)' }}
               >
-                {/* Timer UI - only show if betting and timer enabled */}
-                <div className="flex flex-col items-center justify-center mr-2 sm:mr-6">
-                  {isTimerEnabled && !isSpinning && phase === 'BETTING' && (
-                    <BetTimer
-                      duration={45}
-                      isActive={!isSpinning && phase === 'BETTING'}
-                      onTimeout={() => {
-                        if (onTimeout) {
-                          onTimeout();
-                        } else if (!isSpinning) {
-                          handleSpinClick();
-                        }
-                      }}
-                    />
-                  )}
-                </div>
+
 
                 {/* 2X and Delete Mode Buttons — Left Side */}
                 {!isBettingDisabled && totalBet > 0 && (
