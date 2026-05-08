@@ -475,147 +475,72 @@
     height: auto;
     min-height: 100vh;
     min-height: 100dvh;
-    padding: clamp(14px, 4vw, 22px);
+    padding: 16px 14px;
     border-radius: 0;
+    overflow-y: auto;
   }
 
   .header {
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-  }
-
-  .headerActions {
-    position: absolute;
-    top: 12px;
-    right: 12px;
     gap: 8px;
   }
 
-  .headerBtn,
-  .headerBtnDanger {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
-  }
-
-  .avatarBtn {
-    width: 46px;
-    height: 46px;
-  }
-
-  .profileCard {
-    height: 62px;
-    padding: 10px 20px 10px 10px;
-  }
-
-  .gameGrid {
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .playCard {
-    width: 85vw;
-    max-width: none;
-    min-width: auto;
-    flex: none;
-    aspect-ratio: 11 / 10;
-    border-radius: 24px;
-  }
-
-  /* Scale icons & text proportionally on mobile */
-  .playIconWrap {
-    width: 80px;
-    height: 80px;
-  }
-
-  .playIconSolo,
-  .playIconTourney {
-    width: 32px;
-    height: 32px;
-  }
-
-  .playLabel {
-    font-size: clamp(1.3rem, 5vw, 2rem);
-  }
-
-  .playDesc {
-    font-size: clamp(0.9rem, 3vw, 1.25rem);
-  }
-}
-
-/* ──────────────────────────────────────────
-   SMALL PHONE — ≤480px
-   ────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .lobbyCard {
-    padding: 16px 12px;
+  .headerCenter {
+    order: -1;
+    transform: none;
   }
 
   .logoText {
-    font-size: clamp(1.5rem, 7vw, 2.2rem);
+    font-size: clamp(1.3rem, 5.5vw, 1.8rem);
+    padding-right: 50px;
   }
 
   .logoSub {
     font-size: 9px;
     letter-spacing: 0.3em;
+    margin-top: 2px;
   }
 
-  .playCard {
-    width: 85vw;
-    padding: 12%;
-    border-radius: 24px;
-    gap: 20px;
-    aspect-ratio: 11 / 10;
+  .separator {
+    margin-top: 4px;
   }
 
-  .playIconWrap {
-    width: 72px;
-    height: 72px;
-  }
-
-  .playIconSolo,
-  .playIconTourney {
-    width: 28px;
-    height: 28px;
-  }
-
-  .playLabel {
-    font-size: clamp(1.1rem, 5vw, 1.6rem);
-  }
-
-  .playDesc {
-    font-size: clamp(0.85rem, 3vw, 1.1rem);
-  }
-
-  .quickBtn {
-    width: 94px;
-    height: 76px;
+  .headerActions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
     gap: 6px;
   }
 
-  .quickBtnIcon {
-    width: 24px;
-    height: 24px;
+  .headerBtn,
+  .headerBtnDanger {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
   }
 
-  .quickBtnLabel {
-    font-size: 9px;
-  }
-
-  .footer {
-    font-size: 9px;
-  }
-
-  .profileCard {
-    gap: 12px;
-    padding: 8px 16px 8px 8px;
-    height: 56px;
+  .headerBtn svg,
+  .headerBtnDanger svg {
+    width: 18px;
+    height: 18px;
   }
 
   .avatarBtn {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .trophyIcon {
+    width: 15px;
+    height: 15px;
+  }
+
+  .profileCard {
+    height: 52px;
+    padding: 8px 16px 8px 8px;
+    gap: 10px;
+    border-radius: 12px;
   }
 
   .playerName {
@@ -624,5 +549,140 @@
 
   .chipCount {
     font-size: 12px;
+  }
+
+  .main {
+    gap: 14px;
+    margin-top: 6px;
+    margin-bottom: 8px;
+  }
+
+  .gameGrid {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .playCard {
+    width: 100%;
+    max-width: none;
+    min-width: auto;
+    flex: none;
+    aspect-ratio: auto;
+    height: 210px;
+    border-radius: 18px;
+    padding: 28px 16px;
+    gap: 14px;
+  }
+
+  .playIconWrap {
+    width: 52px;
+    height: 52px;
+  }
+
+  .playIconSolo,
+  .playIconTourney {
+    width: 22px;
+    height: 22px;
+  }
+
+  .playLabel {
+    font-size: 15px;
+  }
+
+  .playDesc {
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .quickActions {
+    flex-wrap: nowrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .quickBtn {
+    flex: 1;
+    width: auto;
+    height: 60px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+
+  .quickBtnIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .quickBtnLabel {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .footer {
+    font-size: 9px;
+    padding-top: 4px;
+  }
+}
+
+/* ──────────────────────────────────────────
+   SMALL PHONE — ≤480px
+   ────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .lobbyCard {
+    padding: 12px 10px;
+  }
+
+  .logoText {
+    font-size: clamp(1.2rem, 7vw, 1.8rem);
+  }
+
+  .profileCard {
+    gap: 8px;
+    padding: 6px 12px 6px 6px;
+    height: 48px;
+  }
+
+  .avatarBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .playCard {
+    padding: 16px 14px;
+    gap: 10px;
+    border-radius: 16px;
+  }
+
+  .playIconWrap {
+    width: 46px;
+    height: 46px;
+  }
+
+  .playIconSolo,
+  .playIconTourney {
+    width: 20px;
+    height: 20px;
+  }
+
+  .playLabel {
+    font-size: 14px;
+  }
+
+  .playDesc {
+    font-size: 11px;
+  }
+
+  .quickBtn {
+    height: 54px;
+    gap: 3px;
+  }
+
+  .quickBtnIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .quickBtnLabel {
+    font-size: 7px;
   }
 }

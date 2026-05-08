@@ -271,6 +271,7 @@ body {
     display: none !important;
   }
 
+  /* ── Default mobile (portrait): Stack vertically ── */
   .mobile-felt-stack {
     flex-direction: column !important;
     gap: 0 !important;
@@ -283,7 +284,6 @@ body {
     overflow-y: visible !important;
     overflow-x: hidden !important;
   }
-
 
   /* Foam buffer — reduce padding & border on mobile */
   .mx-auto.w-full.max-w-\[1500px\] {
@@ -303,7 +303,7 @@ body {
     border-radius: 12px !important;
   }
 
-  /* Wheel section on mobile */
+  /* Wheel section on mobile (portrait) */
   .mobile-wheel-section {
     flex: none !important;
     width: 100% !important;
@@ -312,7 +312,7 @@ body {
     padding-bottom: 0 !important;
   }
 
-  /* Betting table section on mobile
+  /* Betting table section on mobile (portrait)
      Use zoom instead of transform:scale — zoom actually affects layout flow
      so the container shrinks with the content (no empty space) */
   .mobile-table-section {
@@ -327,41 +327,59 @@ body {
     zoom: 1.15;
   }
 
-  /* ── Landscape overrides — MUST come AFTER portrait rules to win cascade ── */
-  @media (orientation: landscape) {
-    .mobile-felt-stack {
-      flex-direction: row !important;
-      align-items: center !important;
-      justify-content: flex-start !important;
-      padding: 0.15rem !important;
-      gap: 0 !important;
-      overflow: visible !important;
-      height: 100% !important;
-    }
-
-    .mobile-wheel-section {
-      width: auto !important;
-      flex: 0 0 auto !important;
-    }
-
-    .mobile-table-section {
-      width: auto !important;
-      flex: 1 1 0 !important;
-      min-width: 0 !important;
-      zoom: 1 !important;
-      overflow: visible !important;
-      margin-top: 0 !important;
-      padding: 0 !important;
-    }
-  }
-
-  /* Compact footer */
+  /* Compact footer — portrait default (MUST come BEFORE landscape override) */
   .mobile-footer-compact {
     height: auto !important;
     padding: 6px 4px !important;
     flex-direction: column !important;
     justify-content: center !important;
     gap: 4px;
+  }
+
+  /* ── Landscape overrides — MUST come AFTER portrait rules ── */
+  @media (orientation: landscape) {
+
+    /* Lock viewport — no scroll in landscape */
+    .mobile-root-scroll {
+      overflow: hidden !important;
+    }
+
+    /* Felt: side-by-side row like desktop */
+    .mobile-felt-stack {
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0.15rem !important;
+      gap: 0 !important;
+      overflow: visible !important;
+      height: 100% !important;
+    }
+
+    /* Wheel: shrink to fit left side */
+    .mobile-wheel-section {
+      width: auto !important;
+      flex: 0 0 auto !important;
+      max-width: 42% !important;
+    }
+
+    /* Table: fill the remaining right side, scale down to fit */
+    .mobile-table-section {
+      width: auto !important;
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      zoom: 0.75 !important;
+      overflow: visible !important;
+      margin-top: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Footer: single compact row in landscape */
+    .mobile-footer-compact {
+      flex-direction: row !important;
+      align-items: center !important;
+      padding: 2px 8px !important;
+      gap: 4px !important;
+    }
   }
 
   /* ── Tournament-specific mobile overrides ── */
@@ -449,3 +467,44 @@ body {
     zoom: 0.92;
   }
 }
+
+/* ──────────────────────────────────────────
+   MOBILE LANDSCAPE — Lock to fit viewport
+   ────────────────────────────────────────── */
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* Main content area: fill remaining space, no scroll */
+  .mobile-game-content {
+    overflow: hidden !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+}
+
+/* Very short mobile landscape — further shrink table */
+@media (max-height: 360px) and (orientation: landscape) {
+  .mobile-table-section {
+    zoom: 0.72 !important;
+  }
+
+  .mobile-header-compact {
+    min-height: 36px !important;
+    padding: 2px 10px !important;
+  }
+
+  .mobile-footer-compact {
+    padding: 3px 8px !important;
+  }
+}
+
+/* Small mobile landscape — shorter heights */
+@media (max-height: 450px) and (max-width: 1024px) and (orientation: landscape) {
+  .mobile-header-compact {
+    min-height: 38px !important;
+    padding: 3px 10px !important;
+  }
+
+  .mobile-footer-compact {
+    padding: 3px 8px !important;
+  }
+}
+

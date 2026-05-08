@@ -318,60 +318,124 @@ const RouletteTable = memo(function RouletteTable({
           >
             {/* Junko Bodie Title & Tournament Rules */}
             {!tournamentMode ? (
-              <div className="hidden md:flex flex-col items-center mb-0.5 -mt-24 relative" style={{ transform: 'scaleX(0.977) scaleY(0.69)' }}>
-                <h1
-                  className="text-2xl md:text-3xl tracking-wider"
-                  style={{
-                    fontFamily: "'Georgia', serif",
-                    fontStyle: 'italic',
-                    fontWeight: 900,
-                    letterSpacing: '0.15em',
-                    background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    display: 'inline-block',
-                  }}
-                >
-                  JUNKO BODIE
-                </h1>
-                <div className="flex items-center gap-2 -mt-0.5">
-                  <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
-                  <span
-                    className="text-[9px] uppercase tracking-[0.4em]"
+              <div
+                className={isMobile
+                  ? "flex flex-row items-center gap-3 mb-0.5 relative"
+                  : "hidden lg:flex flex-col items-center mb-0.5 -mt-24 relative"
+                }
+                style={isMobile ? {} : { transform: 'scaleX(0.977) scaleY(0.69)' }}
+              >
+                {/* Title + subtitle group */}
+                <div className="flex flex-col items-center">
+                  <h1
+                    className={isMobile ? "text-sm tracking-wider" : "text-2xl md:text-3xl tracking-wider"}
                     style={{
-                      color: 'rgba(201, 164, 76, 0.5)',
                       fontFamily: "'Georgia', serif",
-                      fontWeight: 700,
+                      fontStyle: 'italic',
+                      fontWeight: 900,
+                      letterSpacing: '0.15em',
+                      background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      display: 'inline-block',
                     }}
                   >
-                    Roulette
-                  </span>
-                  <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                    JUNKO BODIE
+                  </h1>
+                  <div className="flex items-center gap-2 -mt-0.5">
+                    <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                    <span
+                      className="text-[9px] uppercase tracking-[0.4em]"
+                      style={{
+                        color: 'rgba(201, 164, 76, 0.5)',
+                        fontFamily: "'Georgia', serif",
+                        fontWeight: 700,
+                      }}
+                    >
+                      Roulette
+                    </span>
+                    <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                  </div>
                 </div>
 
-                {/* Larger Timer Section - Absolute to avoid pushing table */}
+                {/* Timer Section — desktop: absolute right of title; mobile: inline right */}
                 {isTimerEnabled && !isSpinning && phase === 'BETTING' && (
-                  <div
-                    className="absolute left-[calc(100%+60px)] top-1/2 -translate-y-1/2"
-                    style={{ transform: 'scaleX(1.136) scaleY(0.75)' }}
-                  >
-                    <BetTimer
-                      duration={45}
-                      isActive={phase === 'BETTING' && !isSpinning}
-                      onTimeout={() => {
-                        if (onTimeout) {
-                          onTimeout();
-                        } else if (!isSpinning) {
-                          handleSpinClick();
-                        }
-                      }}
-                      variant="large"
-                    />
-                  </div>
+                  isMobile ? (
+                    <div>
+                      <BetTimer
+                        duration={45}
+                        isActive={phase === 'BETTING' && !isSpinning}
+                        onTimeout={() => {
+                          if (onTimeout) {
+                            onTimeout();
+                          } else if (!isSpinning) {
+                            handleSpinClick();
+                          }
+                        }}
+                        variant="default"
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className="absolute left-[calc(100%+60px)] top-1/2 -translate-y-1/2"
+                      style={{ transform: 'scaleX(1.136) scaleY(0.75)' }}
+                    >
+                      <BetTimer
+                        duration={45}
+                        isActive={phase === 'BETTING' && !isSpinning}
+                        onTimeout={() => {
+                          if (onTimeout) {
+                            onTimeout();
+                          } else if (!isSpinning) {
+                            handleSpinClick();
+                          }
+                        }}
+                        variant="large"
+                      />
+                    </div>
+                  )
                 )}
               </div>
-            ) : null}
+            ) : (
+              /* Tournament mode: show title only on mobile */
+              isMobile ? (
+                <div className="flex flex-row items-center gap-3 mb-0.5 relative">
+                  <div className="flex flex-col items-center">
+                    <h1
+                      className="text-sm tracking-wider"
+                      style={{
+                        fontFamily: "'Georgia', serif",
+                        fontStyle: 'italic',
+                        fontWeight: 900,
+                        letterSpacing: '0.15em',
+                        background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        display: 'inline-block',
+                      }}
+                    >
+                      JUNKO BODIE
+                    </h1>
+                    <div className="flex items-center gap-2 -mt-0.5">
+                      <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                      <span
+                        className="text-[9px] uppercase tracking-[0.4em]"
+                        style={{
+                          color: 'rgba(201, 164, 76, 0.5)',
+                          fontFamily: "'Georgia', serif",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Roulette
+                      </span>
+                      <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                    </div>
+                  </div>
+                </div>
+              ) : null
+            )}
 
             {/* Betting Grid Section with Blur & Overlay */}
             <div className="w-full relative" style={isMobile && tournamentMode ? {
@@ -426,7 +490,7 @@ const RouletteTable = memo(function RouletteTable({
             {/* ═══ BUTTONS — directly below betting grid (hidden in tournament mode) ═══ */}
             {!tournamentMode && (
               <div
-                className={`flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-end gap-0 sm:gap-4 md:gap-8 mt-1 sm:mt-40 md:mt-56 mb-2 sm:mb-8 md:mb-12 w-full px-0 sm:pr-12`}
+                className={`flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-end gap-1 sm:gap-4 lg:gap-8 mt-1 sm:mt-2 lg:mt-56 mb-1 sm:mb-2 lg:mb-12 w-full px-1 sm:pr-12`}
                 style={{ transform: 'scaleX(1.0) scaleY(1.0)' }}
               >
 

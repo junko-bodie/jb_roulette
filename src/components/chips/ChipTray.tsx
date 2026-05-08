@@ -70,8 +70,9 @@ export default function ChipTray({
 }: ChipTrayProps) {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isSmallMobile = useMediaQuery('(max-width: 480px)');
+  const isLandscapeMobile = useMediaQuery('(max-height: 500px) and (orientation: landscape)');
   
-  const chipSize = isSmallMobile ? 32 : isMobile ? 40 : 50;
+  const chipSize = isLandscapeMobile ? 36 : isSmallMobile ? 32 : isMobile ? 40 : 50;
   const availableFunds = balance - totalBet;
 
   return (

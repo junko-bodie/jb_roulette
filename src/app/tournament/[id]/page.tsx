@@ -231,12 +231,14 @@ export default function TournamentPage() {
   const wheelRef = useRef<HTMLDivElement>(null);
   const [tournamentWheelSize, setTournamentWheelSize] = useState(420);
   const [isMobile, setIsMobile] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(320);
 
   useEffect(() => {
     const updateWheelSize = () => {
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       const mobile = isTouchDevice && window.innerWidth <= 1024;
       setIsMobile(mobile);
+      setSidebarWidth(window.innerWidth < 1100 ? 220 : 320);
 
       const isLandscapeMobile =
         window.matchMedia('(orientation: landscape)').matches &&
@@ -638,7 +640,7 @@ export default function TournamentPage() {
   if (tournament.status === 'waiting') {
     return (
       <div style={{
-        minHeight: '100vh',
+        height: '100dvh',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -647,7 +649,7 @@ export default function TournamentPage() {
         background: 'radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)',
         position: 'relative',
         overflow: 'hidden',
-        padding: '16px',
+        padding: isMobile ? '8px' : '16px',
       }}>
         <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '40%', height: '40%', background: 'rgba(201,164,76,0.05)', borderRadius: '50%', filter: 'blur(80px)' }} />
         <div style={{ position: 'absolute', bottom: '-10%', left: '-10%', width: '40%', height: '40%', background: 'rgba(201,164,76,0.03)', borderRadius: '50%', filter: 'blur(80px)' }} />
@@ -658,12 +660,14 @@ export default function TournamentPage() {
           style={{
             zIndex: 10,
             width: '100%',
-            maxWidth: '640px',
+            maxWidth: isMobile ? '100%' : '640px',
+            maxHeight: isMobile ? 'calc(100dvh - 16px)' : 'none',
+            overflowY: isMobile ? 'auto' : 'visible',
             background: 'linear-gradient(135deg, rgba(20, 50, 40, 0.95) 0%, rgba(10, 30, 20, 0.98) 100%)',
             backdropFilter: 'blur(20px)',
             border: '2px solid rgba(201, 164, 76, 0.35)',
-            borderRadius: '24px',
-            padding: 'clamp(16px, 5vw, 48px) clamp(12px, 4vw, 40px)',
+            borderRadius: isMobile ? '16px' : '24px',
+            padding: isMobile ? '12px 16px' : 'clamp(16px, 5vw, 48px) clamp(12px, 4vw, 40px)',
             boxShadow: '0 30px 100px rgba(0,0,0,0.8), inset 0 0 40px rgba(201, 164, 76, 0.05)',
             textAlign: 'center' as const,
             position: 'relative' as const,
@@ -672,21 +676,21 @@ export default function TournamentPage() {
         >
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,164,76,0.3), transparent)' }} />
 
-          <div style={{ color: '#c9a44c', fontWeight: 900, letterSpacing: '0.4em', fontSize: '10px', textTransform: 'uppercase', marginBottom: '16px', opacity: 0.8 }}>
+          <div style={{ color: '#c9a44c', fontWeight: 900, letterSpacing: '0.4em', fontSize: isMobile ? '8px' : '10px', textTransform: 'uppercase', marginBottom: isMobile ? '6px' : '16px', opacity: 0.8 }}>
             Tournament Matchmaking
           </div>
-          <h2 className={styles.shimmerText} style={{ fontSize: 'clamp(24px, 7vw, 36px)', fontWeight: 900, marginBottom: '8px', letterSpacing: '-0.02em' }}>
+          <h2 className={styles.shimmerText} style={{ fontSize: isMobile ? '20px' : 'clamp(24px, 7vw, 36px)', fontWeight: 900, marginBottom: isMobile ? '4px' : '8px', letterSpacing: '-0.02em' }}>
             Searching for Players...
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', marginBottom: 'clamp(24px, 5vw, 40px)', fontWeight: 500 }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: isMobile ? '11px' : '14px', marginBottom: isMobile ? '10px' : 'clamp(24px, 5vw, 40px)', fontWeight: 500 }}>
             Match begins automatically in <span style={{ color: '#c9a44c', fontWeight: 800 }}>{lobbyTimeRemaining}s</span>
           </p>
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 'clamp(6px, 2vw, 20px)',
-            marginBottom: 'clamp(20px, 4vw, 48px)'
+            gridTemplateColumns: isMobile ? 'repeat(6, 1fr)' : 'repeat(3, 1fr)',
+            gap: isMobile ? '6px' : 'clamp(6px, 2vw, 20px)',
+            marginBottom: isMobile ? '10px' : 'clamp(20px, 4vw, 48px)'
           }}>
             {Array.from({ length: 6 }).map((_, i) => {
               const p = tournament.players[i];
@@ -694,23 +698,23 @@ export default function TournamentPage() {
                 <div key={i} style={{
                   background: p ? 'rgba(201,164,76,0.08)' : 'rgba(0,0,0,0.2)',
                   border: `1px solid ${p ? 'rgba(201,164,76,0.4)' : 'rgba(201,164,76,0.1)'}`,
-                  borderRadius: '16px',
-                  padding: 'clamp(12px, 3vw, 20px) clamp(8px, 2vw, 12px)',
+                  borderRadius: isMobile ? '10px' : '16px',
+                  padding: isMobile ? '8px 4px' : 'clamp(12px, 3vw, 20px) clamp(8px, 2vw, 12px)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
+                  gap: isMobile ? '4px' : '8px',
                   transition: 'all 0.3s ease',
                   boxShadow: p ? '0 10px 20px rgba(0,0,0,0.2)' : 'none'
                 }}>
                   <div style={{ position: 'relative' }}>
-                    <Avatar type={p?.avatar_url || 'default'} size="md" />
-                    {p && <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '10px', height: '10px', background: '#4ade80', borderRadius: '50%', border: '2px solid #0a1e14' }} />}
+                    <Avatar type={p?.avatar_url || 'default'} size={isMobile ? 'sm' : 'md'} />
+                    {p && <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: isMobile ? '7px' : '10px', height: isMobile ? '7px' : '10px', background: '#4ade80', borderRadius: '50%', border: '2px solid #0a1e14' }} />}
                   </div>
                   <span style={{
                     color: p ? '#fff' : 'rgba(255,255,255,0.15)',
-                    fontSize: 'clamp(9px, 2vw, 11px)',
+                    fontSize: isMobile ? '7px' : 'clamp(9px, 2vw, 11px)',
                     fontWeight: 800,
                     maxWidth: '100%',
                     overflow: 'hidden',
@@ -730,9 +734,9 @@ export default function TournamentPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '12px',
+            gap: isMobile ? '8px' : '12px',
             background: 'rgba(0,0,0,0.2)',
-            padding: '12px 24px',
+            padding: isMobile ? '6px 16px' : '12px 24px',
             borderRadius: '100px',
             width: 'fit-content',
             margin: '0 auto',
@@ -742,14 +746,14 @@ export default function TournamentPage() {
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
               style={{
-                width: '18px',
-                height: '18px',
+                width: isMobile ? '14px' : '18px',
+                height: isMobile ? '14px' : '18px',
                 border: '2px solid rgba(201,164,76,0.1)',
                 borderTopColor: '#c9a44c',
                 borderRadius: '50%'
               }}
             />
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: isMobile ? '9px' : '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               Matched <span style={{ color: '#c9a44c' }}>{tournament.players.length}/6</span> Players
             </span>
           </div>
@@ -1167,7 +1171,7 @@ export default function TournamentPage() {
         {!isMobile && (
           <motion.div
             animate={{
-              width: phase === "spinning" ? 0 : 320,
+              width: phase === "spinning" ? 0 : sidebarWidth,
               opacity: phase === "spinning" ? 0 : 1,
               x: phase === "spinning" ? 100 : 0
             }}
