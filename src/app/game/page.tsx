@@ -19,10 +19,140 @@ import Toast from '@/components/ui/Toast';
 
 import { useRouter } from 'next/navigation';
 
+/* ─────────────────────────────────────────────
+   Portrait-lock overlay
+   Shows whenever a mobile device is in portrait
+───────────────────────────────────────────── */
+function PortraitLockOverlay() {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        background: 'radial-gradient(circle at 40% 60%, #0d2a20 0%, #050d0a 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '28px',
+        padding: '32px',
+        textAlign: 'center',
+      }}
+    >
+      {/* Animated phone-rotate icon */}
+      <motion.div
+        animate={{ rotate: [0, -90, -90, 0] }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', times: [0, 0.35, 0.65, 1] }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <svg
+          width="72"
+          height="72"
+          viewBox="0 0 72 72"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect x="20" y="8" width="32" height="56" rx="6" stroke="#c9a44c" strokeWidth="3" fill="none" />
+          <circle cx="36" cy="57" r="3" fill="#c9a44c" opacity="0.6" />
+          <rect x="24" y="16" width="24" height="34" rx="2" fill="rgba(201,164,76,0.08)" stroke="rgba(201,164,76,0.2)" strokeWidth="1" />
+          <path
+            d="M54 18 C62 26, 62 46, 54 54"
+            stroke="#4ade80"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+            strokeDasharray="4 3"
+          />
+          <path d="M51 51 L55 55 L59 51" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
+      </motion.div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '280px' }}>
+        <div style={{
+          color: '#c9a44c',
+          fontWeight: 900,
+          fontSize: '10px',
+          letterSpacing: '0.4em',
+          textTransform: 'uppercase' as const,
+          opacity: 0.8,
+        }}>
+          Rotate Your Device
+        </div>
+        <h2 style={{
+          color: '#fff',
+          fontWeight: 900,
+          fontSize: '22px',
+          letterSpacing: '-0.01em',
+          lineHeight: 1.2,
+          margin: 0,
+        }}>
+          Landscape Mode Required
+        </h2>
+        <p style={{
+          color: 'rgba(255,255,255,0.45)',
+          fontSize: '13px',
+          fontWeight: 500,
+          lineHeight: 1.5,
+          margin: 0,
+        }}>
+          The roulette game is optimised for landscape view. Please rotate your phone sideways to play.
+        </p>
+      </div>
+
+      {/* Pulsing landscape hint */}
+      <motion.div
+        animate={{ opacity: [0.4, 1, 0.4] }}
+        transition={{ duration: 1.8, repeat: Infinity }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(74,222,128,0.08)',
+          border: '1px solid rgba(74,222,128,0.2)',
+          borderRadius: '100px',
+          padding: '8px 18px',
+        }}
+      >
+        <span style={{ color: '#4ade80', fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
+          ↺ Turn sideways to begin
+        </span>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Hook: detects portrait on a touch device
+───────────────────────────────────────────── */
+function useIsPortraitMobile() {
+  const getState = () => {
+    if (typeof window === 'undefined') return false;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (!isTouchDevice) return false;
+    return window.innerHeight > window.innerWidth;
+  };
+
+  const [isPortrait, setIsPortrait] = useState(getState);
+
+  useEffect(() => {
+    const handler = () => setIsPortrait(getState());
+    window.addEventListener('resize', handler);
+    window.addEventListener('orientationchange', handler);
+    return () => {
+      window.removeEventListener('resize', handler);
+      window.removeEventListener('orientationchange', handler);
+    };
+  }, []);
+
+  return isPortrait;
+}
+
 export default function GamePage() {
   const { user, isLoading: authLoading, userProfile, isSoundEnabled, isPopupEnabled } = useGame();
   const router = useRouter();
   const game = useGameState();
+  const isPortraitMobile = useIsPortraitMobile();
 
   const [showResult, setShowResult] = useState(false);
   const [showWinCelebration, setShowWinCelebration] = useState(false);
@@ -110,17 +240,19 @@ export default function GamePage() {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
 
+      const isLandscape = window.innerWidth > window.innerHeight;
       const isMobilePortrait =
         window.innerWidth <= 900 &&
         window.matchMedia('(orientation: portrait)').matches;
       const isLandscapeMobile =
-        window.matchMedia('(orientation: landscape)').matches &&
-        window.innerHeight <= 540 &&
-        window.innerWidth <= 950;
+        isLandscape && window.innerHeight <= 540 && window.innerWidth <= 1024;
+
       if (isMobilePortrait) {
         setWheelSize(Math.min(window.innerWidth * 0.62, 280));
       } else if (isLandscapeMobile) {
-        setWheelSize(360);
+        // Use available height for proper landscape sizing
+        const availableH = window.innerHeight - 48 - 60; // header + footer
+        setWheelSize(Math.min(availableH * 0.85, 260));
       } else if (window.innerHeight < 600) {
         setWheelSize(420);
       } else if (window.innerHeight < 750) {
@@ -145,6 +277,11 @@ export default function GamePage() {
         </div>
       </div>
     );
+  }
+
+  // ══════ PORTRAIT LOCK OVERLAY ══════
+  if (isPortraitMobile) {
+    return <PortraitLockOverlay />;
   }
 
   return (
@@ -192,16 +329,6 @@ export default function GamePage() {
           </div>
         </div>
       </header>
-
-
-
-
-      <div className="mobile-rotate-warning">
-        <div className="mobile-rotate-card">
-          <p className="mobile-rotate-title">Rotate Device</p>
-          <p className="mobile-rotate-text">This game is designed for landscape mode on mobile.</p>
-        </div>
-      </div>
 
       <main className="mobile-game-content mobile-landscape-main flex-1 min-h-0 relative px-0 py-0 overflow-y-auto md:overflow-hidden flex flex-col justify-between items-center h-full">
 
