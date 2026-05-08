@@ -5,11 +5,12 @@ import React from 'react';
 interface AvatarProps {
   type: string;
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export default function Avatar({ type, className, size = 'md' }: AvatarProps) {
   const sizeClasses = {
+    xs: 'w-5 h-5',
     sm: 'w-6 h-6',
     md: 'w-10 h-10',
     lg: 'w-16 h-16',

@@ -103,9 +103,12 @@ const RouletteTable = memo(function RouletteTable({
     onClearZone?.(betId);
   };
 
+  const [isLandscape, setIsLandscape] = useState(false);
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 1024);
+      setIsLandscape(window.innerWidth > window.innerHeight);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -165,7 +168,12 @@ const RouletteTable = memo(function RouletteTable({
             className={`relative flex ${tournamentMode ? 'flex-col justify-center' : 'justify-center'} items-center mobile-wheel-section`}
             initial={{ opacity: 0, scale: 0.95, flex: 1 }}
             animate={isMobile
-              ? { opacity: 1, scale: isSpinning ? (tournamentMode ? 1.05 : 1.2) : 1, y: 0, flex: 'none' }
+              ? {
+                  opacity: 1,
+                  scale: isSpinning ? (tournamentMode ? 1.05 : 1.2) : 1,
+                  y: 0,
+                  flex: 'none',
+                }
               : {
                 opacity: 1,
                 scale: isSpinning ? (tournamentMode ? 1.05 : 1.2) : 1,
@@ -175,7 +183,7 @@ const RouletteTable = memo(function RouletteTable({
             }
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            {tournamentMode && (
+            {tournamentMode && !isMobile && (
               <div className="hidden md:flex flex-col items-center mb-12">
                 <h1
                   className="text-2xl md:text-3xl tracking-wider"
@@ -289,10 +297,15 @@ const RouletteTable = memo(function RouletteTable({
           </motion.div>
 
           <motion.div
-            className={`flex flex-col items-center justify-start p-0.5 sm:p-2 mobile-table-section w-full min-w-0 ${tournamentMode ? '-mt-20' : ''}`}
+            className={`flex flex-col items-center justify-start p-0.5 sm:p-2 mobile-table-section w-full min-w-0 ${tournamentMode && !isMobile ? '-mt-20' : ''}`}
             initial={{ opacity: 0, x: 20, scale: 0.95, flex: 2 }}
             animate={isMobile
-              ? { opacity: isSpinning ? 0 : 1, scale: isSpinning ? 0.9 : 1, y: 0, flex: 'none' }
+              ? {
+                  opacity: isSpinning ? 0 : 1,
+                  scale: isSpinning ? 0.9 : 1,
+                  y: 0,
+                  flex: (isLandscape && tournamentMode) ? 1 : 'none',
+                }
               : {
                 opacity: isSpinning ? 0.2 : 1,
                 x: 1,
@@ -361,7 +374,9 @@ const RouletteTable = memo(function RouletteTable({
             ) : null}
 
             {/* Betting Grid Section with Blur & Overlay */}
-            <div className="w-full relative">
+            <div className="w-full relative" style={isMobile && tournamentMode ? {
+              zoom: 0.82,
+            } : {}}>
               <div
                 className="transition-all duration-700 w-full"
                 style={{ filter: isLocked || isSpinning ? 'blur(8px)' : 'none' }}

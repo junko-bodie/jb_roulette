@@ -284,6 +284,7 @@ body {
     overflow-x: hidden !important;
   }
 
+
   /* Foam buffer — reduce padding & border on mobile */
   .mx-auto.w-full.max-w-\[1500px\] {
     max-width: 100% !important;
@@ -324,6 +325,34 @@ body {
     overflow: visible !important;
     min-height: auto !important;
     zoom: 1.15;
+  }
+
+  /* ── Landscape overrides — MUST come AFTER portrait rules to win cascade ── */
+  @media (orientation: landscape) {
+    .mobile-felt-stack {
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      padding: 0.15rem !important;
+      gap: 0 !important;
+      overflow: visible !important;
+      height: 100% !important;
+    }
+
+    .mobile-wheel-section {
+      width: auto !important;
+      flex: 0 0 auto !important;
+    }
+
+    .mobile-table-section {
+      width: auto !important;
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      zoom: 1 !important;
+      overflow: visible !important;
+      margin-top: 0 !important;
+      padding: 0 !important;
+    }
   }
 
   /* Compact footer */
