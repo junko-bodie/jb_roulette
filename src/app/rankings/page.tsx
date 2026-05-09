@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Avatar from '@/components/ui/Avatar';
 import styles from '@/app/tournament/tournament.module.css';
 
 
@@ -88,9 +89,11 @@ export default function RankingsPage() {
                <div className={styles.cardContent} style={{ padding: '32px' }}>
                  <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-6">
-                       <div className="w-20 h-20 rounded-full bg-[#0f2318] flex items-center justify-center border-2 border-[#c9a44c] text-[#c9a44c] shadow-lg">
-                          <User size={32} />
-                       </div>
+                       <Avatar 
+                          type={userProfile?.avatar || 'default'} 
+                          size="lg" 
+                          className="border-2 border-[#c9a44c] shadow-lg" 
+                       />
                        <div>
                           <span className="text-[10px] font-bold text-[#8b6914] uppercase tracking-widest block mb-1">Your Standing</span>
                           <h2 className="text-3xl font-bold text-[#0f2318]" style={{ fontFamily: 'Georgia, serif' }}>
@@ -174,11 +177,11 @@ export default function RankingsPage() {
                           </td>
                           <td className="py-6 px-4">
                             <div className="flex items-center gap-4">
-                               <div className={`w-10 h-10 rounded-lg flex items-center justify-center border transition-all ${
-                                 isMe ? 'bg-[#0f2318] border-[#c9a44c] text-[#c9a44c]' : 'bg-white border-black/5 text-black/20'
-                               }`}>
-                                  {isTop3 ? <Award size={20} /> : <User size={18} />}
-                               </div>
+                                <Avatar 
+                                   type={entry.avatar_url || entry.avatar || 'default'} 
+                                   size="md"
+                                   className={isMe ? 'border-[#c9a44c]' : 'border-black/5'}
+                                />
                                <div className="flex flex-col">
                                   <span className={`text-sm font-bold uppercase tracking-wider ${isMe ? 'text-[#0f2318]' : 'text-[#0f2318]/80'}`}>
                                     {entry.username}
