@@ -6,7 +6,7 @@ import Link from 'next/link';
 import confetti from 'canvas-confetti';
 import {
   Trophy,
-  ArrowRight,
+  ArrowLeft,
   Users,
   Clock,
   CircleDollarSign,
@@ -16,7 +16,8 @@ import {
   XCircle,
   TrendingUp,
   Star,
-  Crown
+  Crown,
+  Globe
 } from 'lucide-react';
 import { COLORS, FONTS } from '@/styles/theme';
 
@@ -111,29 +112,63 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
         zIndex: 0
       }} />
 
+      {/* Return to Lobby — top right */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3 }}
+        className="fixed top-6 right-6 z-[260]"
+      >
+        <Link
+          href="/lobby"
+          className="group flex items-center gap-2 transition-all active:scale-[0.97]"
+          style={{
+            padding: '12px 28px',
+            borderRadius: '12px',
+            background: '#1a5c35',
+            boxShadow: '0 3px 0 #0f3d22, 0 6px 16px rgba(26,92,53,0.25)',
+          }}
+        >
+          <ArrowLeft
+            className="w-4 h-4 transition-transform group-hover:-translate-x-1"
+            style={{ color: '#f5e9b8' }}
+          />
+          <span style={{
+            fontFamily: "'Helvetica Neue', sans-serif",
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            color: '#f5e9b8',
+          }}>
+            Return to Lobby
+          </span>
+        </Link>
+      </motion.div>
+
       {/* Main Container */}
-      <div className="relative w-full min-h-screen flex flex-col items-center justify-center py-6 px-6" style={{ zIndex: 1 }}>
-        <div className="w-full max-w-3xl flex flex-col items-center gap-1.5">
+      <div className="relative w-full flex flex-col items-center py-6 px-6" style={{ zIndex: 1 }}>
+        <div className="w-full max-w-4xl flex flex-col items-center gap-1">
 
           {/* ── HEADER SECTION ── */}
           <div className="flex flex-col items-center w-full">
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2.5 mb-1"
+              className="flex items-center gap-3 mb-1"
             >
-              <div className="h-px w-8" style={{ background: 'rgba(26,92,53,0.2)' }} />
+              <div className="h-px w-10" style={{ background: 'rgba(26,92,53,0.25)' }} />
               <span style={{
-                fontSize: '9px',
+                fontSize: '10px',
                 fontFamily: "'Helvetica Neue', sans-serif",
-                fontWeight: 700,
-                letterSpacing: '0.4em',
-                color: 'rgba(26,92,53,0.5)',
+                fontWeight: 800,
+                letterSpacing: '0.45em',
+                color: 'rgba(26,92,53,0.4)',
                 textTransform: 'uppercase'
               }}>
                 Tournament Results
               </span>
-              <div className="h-px w-8" style={{ background: 'rgba(26,92,53,0.2)' }} />
+              <div className="h-px w-10" style={{ background: 'rgba(26,92,53,0.25)' }} />
             </motion.div>
 
             <motion.h1
@@ -142,13 +177,14 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
               transition={{ type: 'spring', stiffness: 100 }}
               style={{
                 fontFamily: "'Georgia', serif",
-                fontSize: 'clamp(42px, 7vw, 68px)',
+                fontSize: 'clamp(42px, 7vw, 60px)',
                 fontWeight: 700,
+                fontStyle: 'italic',
                 letterSpacing: '-0.02em',
                 lineHeight: 1,
-                marginBottom: '4px',
-                color: '#1a3d24',
-                textShadow: '0 1px 0 rgba(201,168,76,0.15)',
+                marginBottom: '2px',
+                color: '#0d2a20',
+                textShadow: '0 1px 0 rgba(201,168,76,0.1)',
                 textAlign: 'center'
               }}
             >
@@ -163,20 +199,20 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
               className="relative flex flex-col items-center mb-2 mt-0.5"
             >
               <div className="relative z-10 flex items-center justify-center" style={{
-                width: '84px',
-                height: '84px',
+                width: '80px',
+                height: '80px',
                 borderRadius: '50%',
                 background: 'linear-gradient(145deg, #f0e6c0 0%, #d4a820 50%, #b8960c 100%)',
                 boxShadow: '0 3px 0 #8a6d08, 0 6px 24px rgba(180,140,12,0.25), inset 0 1px 0 rgba(255,255,255,0.4)',
                 border: '2px solid rgba(255,255,255,0.6)',
               }}>
-                <Trophy className="w-9 h-9" style={{ color: '#3d2a00' }} />
+                <Trophy className="w-8 h-8" style={{ color: '#3d2a00' }} />
               </div>
 
-              {/* Name banner ribbon — wider, taller, overflow-visible so text never clips */}
+              {/* Name banner ribbon */}
               <div
-                className="relative z-20 mt-[-14px]"
-                style={{ width: 'auto', minWidth: '300px', maxWidth: '420px' }}
+                className="relative z-20 mt-[-16px]"
+                style={{ width: 'auto', minWidth: '280px', maxWidth: '420px' }}
               >
                 <div
                   className="relative flex flex-col items-center justify-center"
@@ -207,22 +243,23 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
 
                   <span style={{
                     fontFamily: "'Georgia', serif",
-                    fontSize: '20px',
-                    fontWeight: 700,
+                    fontSize: '22px',
+                    fontWeight: 800,
                     color: '#f5e9b8',
                     letterSpacing: '0.04em',
-                    lineHeight: 1.2,
+                    lineHeight: 1.1,
+                    textTransform: 'uppercase',
                   }}>
                     {player.username}
                   </span>
                   <span style={{
                     fontFamily: "'Helvetica Neue', sans-serif",
-                    fontSize: '9px',
-                    fontWeight: 700,
+                    fontSize: '10px',
+                    fontWeight: 800,
                     color: '#C9A84C',
-                    letterSpacing: '0.28em',
+                    letterSpacing: '0.3em',
                     textTransform: 'uppercase',
-                    marginTop: '3px',
+                    marginTop: '2px',
                   }}>
                     {positionLabel(player.final_position)}
                   </span>
@@ -238,7 +275,7 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
               initial={{ opacity: 0, x: -15 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex flex-col items-center gap-2 p-5"
+              className="flex flex-col items-center gap-3 p-6"
               style={{
                 background: 'rgba(255,255,255,0.92)',
                 border: '1px solid rgba(255,255,255,0.95)',
@@ -257,11 +294,11 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                 Your Chips
               </span>
               <div className="flex items-center gap-2">
-                <CircleDollarSign className="w-4 h-4 flex-shrink-0" style={{ color: '#B8960C' }} />
+                <CircleDollarSign className="w-5 h-5 flex-shrink-0" style={{ color: '#B8960C' }} />
                 <span style={{
                   fontFamily: "'Georgia', serif",
                   fontSize: '22px',
-                  fontWeight: 700,
+                  fontWeight: 800,
                   color: '#1a3024',
                   whiteSpace: 'nowrap',
                 }}>
@@ -275,7 +312,7 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
-              className="flex flex-col items-center gap-2 p-5"
+              className="flex flex-col items-center gap-3 p-6"
               style={{
                 background: 'rgba(255,255,255,0.92)',
                 border: '1px solid rgba(255,255,255,0.95)',
@@ -291,30 +328,30 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                 textTransform: 'uppercase',
                 color: 'rgba(26,42,26,0.5)',
               }}>
-                Points
+                Points Earned
               </span>
               <div className="flex items-center gap-2">
                 <span style={{
                   fontFamily: "'Georgia', serif",
-                  fontSize: '26px',
+                  fontSize: '32px',
                   fontWeight: 700,
                   color: pointsEarned >= 0 ? '#1a5c35' : '#b83232',
                 }}>
                   {pointsEarned >= 0 ? `+${pointsEarned}` : pointsEarned}
                 </span>
                 <TrendingUp
-                  className={`w-4 h-4 flex-shrink-0 ${pointsEarned < 0 ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 flex-shrink-0 ${pointsEarned < 0 ? 'rotate-180' : ''}`}
                   style={{ color: pointsEarned >= 0 ? '#1a5c35' : '#b83232' }}
                 />
               </div>
             </motion.div>
 
-            {/* Tournament Info */}
+            {/* World Ranking */}
             <motion.div
               initial={{ opacity: 0, x: 15 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-col justify-center gap-3 p-5"
+              className="flex flex-col items-center gap-3 p-6"
               style={{
                 background: 'rgba(255,255,255,0.92)',
                 border: '1px solid rgba(255,255,255,0.95)',
@@ -323,16 +360,24 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                 backdropFilter: 'blur(10px)',
               }}
             >
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(26,42,26,0.45)' }} />
-                <span style={{ fontFamily: "'Georgia', serif", fontSize: '14px', fontWeight: 700, color: '#1a3024' }}>
-                  {standings.length} Players
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(26,42,26,0.45)' }} />
-                <span style={{ fontFamily: "'Georgia', serif", fontSize: '14px', fontWeight: 700, color: '#1a3024' }}>
-                  {durationStr}
+              <span style={{
+                fontSize: '9px',
+                fontWeight: 700,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                color: 'rgba(26,42,26,0.5)',
+              }}>
+                World Ranking
+              </span>
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(26,42,26,0.35)' }} />
+                <span style={{
+                  fontFamily: "'Georgia', serif",
+                  fontSize: '32px',
+                  fontWeight: 700,
+                  color: '#1a3024',
+                }}>
+                  {player.final_position <= 3 ? player.final_position : '—'}
                 </span>
               </div>
             </motion.div>
@@ -357,18 +402,18 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
             <div
               className="grid px-6 py-3"
               style={{
-                gridTemplateColumns: '60px 1fr 130px 120px 90px',
-                borderBottom: '1px solid rgba(26,42,26,0.08)',
-                background: 'rgba(26,92,53,0.04)',
+                gridTemplateColumns: '70px 1fr 140px 130px 100px',
+                borderBottom: '2px solid rgba(26,92,53,0.12)',
+                background: 'rgba(26,92,53,0.06)',
               }}
             >
               {['Rank', 'Player', 'Chips', 'Points', 'Status'].map((h) => (
                 <span key={h} style={{
-                  fontSize: '9px',
+                  fontSize: '11px',
                   fontWeight: 700,
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
-                  color: 'rgba(26,42,26,0.4)',
+                  color: 'rgba(26,42,26,0.45)',
                 }}>
                   {h}
                 </span>
@@ -387,33 +432,36 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                 return (
                   <div
                     key={s.player_id?.toString() ?? idx}
-                    className="grid items-center px-6 py-4 transition-colors"
+                    className="grid items-center px-6 py-3.5 transition-colors"
                     style={{
-                      gridTemplateColumns: '60px 1fr 130px 120px 90px',
-                      borderBottom: idx < Math.min(standings.length, 8) - 1 ? '1px solid rgba(26,42,26,0.05)' : 'none',
-                      background: isMe ? 'rgba(201,168,76,0.07)' : 'transparent',
+                      gridTemplateColumns: '70px 1fr 140px 130px 100px',
+                      borderBottom: idx < Math.min(standings.length, 8) - 1 ? '1px solid rgba(26,42,26,0.06)' : 'none',
+                      background: isMe ? 'rgba(201,168,76,0.08)' : 'transparent',
                     }}
                   >
                     {/* Rank */}
                     <div className="flex items-center">
                       {rank <= 3 ? (
-                        <div className="relative flex items-center justify-center w-8 h-8">
-                          <Medal className="w-8 h-8" style={{ color: rankColors[rank] }} />
-                          <span className="absolute inset-0 flex items-center justify-center" style={{
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            color: rank === 1 ? '#3d2a00' : rank === 2 ? '#3a3a44' : '#3d1f0a',
-                          }}>
-                            {rank}
-                          </span>
+                        <div className="relative flex items-center justify-center w-10 h-10">
+                          <Medal className="w-9 h-9" style={{ color: rankColors[rank] }} />
+                          <div className="absolute inset-0 flex items-center justify-center" style={{ paddingTop: '8px' }}>
+                            <span style={{
+                              fontSize: '10px',
+                              fontWeight: 900,
+                              color: rank === 1 ? '#3d2a00' : rank === 2 ? '#3a3a44' : '#3d1f0a',
+                              fontFamily: FONTS.secondary,
+                            }}>
+                              {rank}
+                            </span>
+                          </div>
                         </div>
                       ) : (
                         <span style={{
                           fontFamily: "'Georgia', serif",
-                          fontSize: '15px',
+                          fontSize: '18px',
                           color: 'rgba(26,42,26,0.3)',
                           fontWeight: 700,
-                          marginLeft: '10px',
+                          marginLeft: '12px',
                         }}>
                           {rank}
                         </span>
@@ -421,14 +469,14 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                     </div>
 
                     {/* Player */}
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div
                         className="flex items-center justify-center flex-shrink-0 rounded-full"
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: '36px',
+                          height: '36px',
                           background: isMe ? '#1a5c35' : 'rgba(26,42,26,0.07)',
-                          fontSize: '11px',
+                          fontSize: '12px',
                           fontWeight: 700,
                           color: isMe ? '#f5e9b8' : 'rgba(26,42,26,0.45)',
                         }}
@@ -437,8 +485,8 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                       </div>
                       <span style={{
                         fontFamily: "'Georgia', serif",
-                        fontSize: '15px',
-                        fontWeight: 700,
+                        fontSize: '16px',
+                        fontWeight: 800,
                         color: isMe ? '#1a5c35' : '#1a2e1a',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -452,12 +500,12 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                     <div className="flex items-center">
                       <span style={{
                         fontFamily: "'Georgia', serif",
-                        fontSize: '15px',
+                        fontSize: '17px',
                         fontWeight: 700,
-                        color: isBusted ? 'rgba(26,42,26,0.2)' : '#1a2e1a',
+                        color: chips < 0 ? '#b83232' : isBusted ? 'rgba(26,42,26,0.2)' : '#1a2e1a',
                         whiteSpace: 'nowrap',
                       }}>
-                        ${chips.toLocaleString()}
+                        {chips < 0 ? `-$${Math.abs(chips).toLocaleString()}` : `$${chips.toLocaleString()}`}
                       </span>
                     </div>
 
@@ -465,9 +513,9 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                     <div className="flex items-center">
                       <span style={{
                         display: 'inline-block',
-                        padding: '4px 14px',
+                        padding: '5px 16px',
                         borderRadius: '99px',
-                        fontSize: '13px',
+                        fontSize: '15px',
                         fontFamily: "'Georgia', serif",
                         fontWeight: 700,
                         background: points > 0
@@ -489,11 +537,11 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                     {/* Status */}
                     <div className="flex items-center">
                       {rank === 1 ? (
-                        <Trophy className="w-4 h-4" style={{ color: '#B8960C' }} />
+                        <Trophy className="w-5 h-5" style={{ color: '#B8960C' }} />
                       ) : isBusted ? (
-                        <Skull className="w-4 h-4" style={{ color: 'rgba(184,50,50,0.5)' }} />
+                        <Skull className="w-5 h-5" style={{ color: 'rgba(184,50,50,0.5)' }} />
                       ) : (
-                        <CheckCircle2 className="w-4 h-4" style={{ color: 'rgba(26,92,53,0.3)' }} />
+                        <CheckCircle2 className="w-5 h-5" style={{ color: 'rgba(26,92,53,0.35)' }} />
                       )}
                     </div>
                   </div>
@@ -507,12 +555,12 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="w-full flex flex-col items-center gap-4 mt-3"
+            className="w-full flex flex-col items-center gap-4 mt-2"
           >
             <div className="flex items-center gap-4 w-full">
               <div className="flex-1" style={{ height: '1px', background: 'rgba(26,42,26,0.12)' }} />
               <span style={{
-                fontSize: '9px',
+                fontSize: '11px',
                 fontWeight: 700,
                 letterSpacing: '0.4em',
                 textTransform: 'uppercase',
@@ -523,43 +571,40 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
               <div className="flex-1" style={{ height: '1px', background: 'rgba(26,42,26,0.12)' }} />
             </div>
 
-            <div className="grid grid-cols-4 gap-3 w-full">
+            <div className="grid grid-cols-4 gap-4 w-full">
               {[
                 { label: '1st Place', value: '+1000', icon: Trophy, color: '#8a6d08', valueBg: 'rgba(201,168,76,0.12)', bg: 'rgba(255,255,255,0.8)', border: 'rgba(201,168,76,0.25)' },
                 { label: '2nd Place', value: '+100', icon: Medal, color: '#555560', valueBg: 'rgba(122,122,138,0.1)', bg: 'rgba(255,255,255,0.8)', border: 'rgba(122,122,138,0.2)' },
                 { label: '3rd Place', value: '+50', icon: Medal, color: '#7a4e2a', valueBg: 'rgba(139,94,60,0.1)', bg: 'rgba(255,255,255,0.8)', border: 'rgba(139,94,60,0.2)' },
-                { label: 'Busted', value: '-50', icon: XCircle, color: '#b83232', valueBg: 'rgba(184,50,50,0.1)', bg: 'rgba(255,255,255,0.8)', border: 'rgba(184,50,50,0.2)' },
+                { label: 'Busted (0 Chips)', value: '-50', icon: XCircle, color: '#b83232', valueBg: 'rgba(184,50,50,0.1)', bg: 'rgba(255,255,255,0.8)', border: 'rgba(184,50,50,0.2)' },
               ].map((rule) => (
                 <div
                   key={rule.label}
-                  className="flex flex-col items-center justify-center gap-3 px-4 py-5"
+                  className="flex flex-col items-center justify-center gap-1 px-4 py-3"
                   style={{
                     background: rule.bg,
-                    borderRadius: '16px',
+                    borderRadius: '18px',
                     border: `1px solid ${rule.border}`,
                     boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                   }}
                 >
-                  <rule.icon className="w-5 h-5" style={{ color: rule.color, opacity: 0.7 }} />
-                  <div className="flex flex-col items-center gap-1">
+                  <rule.icon className="w-6 h-6" style={{ color: rule.color, opacity: 0.7 }} />
+                  <div className="flex flex-col items-center gap-2">
                     <span style={{
                       fontSize: '9px',
-                      fontWeight: 700,
+                      fontWeight: 800,
                       letterSpacing: '0.18em',
                       textTransform: 'uppercase',
                       color: 'rgba(26,42,26,0.5)',
                       whiteSpace: 'nowrap',
+                      textAlign: 'center',
                     }}>
                       {rule.label}
                     </span>
                     <span style={{
-                      display: 'inline-block',
-                      padding: '3px 12px',
-                      borderRadius: '99px',
-                      background: rule.valueBg,
                       fontFamily: "'Georgia', serif",
-                      fontSize: '17px',
-                      fontWeight: 700,
+                      fontSize: '22px',
+                      fontWeight: 800,
                       color: rule.color,
                       whiteSpace: 'nowrap',
                     }}>
@@ -569,40 +614,6 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                 </div>
               ))}
             </div>
-          </motion.div>
-
-          {/* ── CTA ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mt-4 mb-2"
-          >
-            <Link
-              href="/lobby"
-              className="group relative flex items-center gap-2.5 overflow-hidden transition-all active:scale-[0.97]"
-              style={{
-                padding: '15px 48px',
-                borderRadius: '12px',
-                background: '#1a5c35',
-                boxShadow: '0 4px 0 #0f3d22, 0 8px 20px rgba(26,92,53,0.25)',
-              }}
-            >
-              <span style={{
-                fontFamily: "'Helvetica Neue', sans-serif",
-                fontSize: '12px',
-                fontWeight: 700,
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: '#f5e9b8',
-              }}>
-                Return to Lobby
-              </span>
-              <ArrowRight
-                className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                style={{ color: '#f5e9b8' }}
-              />
-            </Link>
           </motion.div>
 
         </div>

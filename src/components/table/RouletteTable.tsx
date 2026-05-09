@@ -178,45 +178,56 @@ const RouletteTable = memo(function RouletteTable({
                 opacity: 1,
                 scale: isSpinning ? (tournamentMode ? 1.05 : 1.2) : 1,
                 y: isSpinning ? 0 : (tournamentMode ? 8 : -25),
-                flex: isSpinning ? 4.5 : 1
+                flex: 1 // Take full width when table is hidden
               }
             }
+
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             {tournamentMode && !isMobile && (
-              <div className="hidden md:flex flex-col items-center mb-12">
-                <h1
-                  className="text-2xl md:text-3xl tracking-wider"
-                  style={{
-                    fontFamily: "'Georgia', serif",
-                    fontStyle: 'italic',
-                    fontWeight: 900,
-                    letterSpacing: '0.15em',
-                    background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    display: 'inline-block',
-                  }}
-                >
-                  JUNKO BODIE
-                </h1>
-                <div className="flex items-center gap-2 -mt-0.5 mb-2">
-                  <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
-                  <span
-                    className="text-[9px] uppercase tracking-[0.4em]"
-                    style={{
-                      color: 'rgba(201, 164, 76, 0.5)',
-                      fontFamily: "'Georgia', serif",
-                      fontWeight: 700,
-                    }}
+              <AnimatePresence>
+                {!isSpinning && (
+                  <motion.div
+                    className="flex flex-col items-center mb-6"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
                   >
-                    Roulette
-                  </span>
-                  <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
-                </div>
-                <TournamentRules />
-              </div>
+                    <h1
+                      className="text-2xl md:text-3xl tracking-wider"
+                      style={{
+                        fontFamily: "'Georgia', serif",
+                        fontStyle: 'italic',
+                        fontWeight: 900,
+                        letterSpacing: '0.15em',
+                        background: 'linear-gradient(180deg, #f5edd5, #c9a44c)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        display: 'inline-block',
+                      }}
+                    >
+                      JUNKO BODIE
+                    </h1>
+                    <div className="flex items-center gap-2 -mt-0.5 mb-2">
+                      <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                      <span
+                        className="text-[9px] uppercase tracking-[0.4em]"
+                        style={{
+                          color: 'rgba(201, 164, 76, 0.5)',
+                          fontFamily: "'Georgia', serif",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Roulette
+                      </span>
+                      <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
+                    </div>
+                    <TournamentRules />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             )}
 
             <RouletteWheel
@@ -307,15 +318,19 @@ const RouletteTable = memo(function RouletteTable({
                   flex: (isLandscape && tournamentMode) ? 1 : 'none',
                 }
               : {
-                opacity: isSpinning ? 0.2 : 1,
+                opacity: isSpinning ? 0 : 1, // Completely hide during spin
+                pointerEvents: isSpinning ? 'none' : 'auto',
                 x: 1,
                 scaleX: isSpinning ? 0.9 : 1.119,
                 scaleY: isSpinning ? 0.9 : (tournamentMode ? 2.1 : 1.7),
-                flex: isSpinning ? 0.5 : (tournamentMode ? 2.3 : 2)
+                flex: isSpinning ? 0 : (tournamentMode ? 2.3 : 2) // Remove from layout during spin
               }
             }
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
+
+
+
             {/* Junko Bodie Title & Tournament Rules */}
             {!tournamentMode ? (
               <div
@@ -339,10 +354,13 @@ const RouletteTable = memo(function RouletteTable({
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
                       display: 'inline-block',
+                      filter: isSpinning ? 'drop-shadow(0 0 12px rgba(201, 164, 76, 0.4))' : 'none',
+                      transition: 'filter 0.5s ease',
                     }}
                   >
                     JUNKO BODIE
                   </h1>
+
                   <div className="flex items-center gap-2 -mt-0.5">
                     <div className="h-px w-10 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent" style={{ opacity: 0.3 }} />
                     <span
@@ -443,9 +461,13 @@ const RouletteTable = memo(function RouletteTable({
             } : {}}>
               <div
                 className="transition-all duration-700 w-full"
-                style={{ filter: isLocked || isSpinning ? 'blur(8px)' : 'none' }}
+                style={{ 
+                  filter: isLocked || isSpinning ? 'blur(4px)' : 'none', // Reduced blur for better aesthetics
+                  opacity: isSpinning ? 0.4 : 1 // Subtly fade the grid itself
+                }}
               >
                 <BettingLayout
+
                   bets={bets}
                   onPlaceBet={onPlaceBet}
                   onRemoveBet={onRemoveBet}
@@ -510,70 +532,73 @@ const RouletteTable = memo(function RouletteTable({
                   </div>
                 )}
 
-                {/* RE-BET — compact bordered box */}
                 <button
                   onClick={onRebet}
                   disabled={!canBet || !hasLastSpin}
-                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed transition-all duration-200 hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
                     fontSize: isMobile ? '13px' : '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
-                    color: '#e4e0d4',
+                    color: (!canBet || !hasLastSpin) ? 'rgba(228, 224, 212, 0.25)' : '#e4e0d4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
-                    border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
+                    borderWidth: isMobile ? '2.5px' : '3px',
+                    borderStyle: 'solid',
+                    borderColor: (!canBet || !hasLastSpin) ? 'rgba(201, 164, 76, 0.2)' : '#c9a44c',
                     borderRadius: '10px',
                     padding: isMobile ? '7px 9px' : '8px 16px',
                     lineHeight: 1,
-                    boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
+                    boxShadow: (!canBet || !hasLastSpin) ? 'none' : '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
                 >
                   REBET
                 </button>
 
-                {/* CLEAR — compact bordered box (clears all bets) */}
                 <button
                   onClick={handleClearBetsClick}
                   disabled={!canBet || !hasBets}
-                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed transition-all duration-200 hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
                     fontSize: isMobile ? '13px' : '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
-                    color: '#e4e0d4',
+                    color: (!canBet || !hasBets) ? 'rgba(228, 224, 212, 0.25)' : '#e4e0d4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
-                    border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
+                    borderWidth: isMobile ? '2.5px' : '3px',
+                    borderStyle: 'solid',
+                    borderColor: (!canBet || !hasBets) ? 'rgba(201, 164, 76, 0.2)' : '#c9a44c',
                     borderRadius: '10px',
                     padding: isMobile ? '7px 9px' : '8px 16px',
                     lineHeight: 1,
-                    boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
+                    boxShadow: (!canBet || !hasBets) ? 'none' : '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
                 >
                   Clear
                 </button>
 
-                {/* UNDO — compact bordered box */}
                 <button
                   onClick={handleClearLastBetClick}
                   disabled={!canBet || !hasBets}
-                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-[#c9a44c] hover:text-white"
+                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed transition-all duration-200 hover:text-white"
                   style={{
                     fontFamily: 'var(--font-inter)',
                     fontSize: isMobile ? '13px' : '11px',
                     fontWeight: 800,
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
-                    color: '#e4e0d4',
+                    color: (!canBet || !hasBets) ? 'rgba(228, 224, 212, 0.25)' : '#e4e0d4',
                     background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
-                    border: isMobile ? '2.5px solid #c9a44c' : '3px solid #c9a44c',
+                    borderWidth: isMobile ? '2.5px' : '3px',
+                    borderStyle: 'solid',
+                    borderColor: (!canBet || !hasBets) ? 'rgba(201, 164, 76, 0.2)' : '#c9a44c',
                     borderRadius: '10px',
                     padding: isMobile ? '7px 9px' : '8px 16px',
                     lineHeight: 1,
-                    boxShadow: '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
+                    boxShadow: (!canBet || !hasBets) ? 'none' : '0 4px 0 #1a0f09, 0 8px 15px rgba(0,0,0,0.5)',
                   }}
                 >
                   UNDO
@@ -592,10 +617,12 @@ const RouletteTable = memo(function RouletteTable({
                   transition={{ type: 'spring', stiffness: 500, damping: 15 }}
                   className="relative overflow-hidden flex-shrink-0 cursor-pointer disabled:cursor-not-allowed ml-1 sm:ml-4"
                   style={{
-                    background: spinEnabled
-                      ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
-                      : 'linear-gradient(180deg, #1a1a1a 0%, #111 100%)',
-                    color: spinEnabled ? '#ffffff' : '#444',
+                    background: isSpinning
+                      ? 'linear-gradient(180deg, #0a1f1a 0%, #050f0d 100%)'
+                      : spinEnabled
+                        ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
+                        : 'linear-gradient(180deg, #1a1a1a 0%, #111 100%)',
+                    color: isSpinning ? '#c9a44c' : spinEnabled ? '#ffffff' : '#444',
                     fontFamily: "'Georgia', serif",
                     fontStyle: 'italic',
                     fontWeight: 900,
@@ -603,15 +630,18 @@ const RouletteTable = memo(function RouletteTable({
                     letterSpacing: '0.25em',
                     textTransform: 'uppercase' as const,
                     padding: isMobile ? '7px 16px' : '10px 32px',
-                    borderRadius: '9999px',
-                    borderWidth: spinEnabled ? '3px' : '2px',
+                    borderRadius: '999px',
+                    borderWidth: isSpinning || spinEnabled ? '3px' : '2px',
                     borderStyle: 'solid',
-                    borderColor: spinEnabled ? '#f5edd5' : '#333',
+                    borderColor: isSpinning ? '#c9a44c' : spinEnabled ? '#f5edd5' : '#333',
                     boxShadow: spinEnabled
                       ? `0 8px 0 0 #1a0f09, 0 12px 25px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -5px 0 rgba(0,0,0,0.3), 0 0 40px rgba(201, 168, 76, 0.3)`
-                      : 'none',
+                      : isSpinning
+                        ? '0 0 20px rgba(201, 164, 76, 0.2)'
+                        : 'none',
                     textShadow: spinEnabled ? '0 2px 4px rgba(0,0,0,0.6)' : 'none',
                     marginTop: '11px',
+                    opacity: isSpinning ? 0.9 : 1,
                   } as React.CSSProperties}
                 >
                   {/* Shimmer overlay */}
@@ -627,10 +657,19 @@ const RouletteTable = memo(function RouletteTable({
                       transition={{ duration: 3, repeat: Infinity, ease: 'linear', repeatDelay: 2 }}
                     />
                   )}
+                  {/* Pulse effect for spinning */}
+                  {isSpinning && (
+                    <motion.div
+                      className="absolute inset-0 bg-[#c9a44c]/5"
+                      animate={{ opacity: [0, 0.15, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                  )}
                   <span className="relative z-10">
-                    {isSpinning ? 'Spinning...' : 'SPIN'}
+                    {isSpinning ? 'SPINNING...' : 'SPIN'}
                   </span>
                 </motion.button>
+
               </div>
             )}
           </motion.div>

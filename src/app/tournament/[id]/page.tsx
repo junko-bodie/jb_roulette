@@ -231,14 +231,14 @@ export default function TournamentPage() {
   const wheelRef = useRef<HTMLDivElement>(null);
   const [tournamentWheelSize, setTournamentWheelSize] = useState(420);
   const [isMobile, setIsMobile] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(320);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
 
   useEffect(() => {
     const updateWheelSize = () => {
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       const mobile = isTouchDevice && window.innerWidth <= 1024;
       setIsMobile(mobile);
-      setSidebarWidth(window.innerWidth < 1100 ? 220 : 320);
+      setSidebarWidth(window.innerWidth < 1100 ? 220 : 280);
 
       const isLandscapeMobile =
         window.matchMedia('(orientation: landscape)').matches &&
@@ -646,82 +646,87 @@ export default function TournamentPage() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'radial-gradient(circle at 30% 50%, #165b45 0%, #0d2a20 100%)',
+        background: 'radial-gradient(circle at center, #1e7a5e 0%, #0a2318 100%)',
         position: 'relative',
         overflow: 'hidden',
-        padding: isMobile ? '8px' : '16px',
+        padding: isMobile ? '8px' : '24px',
       }}>
-        <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '40%', height: '40%', background: 'rgba(201,164,76,0.05)', borderRadius: '50%', filter: 'blur(80px)' }} />
-        <div style={{ position: 'absolute', bottom: '-10%', left: '-10%', width: '40%', height: '40%', background: 'rgba(201,164,76,0.03)', borderRadius: '50%', filter: 'blur(80px)' }} />
+        {/* Thematic Background Elements */}
+        <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '40%', height: '40%', background: 'rgba(201,164,76,0.08)', borderRadius: '50%', filter: 'blur(100px)' }} />
+        <div style={{ position: 'absolute', bottom: '-10%', left: '-10%', width: '40%', height: '40%', background: 'rgba(201,164,76,0.05)', borderRadius: '50%', filter: 'blur(100px)' }} />
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className={styles.card}
           style={{
             zIndex: 10,
             width: '100%',
-            maxWidth: isMobile ? '100%' : '640px',
-            maxHeight: isMobile ? 'calc(100dvh - 16px)' : 'none',
-            overflowY: isMobile ? 'auto' : 'visible',
-            background: 'linear-gradient(135deg, rgba(20, 50, 40, 0.95) 0%, rgba(10, 30, 20, 0.98) 100%)',
-            backdropFilter: 'blur(20px)',
-            border: '2px solid rgba(201, 164, 76, 0.35)',
-            borderRadius: isMobile ? '16px' : '24px',
-            padding: isMobile ? '12px 16px' : 'clamp(16px, 5vw, 48px) clamp(12px, 4vw, 40px)',
-            boxShadow: '0 30px 100px rgba(0,0,0,0.8), inset 0 0 40px rgba(201, 164, 76, 0.05)',
+            maxWidth: isMobile ? '100%' : '1000px',
+            background: '#f5edd5',
+            padding: isMobile ? '12px 16px' : 'clamp(32px, 6vh, 60px) clamp(24px, 4vw, 56px)',
             textAlign: 'center' as const,
             position: 'relative' as const,
-            overflow: 'hidden'
+            overflow: 'visible' // Allow notches to overlap
           }}
         >
+          {/* Theme Decorations */}
+          <div className={styles.cardBorder} />
+          <div className={styles.cornerTL} />
+          <div className={styles.cornerTR} />
+          <div className={styles.cornerBL} />
+          <div className={styles.cornerBR} />
+
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,164,76,0.3), transparent)' }} />
 
-          <div style={{ color: '#c9a44c', fontWeight: 900, letterSpacing: '0.4em', fontSize: isMobile ? '8px' : '10px', textTransform: 'uppercase', marginBottom: isMobile ? '6px' : '16px', opacity: 0.8 }}>
+          <div style={{ color: '#8b6914', fontWeight: 900, letterSpacing: '0.4em', fontSize: isMobile ? '11px' : '14px', textTransform: 'uppercase', marginBottom: isMobile ? '12px' : '20px', fontFamily: "'Arial Narrow', Arial, sans-serif" }}>
             Tournament Matchmaking
           </div>
-          <h2 className={styles.shimmerText} style={{ fontSize: isMobile ? '20px' : 'clamp(24px, 7vw, 36px)', fontWeight: 900, marginBottom: isMobile ? '4px' : '8px', letterSpacing: '-0.02em' }}>
+          <h2 className={styles.title} style={{ fontSize: isMobile ? '24px' : 'clamp(36px, 5vw, 52px)', marginBottom: isMobile ? '8px' : '16px' }}>
             Searching for Players...
           </h2>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: isMobile ? '11px' : '14px', marginBottom: isMobile ? '10px' : 'clamp(24px, 5vw, 40px)', fontWeight: 500 }}>
+          <p style={{ color: '#3a3028', fontSize: isMobile ? '14px' : '18px', marginBottom: isMobile ? '12px' : 'clamp(32px, 6vh, 52px)', fontWeight: 500, fontFamily: 'Georgia, serif', opacity: 0.9 }}>
             Match begins automatically in <span style={{ color: '#c9a44c', fontWeight: 800 }}>{lobbyTimeRemaining}s</span>
           </p>
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: isMobile ? 'repeat(6, 1fr)' : 'repeat(3, 1fr)',
-            gap: isMobile ? '6px' : 'clamp(6px, 2vw, 20px)',
-            marginBottom: isMobile ? '10px' : 'clamp(20px, 4vw, 48px)'
+            gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
+            gap: isMobile ? '10px' : 'clamp(12px, 2vh, 24px)',
+            marginBottom: isMobile ? '16px' : 'clamp(24px, 5vh, 48px)'
           }}>
             {Array.from({ length: 6 }).map((_, i) => {
               const p = tournament.players[i];
               return (
                 <div key={i} style={{
-                  background: p ? 'rgba(201,164,76,0.08)' : 'rgba(0,0,0,0.2)',
+                  background: p ? '#ffffff' : 'rgba(0,0,0,0.03)',
                   border: `1px solid ${p ? 'rgba(201,164,76,0.4)' : 'rgba(201,164,76,0.1)'}`,
                   borderRadius: isMobile ? '10px' : '16px',
-                  padding: isMobile ? '8px 4px' : 'clamp(12px, 3vw, 20px) clamp(8px, 2vw, 12px)',
+                  padding: isMobile ? '12px 6px' : 'clamp(20px, 4vh, 36px) clamp(10px, 2vw, 16px)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: isMobile ? '4px' : '8px',
-                  transition: 'all 0.3s ease',
-                  boxShadow: p ? '0 10px 20px rgba(0,0,0,0.2)' : 'none'
+                  gap: isMobile ? '6px' : '12px',
+                  transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  boxShadow: p ? '0 12px 24px rgba(0,0,0,0.06)' : 'none',
+                  position: 'relative'
                 }}>
                   <div style={{ position: 'relative' }}>
-                    <Avatar type={p?.avatar_url || 'default'} size={isMobile ? 'sm' : 'md'} />
-                    {p && <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: isMobile ? '7px' : '10px', height: isMobile ? '7px' : '10px', background: '#4ade80', borderRadius: '50%', border: '2px solid #0a1e14' }} />}
+                    <Avatar type={p?.avatar_url || 'default'} size={isMobile ? 'sm' : 'lg'} />
+                    {p && <div style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: isMobile ? '8px' : '12px', height: isMobile ? '8px' : '12px', background: '#4ade80', borderRadius: '50%', border: '2.5px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />}
                   </div>
                   <span style={{
-                    color: p ? '#fff' : 'rgba(255,255,255,0.15)',
-                    fontSize: isMobile ? '7px' : 'clamp(9px, 2vw, 11px)',
+                    color: p ? '#0f2318' : 'rgba(15,35,24,0.30)',
+                    fontSize: isMobile ? '9px' : 'clamp(11px, 2vw, 14px)',
                     fontWeight: 800,
                     maxWidth: '100%',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
+                    letterSpacing: '0.08em',
+                    fontFamily: "'Arial Narrow', Arial, sans-serif"
                   }}>
                     {p ? p.username : 'EMPTY'}
                   </span>
@@ -735,12 +740,13 @@ export default function TournamentPage() {
             alignItems: 'center',
             justifyContent: 'center',
             gap: isMobile ? '8px' : '12px',
-            background: 'rgba(0,0,0,0.2)',
-            padding: isMobile ? '6px 16px' : '12px 24px',
+            background: 'rgba(201, 164, 76, 0.08)',
+            padding: isMobile ? '8px 20px' : '14px 32px',
             borderRadius: '100px',
             width: 'fit-content',
             margin: '0 auto',
-            border: '1px solid rgba(201,164,76,0.1)'
+            border: '1.5px solid rgba(201, 164, 76, 0.2)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
           }}>
             <motion.div
               animate={{ rotate: 360 }}
@@ -753,8 +759,8 @@ export default function TournamentPage() {
                 borderRadius: '50%'
               }}
             />
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: isMobile ? '9px' : '11px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              Matched <span style={{ color: '#c9a44c' }}>{tournament.players.length}/6</span> Players
+            <span style={{ color: '#3a3028', fontWeight: 800, fontSize: isMobile ? '10px' : '13px', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Arial Narrow', Arial, sans-serif" }}>
+              Matched <span style={{ color: '#8b6914' }}>{tournament.players.length}/6</span> Players
             </span>
           </div>
         </motion.div>
@@ -766,12 +772,12 @@ export default function TournamentPage() {
   if (isStarting && tournament) {
     return (
       <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
-        style={{ background: 'radial-gradient(circle at center, #1a4d3c 0%, #050d0a 100%)' }}>
+        style={{ background: 'radial-gradient(circle at center, #247a5e 0%, #0a1e14 100%)' }}>
 
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-[-100%] opacity-20"
+          className="absolute inset-[-100%] opacity-30"
           style={{
             background: 'conic-gradient(from 0deg, transparent 0deg, #c9a44c 20deg, transparent 40deg, #c9a44c 60deg, transparent 80deg)',
             filter: 'blur(60px)'
@@ -788,7 +794,7 @@ export default function TournamentPage() {
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.3 }}
-            className="text-[#c9a44c] font-black text-xs uppercase tracking-[0.5em] mb-4"
+            className="text-[#c9a44c] font-black text-sm uppercase tracking-[0.5em] mb-4"
           >
             Matchmaking Complete
           </motion.div>
@@ -811,14 +817,14 @@ export default function TournamentPage() {
             Match Found!
           </motion.h1>
 
-          <div className="flex flex-wrap justify-center gap-4 mb-10 px-2">
+          <div className="flex flex-wrap justify-center gap-6 mb-10 px-2">
             {tournament?.players?.slice(0, 6).map((p, i) => (
               <motion.div
                 key={p.player_id.toString()}
                 initial={{ opacity: 0, y: 15, scale: 0.8 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ delay: 0.4 + (i * 0.08), duration: 0.3 }}
-                className="flex flex-col items-center gap-2"
+                className="relative flex flex-col items-center gap-2"
               >
                 <div className="relative">
                   <Avatar type={p.avatar_url || 'default'} size="lg" className="border-4 border-[#c9a44c]/60 shadow-2xl" />
@@ -828,10 +834,10 @@ export default function TournamentPage() {
                     </div>
                   )}
                 </div>
-                <span className="text-white font-bold text-xs tracking-wide">
+                <span className="text-white font-bold text-sm tracking-wide">
                   {p.username}
                 </span>
-                <span className="text-[#c9a44c] text-[10px] font-black uppercase tracking-widest">
+                <span className="text-[#c9a44c] text-[13px] font-black uppercase tracking-widest">
                   ${p.current_chips.toLocaleString()}
                 </span>
               </motion.div>
@@ -846,13 +852,13 @@ export default function TournamentPage() {
               className="flex flex-col items-center gap-2"
             >
               <div className="h-px w-64 bg-gradient-to-r from-transparent via-[#c9a44c]/40 to-transparent" />
-              <span className="text-white/60 font-black text-[10px] uppercase tracking-[0.3em]">
+              <span className="text-white/90 font-black text-[11px] uppercase tracking-[0.3em]">
                 Round {currentRound} Starting
               </span>
               <motion.div
                 animate={{ opacity: [0.6, 1, 0.6] }}
                 transition={{ repeat: Infinity, duration: 1 }}
-                className="text-[#c9a44c] font-bold text-xs uppercase tracking-widest"
+                className="text-[#c9a44c] font-bold text-sm uppercase tracking-widest"
               >
                 Are You Ready?
               </motion.div>
@@ -1180,13 +1186,13 @@ export default function TournamentPage() {
               flexShrink: 0,
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px',
-              padding: '24px 0',
+              gap: '24px',
+              padding: '24px 8px 24px 0', /* Reduced right padding to fill corner */
               height: '100%',
-              overflow: 'hidden',
+              overflow: 'visible',
             }}
           >
-            <div style={{ flex: '1.21 1 0', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column' }}>
               <Scoreboard />
             </div>
             <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -1308,51 +1314,7 @@ export default function TournamentPage() {
               </motion.button>
             </div>
 
-            {/* Separator */}
-            <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
 
-            {/* Place Bet CTA */}
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <motion.button
-                onClick={handleSubmitBets}
-                disabled={phase !== "betting"}
-                whileTap={phase === 'betting' && bets.size > 0 ? { scale: 0.96 } : {}}
-                style={{
-                  height: '38px', /* Taller button for better tap target */
-                  padding: '0 16px',
-                  borderRadius: '8px',
-                  fontFamily: "'Georgia', serif",
-                  fontStyle: 'italic',
-                  fontSize: '12px', /* slightly larger font */
-                  fontWeight: 900,
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                  border: '1px solid',
-                  cursor: phase === 'betting' ? 'pointer' : 'default',
-                  position: 'relative',
-                  zIndex: 1,
-                  whiteSpace: 'nowrap',
-                  ...(phase === 'betting'
-                    ? (bets.size > 0 ? {
-                      background: 'linear-gradient(150deg, #d4ab52 0%, #c9a44c 60%, #b08a38 100%)',
-                      borderColor: 'rgba(255,220,120,0.25)',
-                      color: '#1a0d00',
-                      boxShadow: '0 4px 16px rgba(201,164,76,0.3)',
-                    } : {
-                      background: 'transparent',
-                      borderColor: 'rgba(255,255,255,0.05)',
-                      color: 'rgba(255,255,255,0.12)',
-                    })
-                    : {
-                      background: 'rgba(0,0,0,0.35)',
-                      borderColor: 'rgba(201,164,76,0.12)',
-                      color: 'rgba(201,164,76,0.35)',
-                    }),
-                }}
-              >
-                {phase === "betting" ? "Place Bet" : "Placed"}
-              </motion.button>
-            </div>
           </div>
         ) : (
           /* ─── DESKTOP FOOTER LAYOUT (unchanged) ─── */
@@ -1369,7 +1331,7 @@ export default function TournamentPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 order-2 tournament-controls-mobile" style={{ paddingRight: '8px' }}>
+            <div className="flex items-center gap-2 order-2 tournament-controls-mobile" style={{ paddingRight: '20px' }}>
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1385,7 +1347,7 @@ export default function TournamentPage() {
                 <span style={{ fontSize: '20px', fontWeight: 950, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>${totalBet.toLocaleString()}</span>
               </div>
               <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.06)', flexShrink: 0 }} />
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 {[
                   { label: 'Rebet', onClick: handleRebet, disabled: phase !== "betting" || lastSpinBets.size === 0 || myChips < lastTotal },
                   { label: 'Undo', onClick: handleClearLastBet, disabled: phase !== "betting" || betPlacementHistory.length === 0 },
@@ -1395,27 +1357,29 @@ export default function TournamentPage() {
                     key={btn.label}
                     onClick={btn.onClick}
                     disabled={btn.disabled}
-                    whileTap={{ scale: 0.94 }}
+                    whileHover={btn.disabled ? {} : { scale: 1.04, y: -1 }}
+                    whileTap={btn.disabled ? {} : { scale: 0.96, y: 2 }}
+                    className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200"
                     style={{
-                      height: '36px',
-                      padding: '0 14px',
-                      borderRadius: '7px',
-                      fontSize: '10px',
-                      fontWeight: 700,
+                      fontFamily: 'var(--font-inter)',
+                      height: '50px',
+                      padding: '0 18px',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: 800,
                       letterSpacing: '0.12em',
                       textTransform: 'uppercase',
-                      transition: 'all 0.15s ease',
-                      border: '1px solid',
+                      lineHeight: 1,
                       ...(btn.disabled ? {
-                        background: 'transparent',
-                        borderColor: 'rgba(255,255,255,0.05)',
+                        background: 'rgba(20,20,20,0.6)',
+                        border: '2px solid rgba(255,255,255,0.06)',
                         color: 'rgba(255,255,255,0.15)',
-                        cursor: 'default',
+                        boxShadow: 'none',
                       } : {
-                        background: 'rgba(255,255,255,0.04)',
-                        borderColor: 'rgba(255,255,255,0.12)',
-                        color: 'rgba(255,255,255,0.55)',
-                        cursor: 'pointer',
+                        background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                        border: '2.5px solid #c9a44c',
+                        color: '#e4e0d4',
+                        boxShadow: '0 3px 0 #1a0f09, 0 6px 12px rgba(0,0,0,0.5)',
                       }),
                     }}
                   >
@@ -1425,29 +1389,29 @@ export default function TournamentPage() {
                 <motion.button
                   onClick={handleDoubleAllBets}
                   disabled={phase !== "betting" || myChips < totalBet * 2 || totalBet === 0}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0) ? {} : { scale: 1.04, y: -1 }}
+                  whileTap={(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0) ? {} : { scale: 0.96, y: 2 }}
+                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200"
                   style={{
-                    height: '36px',
-                    width: '44px',
-                    borderRadius: '7px',
-                    fontSize: '12px',
-                    fontWeight: 800,
+                    height: '50px',
+                    width: '50px',
+                    borderRadius: '9999px',
+                    fontSize: '14px',
+                    fontWeight: 900,
                     letterSpacing: '0.04em',
-                    transition: 'all 0.15s ease',
-                    border: '1px solid',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     ...((phase !== "betting" || myChips < totalBet * 2 || totalBet === 0) ? {
-                      background: 'transparent',
-                      borderColor: 'rgba(255,255,255,0.05)',
+                      background: 'rgba(20,20,20,0.6)',
+                      border: '2px solid rgba(255,255,255,0.06)',
                       color: 'rgba(255,255,255,0.15)',
-                      cursor: 'default',
+                      boxShadow: 'none',
                     } : {
-                      background: 'rgba(201,164,76,0.08)',
-                      borderColor: 'rgba(201,164,76,0.3)',
+                      background: 'linear-gradient(180deg, #3a3020 0%, #2a2010 100%)',
+                      border: '2.5px solid #c9a44c',
                       color: '#c9a44c',
-                      cursor: 'pointer',
+                      boxShadow: '0 3px 0 #1a0f09, 0 6px 12px rgba(0,0,0,0.5), 0 0 14px rgba(201,164,76,0.12)',
                     }),
                   }}
                 >
@@ -1456,34 +1420,33 @@ export default function TournamentPage() {
                 <motion.button
                   onClick={() => { soundEngine?.playSwoosh(); setDeleteMode(!deleteMode); }}
                   disabled={phase !== "betting"}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={phase !== "betting" ? {} : { scale: 1.04, y: -1 }}
+                  whileTap={phase !== "betting" ? {} : { scale: 0.96, y: 2 }}
+                  className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200"
                   style={{
-                    height: '36px',
-                    width: '44px',
-                    borderRadius: '7px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    transition: 'all 0.15s ease',
-                    border: '1px solid',
+                    height: '50px',
+                    width: '50px',
+                    borderRadius: '9999px',
+                    fontSize: '15px',
+                    fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     ...(phase !== "betting" ? {
-                      background: 'transparent',
-                      borderColor: 'rgba(255,255,255,0.05)',
+                      background: 'rgba(20,20,20,0.6)',
+                      border: '2px solid rgba(255,255,255,0.06)',
                       color: 'rgba(255,255,255,0.15)',
-                      cursor: 'default',
+                      boxShadow: 'none',
                     } : deleteMode ? {
-                      background: 'rgba(220,38,38,0.15)',
-                      borderColor: 'rgba(248,113,113,0.35)',
+                      background: 'linear-gradient(180deg, #3a1515 0%, #2a0808 100%)',
+                      border: '2.5px solid #f87171',
                       color: '#f87171',
-                      cursor: 'pointer',
-                      boxShadow: '0 0 14px rgba(220,38,38,0.18)',
+                      boxShadow: '0 3px 0 #1a0f09, 0 6px 12px rgba(0,0,0,0.5), 0 0 14px rgba(220,38,38,0.2)',
                     } : {
-                      background: 'rgba(255,255,255,0.03)',
-                      borderColor: 'rgba(255,255,255,0.09)',
-                      color: 'rgba(255,255,255,0.3)',
-                      cursor: 'pointer',
+                      background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                      border: '2.5px solid #c9a44c',
+                      color: '#e4e0d4',
+                      boxShadow: '0 3px 0 #1a0f09, 0 6px 12px rgba(0,0,0,0.5)',
                     }),
                   }}
                 >
@@ -1504,55 +1467,6 @@ export default function TournamentPage() {
               }}>
                 <span style={{ fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#c9a44c', fontWeight: 900, marginBottom: '1px' }}>Balance</span>
                 <span style={{ fontSize: '20px', fontWeight: 950, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>${myChips.toLocaleString()}</span>
-              </div>
-              <div className="relative" style={{ marginRight: '8px' }}>
-                <motion.button
-                  onClick={handleSubmitBets}
-                  disabled={phase !== "betting"}
-                  whileHover={phase === 'betting' && bets.size > 0 ? { scale: 1.02 } : {}}
-                  whileTap={phase === 'betting' && bets.size > 0 ? { scale: 0.97 } : {}}
-                  className="tournament-submit-btn"
-                  style={{
-                    height: '38px',
-                    padding: '0 20px',
-                    borderRadius: '8px',
-                    fontFamily: "'Georgia', serif",
-                    fontStyle: 'italic',
-                    fontSize: '13px',
-                    fontWeight: 900,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    transition: 'all 0.15s ease',
-                    border: '1px solid',
-                    position: 'relative',
-                    zIndex: 10,
-                    whiteSpace: 'nowrap',
-                    ...(phase === 'betting'
-                      ? (bets.size > 0 ? {
-                        background: 'linear-gradient(150deg, #d4ab52 0%, #c9a44c 60%, #b08a38 100%)',
-                        borderColor: 'rgba(255,220,120,0.25)',
-                        color: '#1a0d00',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 20px rgba(201,164,76,0.28), inset 0 1px 0 rgba(255,255,255,0.18)',
-                      } : {
-                        background: 'transparent',
-                        borderColor: 'rgba(255,255,255,0.05)',
-                        color: 'rgba(255,255,255,0.12)',
-                        cursor: 'default',
-                      })
-                      : {
-                        background: 'rgba(0,0,0,0.35)',
-                        borderColor: 'rgba(201,164,76,0.12)',
-                        color: 'rgba(201,164,76,0.35)',
-                        cursor: 'default',
-                      }),
-                  }}
-                >
-                  {phase === "betting" ? "Place Bet" : "Placed"}
-                </motion.button>
-                {phase === 'betting' && bets.size > 0 && (
-                  <div style={{ position: 'absolute', inset: 0, background: '#c9a44c', filter: 'blur(18px)', opacity: 0.16, zIndex: 0, borderRadius: '9px' }} />
-                )}
               </div>
             </div>
           </div>

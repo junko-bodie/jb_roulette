@@ -60,7 +60,9 @@ export default function BettingControlButtons({
           boxShadow: canDouble
             ? `0 8px 20px rgba(0,0,0,0.6), 0 0 20px ${COLORS.gold}a0, inset 0 3px 0 rgba(255,255,255,0.5)`
             : 'inset 0 1px 0 rgba(0,0,0,0.3)',
-          border: `3px solid ${canDouble ? COLORS.gold : '#555'}`,
+          borderWidth: '3px',
+          borderStyle: 'solid',
+          borderColor: canDouble ? COLORS.gold : '#555',
           fontWeight: 'bold',
         } as React.CSSProperties}
       >
@@ -88,7 +90,9 @@ export default function BettingControlButtons({
           boxShadow: deleteMode
             ? `0 8px 20px rgba(255,0,0,0.4), 0 0 25px #ff5555dd, inset 0 3px 0 rgba(255,255,255,0.4)`
             : `0 6px 16px rgba(0,0,0,0.5), 0 0 15px ${COLORS.gold}60, inset 0 3px 0 rgba(255,255,255,0.5)`,
-          border: `3px solid ${deleteMode ? '#ff7777' : COLORS.gold}`,
+          borderWidth: '3px',
+          borderStyle: 'solid',
+          borderColor: deleteMode ? '#ff7777' : COLORS.gold,
           cursor: 'pointer',
           fontWeight: 'bold',
         } as React.CSSProperties}

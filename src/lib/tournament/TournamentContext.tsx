@@ -629,7 +629,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       if (!prev) return null;
       const updatedPlayers = prev.players.map(p => ({
         ...p,
-        current_chips: data.chip_updates?.[p.player_id.toString()] ?? p.current_chips,
+        current_chips: Math.max(0, data.chip_updates?.[p.player_id.toString()] ?? p.current_chips),
       }));
       return { ...prev, players: updatedPlayers };
     });
@@ -778,7 +778,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       return {
         player_id: p.player_id,
         username: p.username,
-        chips: p.current_chips,
+        chips: Math.max(0, p.current_chips),
         rank: p.status === 'active' ? index + 1 : (p.final_position || 0),
         is_bot: p.is_bot,
         status: p.status,

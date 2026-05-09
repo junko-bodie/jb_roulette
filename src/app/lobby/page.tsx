@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import SettingsModal from '@/components/ui/SettingsModal';
-import ProfileModal from '@/components/ui/ProfileModal';
 import dynamic from 'next/dynamic';
 const WelcomeVideoModal = dynamic(() => import('@/components/ui/WelcomeVideoModal'), { ssr: false, loading: () => null });
 import { User, Settings, BarChart2, LogOut, Play, Trophy } from 'lucide-react';
@@ -17,7 +16,6 @@ export default function Home() {
   const router = useRouter();
   const supabase = createClient();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState<string | null>(null);
   const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -105,7 +103,8 @@ export default function Home() {
         <header className={styles.header} style={{ marginTop: userProfile?.annual_championship_qualified ? '40px' : '0' }}>
           <div
             className={styles.profileCard}
-            onClick={() => setIsProfileOpen(true)}
+            onClick={() => router.push('/profile')}
+            style={{ cursor: 'pointer' }}
           >
             <div className={styles.avatarBtn}>
               <Trophy size={22} strokeWidth={1.5} className={styles.trophyIcon} />
@@ -134,13 +133,6 @@ export default function Home() {
           </div>
 
           <div className={styles.headerActions}>
-            <button
-              className={styles.headerBtn}
-              onClick={() => setIsSettingsOpen(true)}
-              title="Settings"
-            >
-              <Settings size={24} strokeWidth={1.5} />
-            </button>
             <button
               className={styles.headerBtnDanger}
               onClick={handleSignOut}
@@ -206,15 +198,11 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className={styles.quickBtn} onClick={() => setIsProfileOpen(true)}>
+            <div className={styles.quickBtn} onClick={() => router.push('/profile')}>
               <User className={styles.quickBtnIcon} strokeWidth={1.5} />
               <span className={styles.quickBtnLabel}>PROFILE</span>
             </div>
 
-            <div className={styles.quickBtn} onClick={() => setIsSettingsOpen(true)}>
-              <Settings className={styles.quickBtnIcon} strokeWidth={1.5} />
-              <span className={styles.quickBtnLabel}>SETTINGS</span>
-            </div>
 
             <div className={styles.quickBtn} onClick={() => router.push('/rankings')}>
               <BarChart2 className={styles.quickBtnIcon} strokeWidth={1.5} />
@@ -265,7 +253,6 @@ export default function Home() {
 
       {/* Modals */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-      <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
       <WelcomeVideoModal
         isOpen={isWelcomeVideoOpen}
         onClose={() => {

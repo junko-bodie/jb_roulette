@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
 import { createClient } from '@/lib/supabase/client';
-import { Trophy, Star, ShieldCheck, User, X, Camera, Zap, ChevronRight } from 'lucide-react';
+import { Trophy, Star, ShieldCheck, User, X, Camera, Zap, ChevronRight, Award, Target } from 'lucide-react';
 import { COLORS, FONTS } from '@/styles/theme';
-import styles from './modal.module.css';
+import styles from '@/app/tournament/tournament.module.css';
+
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -21,18 +22,18 @@ const AVAILABLE_AVATARS = [
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const { userProfile, setUserProfile, user } = useGame();
   const supabase = createClient();
-  const [name, setName] = useState(userProfile.name);
-  const [selectedAvatar, setSelectedAvatar] = useState(userProfile.avatar);
+  const [name, setName] = useState(userProfile?.name || '');
+  const [selectedAvatar, setSelectedAvatar] = useState(userProfile?.avatar || 'default');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
-    if (isOpen) {
+  useEffect(() => {
+    if (isOpen && userProfile) {
       setName(userProfile.name);
       setSelectedAvatar(userProfile.avatar);
     }
-  }, [isOpen, userProfile.name, userProfile.avatar]);
+  }, [isOpen, userProfile]);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -89,222 +90,121 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     }
   };
 
-  const isCustomAvatar = selectedAvatar.startsWith('http') || selectedAvatar.startsWith('/');
+  const isCustomAvatar = selectedAvatar?.startsWith('http') || selectedAvatar?.startsWith('/');
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className={styles.overlay}>
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/70 backdrop-blur-md"
+            className="absolute inset-0 bg-[#06140e]/90 backdrop-blur-md"
             onClick={onClose}
           />
 
-          {/* Modal */}
+          {/* Modal Card (Using Tournament Aesthetic) */}
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-            className="relative w-full max-w-[420px] rounded-2xl overflow-hidden"
-            style={{
-              background: '#0d0d0d',
-              border: '1px solid rgba(255,255,255,0.07)',
-              boxShadow: '0 32px 64px rgba(0,0,0,0.7)',
-            }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className={styles.card}
+            style={{ maxWidth: '500px', background: '#f5edd5' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Top accent line */}
-            <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent)' }} />
+            {/* Corner Notches */}
+            <div className={styles.cornerTL} />
+            <div className={styles.cornerTR} />
+            <div className={styles.cornerBL} />
+            <div className={styles.cornerBR} />
 
-            {/* Header */}
-            <div className="flex items-center justify-between px-7 pt-6 pb-5">
-              <span style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.3)', fontWeight: 700, textTransform: 'uppercase' }}>
-                Profile
-              </span>
-              <button
-                onClick={onClose}
-                style={{
-                  width: 28, height: 28, borderRadius: 8,
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'rgba(255,255,255,0.3)', cursor: 'pointer', transition: 'color 0.15s'
-                }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}
-              >
-                <X size={13} />
-              </button>
-            </div>
+            <div className={styles.cardContent} style={{ padding: '32px' }}>
+              {/* Header */}
+              <div className="w-full flex items-center justify-between mb-6">
+                <span className="text-[10px] font-bold text-[#8b6914] uppercase tracking-[0.2em]">Member ID Card</span>
+                <button onClick={onClose} className="text-[#0f2318]/40 hover:text-[#0f2318] transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
 
-            {/* Body */}
-            <div className="px-7 pb-7 flex flex-col gap-6">
-
-              {/* Avatar + Name */}
-              <div className="flex items-center gap-5">
-                {/* Avatar */}
-                <div className="relative flex-shrink-0">
-                  <div
-                    style={{
-                      width: 72, height: 72, borderRadius: 16,
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      overflow: 'hidden', position: 'relative',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                    className="group"
-                  >
+              {/* Identity Section */}
+              <div className="flex flex-col items-center gap-6 w-full mb-8">
+                <div className="relative group">
+                  <div className="w-24 h-24 rounded-full bg-white border-2 border-[#c9a44c] shadow-lg overflow-hidden flex items-center justify-center">
                     {isCustomAvatar ? (
-                      <img src={selectedAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={selectedAvatar} alt="avatar" className="w-full h-full object-cover" />
                     ) : (
-                      <AvatarIcon type={selectedAvatar} size={24} color="rgba(212,175,55,0.6)" />
+                      <AvatarIcon type={selectedAvatar} size={40} color="#0f2318" />
                     )}
-                    <button
-                      onClick={handleFileClick}
-                      style={{
-                        position: 'absolute', inset: 0,
-                        background: 'rgba(0,0,0,0.65)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        opacity: 0, transition: 'opacity 0.15s', color: 'white', cursor: 'pointer'
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                      onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
-                    >
-                      <Camera size={16} />
-                    </button>
                   </div>
+                  <button 
+                    onClick={handleFileClick}
+                    className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Camera size={18} />
+                  </button>
                 </div>
 
-                {/* Name input */}
-                <div className="flex flex-col flex-1 gap-1">
-                  <label style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700 }}>
-                    Display Name
-                  </label>
-                  <input
+                <div className="w-full">
+                  <input 
                     type="text"
-                    maxLength={20}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    style={{
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: 10, padding: '10px 12px',
-                      color: 'white', fontSize: '14px', fontWeight: 600,
-                      outline: 'none', width: '100%',
-                      fontFamily: FONTS.primary,
-                      transition: 'border-color 0.15s',
-                    }}
-                    onFocus={e => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.4)')}
-                    onBlur={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
-                    placeholder="Enter name…"
+                    maxLength={20}
+                    className="w-full bg-transparent border-b border-[#c9a44c] py-2 text-center text-xl font-bold text-[#0f2318] focus:outline-none focus:border-[#0f2318] transition-all"
+                    placeholder="Enter Name..."
+                    style={{ fontFamily: 'Georgia, serif' }}
                   />
+                  <div className="text-[9px] font-bold text-[#c9a44c] uppercase tracking-widest text-center mt-2">Display Name</div>
                 </div>
               </div>
 
               {/* Avatar Picker */}
-              <div>
-                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 10 }}>
-                  Icon
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6 }}>
-                  {AVAILABLE_AVATARS.map((avatar) => {
-                    const active = selectedAvatar === avatar;
-                    return (
-                      <button
-                        key={avatar}
-                        onClick={() => setSelectedAvatar(avatar)}
-                        style={{
-                          aspectRatio: '1',
-                          borderRadius: 10,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.03)',
-                          border: active ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.05)',
-                          color: active ? 'rgba(212,175,55,1)' : 'rgba(212,175,55,0.45)',
-                          cursor: 'pointer', transition: 'all 0.15s',
-                        }}
-                        onMouseEnter={e => { if (!active) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(212,175,55,0.8)'; } }}
-                        onMouseLeave={e => { if (!active) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(212,175,55,0.45)'; } }}
-                      >
-                        <AvatarIcon type={avatar} size={14} color="currentColor" />
-                      </button>
-                    );
-                  })}
+              <div className="w-full mb-8">
+                <div className="grid grid-cols-6 gap-2 p-3 bg-black/5 rounded-xl border border-[#c9a44c]/20">
+                  {AVAILABLE_AVATARS.map((avatar) => (
+                    <button
+                      key={avatar}
+                      onClick={() => setSelectedAvatar(avatar)}
+                      className={`aspect-square rounded-lg flex items-center justify-center transition-all ${
+                        selectedAvatar === avatar 
+                          ? 'bg-[#c9a44c] text-[#0f2318] shadow-md scale-110' 
+                          : 'bg-white/40 text-[#0f2318]/40 hover:bg-white/60'
+                      }`}
+                    >
+                      <AvatarIcon type={avatar} size={14} color="currentColor" />
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Divider */}
-              <div style={{ height: 1, background: 'rgba(255,255,255,0.05)' }} />
-
-              {/* Stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                <StatCell label="Points" value={userProfile.season?.points ?? 0} />
-                <StatCell label="Global Rank" value={userProfile.season?.rank ? `#${userProfile.season.rank}` : '—'} accent />
-              </div>
-
-              <div style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.05)',
-                borderRadius: 12, padding: '14px 20px',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              }}>
-                <MiniStat label="Played" value={userProfile.stats?.tournaments_played ?? 0} />
-                <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.06)' }} />
-                <MiniStat label="Won" value={userProfile.stats?.tournaments_won ?? 0} accent />
-                <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.06)' }} />
-                <MiniStat label="Best" value={userProfile.stats?.best_finish ? `#${userProfile.stats.best_finish}` : '—'} />
-              </div>
-
-              {/* Badges */}
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-                <BadgeIcon active={userProfile.badges?.champion} type="champion" />
-                <BadgeIcon active={userProfile.badges?.elite_status} type="elite" />
-                <BadgeIcon active={userProfile.badges?.all_time_champion} type="all_time" />
+              {/* Quick Stats Grid */}
+              <div className="w-full grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-white/50 border border-[#c9a44c]/20 p-3 rounded-lg text-center">
+                  <span className="text-[8px] font-bold text-[#8b6914] uppercase tracking-widest block mb-1">Season Rank</span>
+                  <span className="text-xl font-bold text-[#0f2318]" style={{ fontFamily: 'Georgia, serif' }}>
+                    #{userProfile?.season?.rank || '—'}
+                  </span>
+                </div>
+                <div className="bg-white/50 border border-[#c9a44c]/20 p-3 rounded-lg text-center">
+                  <span className="text-[8px] font-bold text-[#8b6914] uppercase tracking-widest block mb-1">Season Points</span>
+                  <span className="text-xl font-bold text-[#0f2318]" style={{ fontFamily: 'Georgia, serif' }}>
+                    {(userProfile?.season?.points || 0).toLocaleString()}
+                  </span>
+                </div>
               </div>
 
               {/* Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 2 }}>
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving || isUploading || !name.trim()}
-                  style={{
-                    width: '100%', padding: '13px 20px',
-                    background: (isSaving || isUploading || !name.trim()) ? 'rgba(255,255,255,0.08)' : 'white',
-                    color: (isSaving || isUploading || !name.trim()) ? 'rgba(255,255,255,0.2)' : 'black',
-                    borderRadius: 12, fontSize: '11px', fontWeight: 800,
-                    letterSpacing: '0.15em', textTransform: 'uppercase',
-                    cursor: (isSaving || isUploading || !name.trim()) ? 'not-allowed' : 'pointer',
-                    border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    transition: 'background 0.15s, color 0.15s',
-                  }}
-                  onMouseEnter={e => { if (!isSaving && !isUploading && name.trim()) e.currentTarget.style.background = 'rgba(212,175,55,1)'; }}
-                  onMouseLeave={e => { if (!isSaving && !isUploading && name.trim()) e.currentTarget.style.background = 'white'; }}
-                >
-                  <span>{isSaving ? 'Saving…' : isUploading ? 'Uploading…' : 'Save Profile'}</span>
-                  {!isSaving && !isUploading && <ChevronRight size={13} />}
-                </button>
-
-                <button
-                  onClick={onClose}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em',
-                    textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)',
-                    padding: '6px', transition: 'color 0.15s'
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.18)')}
-                >
-                  Cancel
-                </button>
-              </div>
+              <button 
+                className={styles.enterButton}
+                onClick={handleSave}
+                disabled={isSaving || isUploading || !name.trim()}
+              >
+                {isSaving ? 'Saving...' : 'Update Member ID'}
+              </button>
             </div>
-
-            {/* Bottom accent line */}
-            <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.15), transparent)' }} />
           </motion.div>
 
           <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
@@ -314,80 +214,20 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   );
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function StatCell({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
-  return (
-    <div style={{
-      background: 'rgba(255,255,255,0.03)',
-      border: '1px solid rgba(255,255,255,0.05)',
-      borderRadius: 12, padding: '14px 16px',
-      display: 'flex', flexDirection: 'column', gap: 4,
-    }}>
-      <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700 }}>
-        {label}
-      </span>
-      <span style={{
-        fontSize: '18px', fontWeight: 800, lineHeight: 1,
-        color: accent ? 'rgba(212,175,55,1)' : 'white',
-      }}>
-        {value}
-      </span>
-    </div>
-  );
-}
-
-function MiniStat({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-      <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 700 }}>
-        {label}
-      </span>
-      <span style={{ fontSize: '14px', fontWeight: 700, color: accent ? 'rgba(212,175,55,1)' : 'white' }}>
-        {value}
-      </span>
-    </div>
-  );
-}
-
-function BadgeIcon({ active, type }: { active?: boolean; type: string }) {
-  const getIcon = () => {
-    switch (type) {
-      case 'champion': return <Trophy size={14} />;
-      case 'elite': return <ShieldCheck size={14} />;
-      case 'all_time': return <Star size={14} />;
-      default: return null;
-    }
-  };
-
-  return (
-    <div style={{
-      width: 36, height: 36, borderRadius: 10,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: active ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.03)',
-      border: active ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.05)',
-      color: active ? 'rgba(212,175,55,1)' : 'rgba(255,255,255,0.08)',
-    }}>
-      {getIcon()}
-    </div>
-  );
-}
-
 function AvatarIcon({ type, size, color }: { type: string; size: number; color: string }) {
-  const style = { color, fontSize: size - 2 };
   const iconProps = { size, color };
   switch (type) {
     case 'default': return <User {...iconProps} />;
     case 'crown': return <Trophy {...iconProps} />;
     case 'diamond': return <Star {...iconProps} />;
     case 'star': return <Star {...iconProps} />;
-    case 'spade': return <span style={style}>♠</span>;
-    case 'heart': return <span style={style}>♥</span>;
-    case 'club': return <span style={style}>♣</span>;
-    case 'dice': return <Zap {...iconProps} />;
-    case 'chip': return <Zap {...iconProps} />;
+    case 'spade': return <span style={{ color, fontSize: size, fontWeight: 900 }}>♠</span>;
+    case 'heart': return <span style={{ color, fontSize: size, fontWeight: 900 }}>♥</span>;
+    case 'club': return <span style={{ color, fontSize: size, fontWeight: 900 }}>♣</span>;
+    case 'dice': return <Award {...iconProps} />;
+    case 'chip': return <Target {...iconProps} />;
     case 'trophy': return <Trophy {...iconProps} />;
-    case 'bolt': return <Zap {...iconProps} />;
-    default: return <span style={{ ...style, fontWeight: 700 }}>{type[0].toUpperCase()}</span>;
+    case 'bolt': return <ShieldCheck {...iconProps} />;
+    default: return <User {...iconProps} />;
   }
 }

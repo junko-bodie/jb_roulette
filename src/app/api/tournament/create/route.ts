@@ -4,8 +4,11 @@ import { getUser } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 import { Tournament, TournamentPlayer } from '@/lib/models/Tournament';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const body = await request.json().catch(() => ({}));
+    const requestedWheelType = body.wheel_type || 'american';
+    
     let user = await getUser();
     
     const db = await getDb();
@@ -65,6 +68,7 @@ export async function POST() {
     // and where the player is not already present
     let tournament = await db.collection('tournaments').findOne({
       status: "waiting",
+      wheel_type: requestedWheelType,
       "players.5": { $exists: false }, // Fewer than 6 players
       "players.player_id": { $ne: profile._id } // Not already in it
     });
@@ -86,7 +90,7 @@ export async function POST() {
           current_round: 1,
           winner_id: null,
           players: [currentPlayer],
-          wheel_type: 'american'
+          wheel_type: requestedWheelType
         };
 
         const result = await db.collection('tournaments').insertOne(newTournament as any);
@@ -110,7 +114,7 @@ export async function POST() {
           current_round: 1,
           winner_id: null,
           players: [currentPlayer],
-          wheel_type: 'american'
+          wheel_type: requestedWheelType
         };
 
         const result = await db.collection('tournaments').insertOne(newTournament as any);

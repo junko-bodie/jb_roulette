@@ -13,9 +13,9 @@ const RankMovement = memo(({ direction }: { direction: 'up' | 'down' }) => (
     className="flex items-center"
   >
     {direction === 'up' ? (
-      <ChevronUp className="w-3.5 h-3.5 text-emerald-400" />
+      <ChevronUp className="w-3 h-3 text-emerald-400" />
     ) : (
-      <ChevronDown className="w-3.5 h-3.5 text-rose-400" />
+      <ChevronDown className="w-3 h-3 text-rose-400" />
     )}
   </motion.div>
 ));
@@ -71,43 +71,43 @@ export default function Scoreboard() {
   }, [scores, prevRanks]);
 
   return (
-    <div className="relative z-40 w-full h-full flex flex-col">
+    <div className="relative z-40 w-full flex flex-col">
       <motion.div
         initial={{ x: 50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="relative flex flex-col h-full overflow-hidden rounded-2xl border border-white/[0.06] backdrop-blur-xl"
+        className="relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] backdrop-blur-xl"
         style={{
-          background: 'rgba(10, 12, 16, 0.97)',
+          background: 'linear-gradient(180deg, rgba(12, 35, 25, 0.97) 0%, rgba(8, 25, 18, 0.98) 100%)',
           boxShadow: '0 24px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
         }}
       >
-        {/* Header */}
-        <div className="px-5 pt-5 pb-4 flex items-center justify-between border-b border-white/[0.05]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-1 h-5 rounded-full bg-amber-400" />
+        {/* Header — improved spacing */}
+        <div className="pl-4 pr-3 pt-4 pb-3 flex items-center justify-between border-b border-white/[0.08]">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-4 rounded-full bg-amber-400" />
             <span
-              className="text-[15px] font-semibold uppercase tracking-[0.2em] text-white/40"
+              className="text-[14px] font-bold uppercase tracking-[0.2em] text-amber-400"
               style={{ fontFamily: FONTS.primary }}
             >
               Leaderboard
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-shrink-0 mr-1">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] text-white/30 font-medium uppercase tracking-wider">Live</span>
+            <span className="text-[10px] text-white/70 font-medium uppercase">Live..</span>
           </div>
         </div>
 
-        {/* Players List */}
-        <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar divide-y divide-white/[0.04] pb-8">
+        {/* Players List — tighter rows */}
+        <div className="flex flex-col overflow-y-auto no-scrollbar gap-px pb-1">
           <AnimatePresence>
             {scores.map((s, idx) => {
               const pid = s.player_id.toString();
               const m = movement[pid];
-              
+
               // Only highlight the actual current user
-              const isMe = userProfile?.id 
-                ? pid === userProfile.id 
+              const isMe = userProfile?.id
+                ? pid === userProfile.id
                 : (!s.is_bot && s.username === userProfile?.name);
 
               const isEliminated = s.status === "eliminated";
@@ -145,25 +145,25 @@ export default function Scoreboard() {
                     layout: { type: 'spring', stiffness: 400, damping: 38 },
                     backgroundColor: { duration: 0.3 },
                   }}
-                  className={`relative flex items-center gap-3 px-5 py-3 min-h-[48px] transition-colors ${isEliminated ? 'grayscale' : ''
+                  className={`relative flex items-center gap-3 pl-4 pr-3 py-3 min-h-[46px] transition-colors ${isEliminated ? 'grayscale' : ''
                     } ${isMe ? 'bg-white/[0.03]' : 'hover:bg-white/[0.02]'}`}
                 >
                   {/* Left accent bar for current user */}
                   {isMe && !isEliminated && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-6 rounded-r-full bg-amber-400" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-r-full bg-amber-400" />
                   )}
 
                   {/* Rank */}
                   <div
-                    className="w-7 flex-shrink-0 flex items-center justify-center"
+                    className="w-8 flex-shrink-0 flex items-center justify-center"
                   >
                     {isEliminated ? (
-                      <Skull className="w-3.5 h-3.5 text-white/20" />
+                      <Skull className="w-3 h-3 text-white/20" />
                     ) : (
                       <span
-                        className="text-[13px] font-bold tabular-nums"
+                        className="text-[12px] font-bold tabular-nums"
                         style={{
-                          color: rankColors[s.rank] ?? 'rgba(255,255,255,0.35)',
+                          color: rankColors[s.rank] ?? 'rgba(255,255,255,0.50)',
                           fontFamily: FONTS.primary,
                         }}
                       >
@@ -172,36 +172,32 @@ export default function Scoreboard() {
                     )}
                   </div>
 
-                  {/* Color dot */}
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0 ring-1 ring-white/10"
-                    style={{ backgroundColor: rankColor }}
-                  />
+
 
                   {/* Name + meta */}
                   <div className="flex flex-col min-w-0 flex-1">
                     <span
-                      className={`text-[13px] font-semibold truncate leading-tight ${isEliminated
+                      className={`text-[13px] font-bold truncate leading-tight ${isEliminated
                         ? 'text-white/25'
                         : isMe
                           ? 'text-amber-300'
-                          : 'text-white/85'
+                          : 'text-white/95'
                         }`}
                     >
                       {s.username}
                     </span>
 
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-2 mt-px">
                       {isEliminated ? (
-                        <span className="text-[10px] text-white/20 font-medium">
+                        <span className="text-[9px] text-white/30 font-medium">
                           Eliminated · #{s.final_position}
                         </span>
                       ) : isBetting && s.currentWager > 0 ? (
-                        <span className="text-[10px] text-amber-400/70 font-medium">
+                        <span className="text-[9px] text-amber-400/90 font-medium">
                           At risk: ${s.currentWager.toLocaleString()}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-white/25 font-medium uppercase tracking-wider">
+                        <span className="text-[9px] text-white/55 font-medium uppercase tracking-wider">
                           Active
                         </span>
                       )}
@@ -209,7 +205,7 @@ export default function Scoreboard() {
                   </div>
 
                   {/* Movement + Chips */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <AnimatePresence>
                       {m && !isEliminated && (
                         <motion.div
@@ -227,11 +223,9 @@ export default function Scoreboard() {
                       initial={{ scale: 1 }}
                       animate={{ scale: [1, 1.06, 1] }}
                       transition={{ duration: 0.25 }}
-                      className={`text-[14px] font-bold tabular-nums ${isEliminated
+                      className={`text-[13px] font-bold tabular-nums ${isEliminated
                         ? 'text-white/15'
-                        : isMe
-                          ? 'text-white'
-                          : 'text-white/70'
+                        : 'text-white'
                         }`}
                       style={{ fontFamily: FONTS.primary }}
                     >
@@ -244,14 +238,7 @@ export default function Scoreboard() {
           </AnimatePresence>
         </div>
 
-        {/* Bottom shimmer bar */}
-        <div className="relative h-px bg-white/[0.04] overflow-hidden">
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
-            animate={{ x: ['-100%', '200%'] }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: 'linear' }}
-          />
-        </div>
+
       </motion.div>
     </div>
   );

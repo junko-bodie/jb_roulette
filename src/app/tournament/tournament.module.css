@@ -1,512 +1,619 @@
+/* ─── Base ──────────────────────────────────────────────── */
 .page {
   min-height: 100vh;
   min-height: 100dvh;
-  background: #0d2116;
-  /* Deep page background */
-  font-family: 'Inter', sans-serif;
+  background: #e8d9b8;
+  font-family: 'Georgia', 'Times New Roman', serif;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  flex-direction: column;
   box-sizing: border-box;
 }
 
-.windowFrame {
-  width: 100%;
-  max-width: 1100px;
-  height: 90vh;
-  max-height: 800px;
-  background: #0f2c1c;
-  /* A slightly lighter green for the frame */
-  border: 1px solid rgba(212, 188, 129, 0.4);
-  border-radius: 16px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
-
+/* ─── Header ─────────────────────────────────────────────── */
 .header {
+  background-color: #0f2318;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 32px;
+  padding: 0 28px;
+  height: 44px;
+  flex-shrink: 0;
   z-index: 10;
 }
 
 .logoGroup {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logoText {
-  color: #cca658;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  color: #f2e8d0;
+  font-family: 'Arial Narrow', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
+.logoSeparator {
+  color: #c9a44c;
+  font-size: 13px;
+  opacity: 0.5;
+}
+
 .logoSub {
-  color: #8c7645;
-  font-size: 9px;
-  font-weight: 700;
+  color: #c9a44c;
+  font-family: 'Arial Narrow', Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
+  opacity: 0.85;
 }
 
 .signOutBtn {
   background: transparent;
-  color: #cca658;
-  border: 1px solid #755f30;
-  padding: 6px 14px;
-  border-radius: 8px;
+  border: 1px solid rgba(201, 164, 76, 0.4);
+  color: #c9a44c;
+  font-family: 'Arial Narrow', Arial, sans-serif;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
+  padding: 4px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+  border-radius: 2px;
+  text-transform: uppercase;
 }
 
 .signOutBtn:hover {
-  background: rgba(204, 166, 88, 0.1);
+  background: rgba(201, 164, 76, 0.1);
+  border-color: #c9a44c;
 }
 
+/* ─── Main ──────────────────────────────────────────────── */
 .main {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  z-index: 10;
-  padding: 0 24px 24px 24px;
+  padding: clamp(16px, 4vh, 32px) 24px;
 }
 
-.ivoryCard {
-  width: 100%;
-  height: 100%;
-  background: #f1dbb7;
-  /* Modified to golden color requested */
-  border-radius: 12px;
-  padding: 2px;
-  /* Super thin padding */
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+/* ─── Card ──────────────────────────────────────────────── */
+.card {
   position: relative;
-}
-
-.ivoryCardInner {
   width: 100%;
-  height: 100%;
-  border: 1px solid #dcc499;
-  border-radius: 8px;
-  padding: 40px;
-  position: relative;
+  max-width: 1100px;
+  background-color: #f5edd5;
+  /* Outer card border — thicker gold */
+  border: 2.5px solid #c9a44c;
+  border-radius: 6px;
   overflow: hidden;
-  display: flex;
-  justify-content: center;
-  background: #f1dbb7;
-  /* Modified to golden color requested */
-  box-sizing: border-box;
+  box-shadow:
+    0 0 0 6px rgba(201, 164, 76, 0.18),
+    0 8px 40px rgba(0, 0, 0, 0.15),
+    inset 0 0 60px rgba(201, 164, 76, 0.04);
 }
 
-/* Beautiful inverted corners */
+/* Inner gold line inset border */
+.cardBorder {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(201, 164, 76, 0.5);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ─── Corner notch decorations ───────────────────────────── */
 .cornerTL,
 .cornerTR,
 .cornerBL,
 .cornerBR {
   position: absolute;
-  width: 20px;
-  height: 20px;
-  border: 1px solid #dcc499;
-  border-radius: 50%;
-  background: #f1dbb7;
-  /* Match outer card */
-  z-index: 2;
+  width: 22px;
+  height: 22px;
+  z-index: 20;
+  pointer-events: none;
 }
 
 .cornerTL {
-  top: -10px;
-  left: -10px;
+  top: 0;
+  left: 0;
 }
 
 .cornerTR {
-  top: -10px;
-  right: -10px;
+  top: 0;
+  right: 0;
 }
 
 .cornerBL {
-  bottom: -10px;
-  left: -10px;
+  bottom: 0;
+  left: 0;
 }
 
 .cornerBR {
-  bottom: -10px;
-  right: -10px;
+  bottom: 0;
+  right: 0;
 }
 
+/* Quarter-circle overlays that "bite" into the card corners */
+.cornerTL::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #e8d9b8;
+  border-radius: 0 0 100% 0;
+}
 
+.cornerTR::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: #e8d9b8;
+  border-radius: 0 0 0 100%;
+}
+
+.cornerBL::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #e8d9b8;
+  border-radius: 0 100% 0 0;
+}
+
+.cornerBR::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background: #e8d9b8;
+  border-radius: 100% 0 0 0;
+}
+
+/* ─── Watermark ─────────────────────────────────────────── */
 .watermark {
   position: absolute;
-  right: -80px;
-  bottom: -80px;
-  width: 450px;
-  height: 450px;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 440px;
+  height: 440px;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
 }
 
+/* ─── Card Content ──────────────────────────────────────── */
 .cardContent {
   position: relative;
-  z-index: 10;
+  z-index: 1;
+  padding: clamp(24px, 5vh, 40px) 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  max-width: 650px;
-  justify-content: center;
-  transform: translateY(-20px);
+}
+
+/* ─── Top Label Row ─────────────────────────────────────── */
+.topLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.labelLine {
+  flex: 0 0 56px;
+  height: 1.5px;
+  background: linear-gradient(to right, transparent, #c9a44c, transparent);
 }
 
 .topLabel {
+  color: #8b6914;
+  font-family: 'Arial Narrow', Arial, sans-serif;
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.25em;
-  color: #1a3c2a;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  white-space: nowrap;
 }
 
+/* ─── Title ─────────────────────────────────────────────── */
 .title {
-  font-family: 'Inter', sans-serif;
-  font-weight: 800;
-  font-size: 44px;
-  color: #0f2c1c;
-  margin: 0;
-  letter-spacing: -0.02em;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-variant: small-caps;
+  font-size: clamp(22px, 3.2vw, 36px);
+  font-weight: 700;
+  color: #0f2318;
+  text-align: center;
+  line-height: 1.1;
+  margin: 0 0 10px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
+/* ─── Separator ─────────────────────────────────────────── */
 .separator {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 20px 0;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .sepLine {
-  width: 70px;
+  width: 40px;
   height: 1px;
-  background: #0f2c1c;
+  background: #c9a44c;
+  opacity: 0.6;
 }
 
 .sepDiamond {
-  width: 5px;
-  height: 5px;
-  background: #cda359;
+  width: 7px;
+  height: 7px;
+  background: #c9a44c;
   transform: rotate(45deg);
 }
 
+/* ─── Subtitle ──────────────────────────────────────────── */
 .subtitle {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 13.5px;
+  color: #3a3028;
   text-align: center;
-  font-size: 14px;
-  color: #2b3b32;
-  line-height: 1.6;
-  margin-bottom: 40px;
+  line-height: 1.55;
+  margin: 0 0 16px;
+  max-width: 580px;
+  opacity: 0.88;
 }
 
-.playerBanner {
-  width: 100%;
-  background: #193826;
-  padding: 24px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 40px;
-  /* Notched corners using clip-path! */
-  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 10px 20px rgba(0, 0, 0, 0.1);
-  position: relative;
-}
-
-.bannerLeft {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-}
-
-.trophyIcon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 1.5px solid #d4bc81;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.playerInfo {
-  display: flex;
-  flex-direction: column;
-}
-
-.challengerLabel {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  color: #9cbda8;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-}
-
-.playerName {
-  font-family: 'Georgia', serif;
-  font-size: 26px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: 0.02em;
-}
-
-.bannerDivider {
-  width: 1px;
-  height: 48px;
-  background: rgba(212, 188, 129, 0.2);
-  margin: 0 40px;
-}
-
-.bannerRight {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.readyText {
-  font-family: 'Georgia', serif;
-  font-style: italic;
-  font-size: 24px;
-  font-weight: 800;
-  color: #dcb360;
-  margin-bottom: 6px;
-}
-
-.precisionText {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.25em;
-  color: #cca658;
-}
-
+/* ─── Enter Button ──────────────────────────────────────── */
 .enterButton {
   width: 100%;
-  max-width: 500px;
-  height: 56px;
-  background: #c9a556;
+  max-width: 780px;
+  padding: 16px 32px;
+  background: linear-gradient(to bottom,
+      #f1d28c 0%,
+      #c9941e 50%,
+      #b8811a 100%);
   border: none;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: #113626;
+  outline: 1px solid rgba(255, 255, 255, 0.25);
+  outline-offset: -2px;
+  border-radius: 6px;
+  color: #0f2318;
+  font-family: 'Arial Narrow', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), inset 0 2px 0 rgba(255, 255, 255, 0.4);
-  margin-bottom: 24px;
-  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  margin-top: 4px;
+  margin-bottom: 16px;
 }
 
-.enterButton:hover {
+.enterButton:hover:not(:disabled) {
+  filter: brightness(1.08);
   transform: translateY(-2px);
-  background: #d8ba78;
-  box-shadow: 0 14px 25px rgba(0, 0, 0, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 0 #8a5e0a,
+    0 10px 28px rgba(160, 120, 20, 0.5),
+    inset 0 1px 0 rgba(255, 240, 160, 0.35);
+}
+
+.enterButton:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+  box-shadow:
+    0 1px 0 #8a5e0a,
+    0 3px 10px rgba(160, 120, 20, 0.35),
+    inset 0 1px 0 rgba(255, 240, 160, 0.35);
 }
 
 .enterButton:disabled {
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: not-allowed;
-  transform: none;
 }
 
-.footerText {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  color: #1a1a1a;
+/* ─── Stats Row ─────────────────────────────────────────── */
+.statsRow {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 780px;
+  margin-bottom: 12px;
+  gap: 0;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 32px 0 0;
+  flex-shrink: 0;
+}
+
+/* First stat no left padding */
+.statItem:first-child {
+  padding-left: 0;
+}
+
+.statIcon {
+  width: 20px;
+  height: 20px;
+  color: #0f2318;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.statText {
+  font-family: 'Arial Narrow', Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f2318;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.statDivider {
+  width: 1px;
+  height: 28px;
+  background: rgba(15, 35, 24, 0.3);
+  flex-shrink: 0;
+  margin-right: 32px;
+}
+
+/* ─── Championship Card ─────────────────────────────────── */
+.champCard {
+  width: 100%;
+  max-width: 880px;
+  background: #ffffff;
+  border: 1px solid rgba(201, 164, 76, 0.4);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+}
+
+.champTop {
+  display: flex;
+  align-items: flex-start;
   gap: 16px;
+  padding: 8px 24px;
+  border-bottom: 1px solid rgba(201, 164, 76, 0.2);
 }
 
-.dot {
-  font-size: 14px;
-  line-height: 0;
+.champIconCircle {
+  flex-shrink: 0;
+  width: 40px;
+  /* Reduced from 52px */
+  height: 40px;
+  border-radius: 50%;
+  background: #0f2318;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c9a44c;
 }
 
-/* ── Mobile Responsive ── */
+.champInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.champTitle {
+  font-family: 'Arial Narrow', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #0f2318;
+  text-transform: uppercase;
+}
+
+.champDesc {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 12.5px;
+  color: #5a4a30;
+  line-height: 1.4;
+}
+
+/* ─── Championship Points Grid ──────────────────────────── */
+.champPoints {
+  display: flex;
+  align-items: stretch;
+}
+
+.champCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 12px 6px;
+  gap: 2px;
+}
+
+.champDivider {
+  width: 1px;
+  background: rgba(201, 164, 76, 0.3);
+  align-self: stretch;
+  margin: 14px 0;
+}
+
+.champPlace {
+  font-family: 'Arial Narrow', Arial, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #6b5a3a;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.champValue {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.champGold {
+  color: #b8892e;
+}
+
+.champRed {
+  color: #c0392b;
+}
+
+.champUnit {
+  font-family: 'Arial Narrow', Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #6b5a3a;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ─── Mobile ────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .page {
-    padding: 0;
-  }
-
-  .windowFrame {
-    width: 100%;
-    max-width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100dvh;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-  }
-
-  .header {
-    padding: 16px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .logoGroup {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .logoText {
-    font-size: 13px;
-  }
-
   .main {
-    padding: 0 12px 12px;
-  }
-
-  .ivoryCardInner {
-    padding: 20px 16px;
+    padding: 20px 16px 32px;
   }
 
   .cardContent {
-    transform: none;
-    max-width: 100%;
+    padding: 28px 24px 32px;
   }
 
   .title {
-    font-size: 28px;
-    letter-spacing: -0.01em;
+    white-space: normal;
+    font-size: clamp(26px, 7vw, 42px);
   }
 
-  .topLabel {
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    margin-bottom: 8px;
-  }
-
-  .subtitle {
-    font-size: 12px;
-    margin-bottom: 24px;
-  }
-
-  .playerBanner {
+  .statsRow {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 20px 16px;
-    gap: 16px;
-    margin-bottom: 24px;
-    clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
   }
 
-  .bannerLeft {
+  .statDivider {
+    display: none;
+  }
+
+  .statItem {
+    padding: 0;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .champPoints {
+    flex-wrap: wrap;
+  }
+
+  .champCol {
+    flex: 0 0 50%;
+  }
+
+  .champCol:nth-child(1),
+  .champCol:nth-child(3) {
+    border-bottom: 1px solid rgba(201, 164, 76, 0.2);
+  }
+
+  .champDivider {
+    display: none;
+  }
+
+  .champTop {
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
 
-  .bannerDivider {
-    width: 80%;
-    height: 1px;
-    margin: 0;
+  .champIconCircle {
+    width: 44px;
+    height: 44px;
   }
 
-  .bannerRight {
-    align-items: center;
-    text-align: center;
-  }
-
-  .playerName {
-    font-size: 20px;
-  }
-
-  .readyText {
-    font-size: 20px;
+  .watermark {
+    width: 260px;
+    height: 260px;
+    right: -60px;
+    opacity: 0.6;
   }
 
   .enterButton {
-    height: 48px;
-    font-size: 13px;
-    margin-bottom: 16px;
+    font-size: 15px;
+    padding: 18px 24px;
+    margin-bottom: 20px;
   }
 
-  .footerText {
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
+  .subtitle {
+    font-size: 13.5px;
+    margin-bottom: 24px;
   }
 
-  .separator {
-    margin: 14px 0;
-  }
-
-  .sepLine {
-    width: 40px;
-  }
-
-  .cornerTL,
-  .cornerTR,
-  .cornerBL,
-  .cornerBR {
-    width: 14px;
-    height: 14px;
-  }
-
-  .cornerTL { top: -7px; left: -7px; }
-  .cornerTR { top: -7px; right: -7px; }
-  .cornerBL { bottom: -7px; left: -7px; }
-  .cornerBR { bottom: -7px; right: -7px; }
-
-  .watermark {
-    width: 250px;
-    height: 250px;
-    right: -50px;
-    bottom: -50px;
+  .cornerTL::before,
+  .cornerTR::before,
+  .cornerBL::before,
+  .cornerBR::before {
+    background: #e8d9b8;
   }
 }
 
 @media (max-width: 480px) {
-  .title {
-    font-size: 22px;
+  .header {
+    padding: 0 16px;
   }
 
-  .playerName {
-    font-size: 18px;
+  .logoText {
+    font-size: 11px;
   }
 
-  .readyText {
-    font-size: 16px;
+  .logoSub {
+    font-size: 9px;
   }
 
-  .trophyIcon {
-    width: 40px;
-    height: 40px;
+  .logoSeparator {
+    display: none;
   }
 
-  .ivoryCardInner {
-    padding: 16px 12px;
+  .cardContent {
+    padding: 22px 16px 24px;
+  }
+
+  .topLabel {
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+  }
+
+  .labelLine {
+    flex: 0 0 20px;
+  }
+
+  .champValue {
+    font-size: 26px;
   }
 
   .enterButton {
-    height: 44px;
-    font-size: 12px;
-    border-radius: 6px;
+    font-size: 13px;
+    padding: 16px 20px;
+    letter-spacing: 0.15em;
   }
 }

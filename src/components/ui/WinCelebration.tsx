@@ -68,11 +68,11 @@ export default function WinCelebration({ show, onComplete }: WinCelebrationProps
 
           {/* WIN Text */}
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.5 }} // Start lower
+            initial={{ opacity: 0, y: -220, scale: 0.5 }}
             animate={{
               opacity: [0, 1, 1, 0],
-              y: [120, 150, 180, 200], // Move it further down to avoid the center circle
-              scale: [0.5, 1.5, 1.5, 1.2] // 50% bigger
+              y: [-240, -260, -280, -300], // Move it much further up to avoid the large winning number
+              scale: [0.5, 1.2, 1.2, 1.0] // Reduced scale slightly to save space
             }}
             transition={{ duration: 2, ease: "easeOut" }}
             className="absolute text-8xl font-black text-yellow-400 drop-shadow-[0_0_40px_rgba(251,191,36,0.9)]" // Bigger text and shadow

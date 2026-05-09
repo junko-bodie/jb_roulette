@@ -10,6 +10,7 @@ export default function TournamentLobby() {
   const router = useRouter();
   const supabase = createClient();
   const [isCreating, setIsCreating] = useState(false);
+  const [wheelType, setWheelType] = useState<'american' | 'european'>('american');
 
   useEffect(() => {
     if (!isGameLoading && !user) {
@@ -20,7 +21,11 @@ export default function TournamentLobby() {
   const handleStartTournament = async () => {
     setIsCreating(true);
     try {
-      const response = await fetch('/api/tournament/create', { method: 'POST' });
+      const response = await fetch('/api/tournament/create', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wheel_type: wheelType })
+      });
       if (!response.ok) throw new Error('Failed to create tournament');
       const tournament = await response.json();
       router.push(`/tournament/${tournament._id}`);
@@ -51,93 +56,264 @@ export default function TournamentLobby() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.windowFrame}>
-        <header className={styles.header}>
-          <div className={styles.logoGroup}>
-            <span className={styles.logoText}>JUNKO BODIE ROULETTE</span>
-            <span className={styles.logoSub}>PRO TOURNAMENT SERIES</span>
-          </div>
-          <button className={styles.signOutBtn} onClick={handleSignOut}>SIGN OUT</button>
-        </header>
+      {/* Thin dark header */}
+      <header className={styles.header}>
+        <div className={styles.logoGroup}>
+          <span className={styles.logoText}>JUNKO BODIE ROULETTE</span>
+          <span className={styles.logoSeparator}>|</span>
+          <span className={styles.logoSub}>PRO TOURNAMENT SERIES</span>
+        </div>
+        <button className={styles.signOutBtn} onClick={handleSignOut}>SIGN OUT</button>
+      </header>
 
-        <main className={styles.main}>
-          <div className={styles.ivoryCard}>
-            <div className={styles.ivoryCardInner}>
-              <div className={styles.watermark}>
-                 <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style={{opacity: 0.1, width: '100%', height: '100%'}}>
-                   <circle cx="200" cy="200" r="180" fill="none" stroke="#8b7355" strokeWidth="2" />
-                   <circle cx="200" cy="200" r="140" fill="none" stroke="#8b7355" strokeWidth="1" strokeDasharray="4 4"/>
-                   <circle cx="200" cy="200" r="100" fill="none" stroke="#8b7355" strokeWidth="4" />
-                   <path d="M 200 20 L 200 380 M 20 200 L 380 200 M 70 70 L 330 330 M 70 330 L 330 70" stroke="#8b7355" strokeWidth="1" />
-                   <path d="M 200 0 L 210 30 L 190 30 Z" fill="#8b7355" />
-                   <path d="M 200 400 L 210 370 L 190 370 Z" fill="#8b7355" />
-                   <path d="M 0 200 L 30 190 L 30 210 Z" fill="#8b7355" />
-                   <path d="M 400 200 L 370 190 L 370 210 Z" fill="#8b7355" />
-                 </svg>
+      <main className={styles.main}>
+        <div className={styles.card}>
+          {/* Gold border frame */}
+          <div className={styles.cardBorder} />
+
+          {/* Corner notch decorations */}
+          <div className={styles.cornerTL} />
+          <div className={styles.cornerTR} />
+          <div className={styles.cornerBL} />
+          <div className={styles.cornerBR} />
+
+          {/* Compass / roulette watermark */}
+          <div className={styles.watermark}>
+            <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="250" cy="250" r="230" fill="none" stroke="#c9a44c" strokeWidth="1.5" strokeOpacity="0.35" />
+              <circle cx="250" cy="250" r="180" fill="none" stroke="#c9a44c" strokeWidth="1" strokeOpacity="0.25" strokeDasharray="5 5" />
+              <circle cx="250" cy="250" r="120" fill="none" stroke="#c9a44c" strokeWidth="2" strokeOpacity="0.3" />
+              <circle cx="250" cy="250" r="30" fill="none" stroke="#c9a44c" strokeWidth="2" strokeOpacity="0.4" />
+              <circle cx="250" cy="250" r="12" fill="#c9a44c" fillOpacity="0.5" />
+              {/* Compass spikes */}
+              <path d="M250 20 L262 240 L250 250 L238 240 Z" fill="#c9a44c" fillOpacity="0.45" />
+              <path d="M250 480 L262 260 L250 250 L238 260 Z" fill="#c9a44c" fillOpacity="0.25" />
+              <path d="M20 250 L240 238 L250 250 L240 262 Z" fill="#c9a44c" fillOpacity="0.25" />
+              <path d="M480 250 L260 238 L250 250 L260 262 Z" fill="#c9a44c" fillOpacity="0.45" />
+              {/* Diagonal lines */}
+              <path d="M95 95 L244 244 M405 95 L256 244 M95 405 L244 256 M405 405 L256 256" stroke="#c9a44c" strokeWidth="1" strokeOpacity="0.2" />
+              {/* Tick marks */}
+              {Array.from({ length: 36 }).map((_, i) => {
+                const angle = (i * 10 * Math.PI) / 180;
+                const isMajor = i % 9 === 0;
+                const r1 = isMajor ? 195 : 205;
+                const r2 = 230;
+                return (
+                  <line
+                    key={i}
+                    x1={250 + r1 * Math.cos(angle)}
+                    y1={250 + r1 * Math.sin(angle)}
+                    x2={250 + r2 * Math.cos(angle)}
+                    y2={250 + r2 * Math.sin(angle)}
+                    stroke="#c9a44c"
+                    strokeWidth={isMajor ? 1.5 : 0.8}
+                    strokeOpacity="0.3"
+                  />
+                );
+              })}
+            </svg>
+          </div>
+
+          <div className={styles.cardContent}>
+            {/* Top label with flanking lines */}
+            <div className={styles.topLabelRow}>
+              <div className={styles.labelLine} />
+              <span className={styles.topLabel}>THE CALM BEFORE THE STORM</span>
+              <div className={styles.labelLine} />
+            </div>
+
+            {/* Main title */}
+            <h1 className={styles.title}>Ready To Prove You&rsquo;re the Best?</h1>
+
+            {/* Separator */}
+            <div className={styles.separator}>
+              <div className={styles.sepLine} />
+              <div className={styles.sepDiamond} />
+              <div className={styles.sepLine} />
+            </div>
+
+            {/* Subtitle */}
+            <p className={styles.subtitle}>
+              You&rsquo;ve learned the rules. Now it&rsquo;s time to test your strategy and skill
+              <br />against other players in a combat format.
+            </p>
+
+            {/* Wheel Selection Toggle */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '32px',
+              width: '100%',
+              maxWidth: '420px',
+              position: 'relative',
+              zIndex: 5
+            }}>
+              <span style={{
+                fontSize: '11px',
+                fontWeight: 800,
+                color: '#8b6914',
+                textTransform: 'uppercase',
+                letterSpacing: '0.25em',
+                opacity: 0.7,
+                marginBottom: '4px'
+              }}>
+                Select Wheel Variant
+              </span>
+              <div style={{
+                display: 'flex',
+                background: 'rgba(15, 35, 24, 0.05)',
+                padding: '6px',
+                borderRadius: '100px',
+                border: '1.5px solid rgba(201, 164, 76, 0.25)',
+                width: '100%',
+                boxSizing: 'border-box',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+              }}>
+                <button 
+                  onClick={() => setWheelType('american')}
+                  style={{
+                    flex: 1,
+                    padding: '10px 0',
+                    borderRadius: '100px',
+                    fontSize: '11px',
+                    fontWeight: 900,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    transition: 'all 0.25s ease',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: wheelType === 'american' ? '#c9a44c' : 'transparent',
+                    color: wheelType === 'american' ? '#0f2318' : 'rgba(15, 35, 24, 0.4)',
+                    boxShadow: wheelType === 'american' ? '0 4px 15px rgba(201, 164, 76, 0.4)' : 'none',
+                  }}
+                >
+                  American (00)
+                </button>
+                <button 
+                  onClick={() => setWheelType('european')}
+                  style={{
+                    flex: 1,
+                    padding: '10px 0',
+                    borderRadius: '100px',
+                    fontSize: '11px',
+                    fontWeight: 900,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    transition: 'all 0.25s ease',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: wheelType === 'european' ? '#c9a44c' : 'transparent',
+                    color: wheelType === 'european' ? '#0f2318' : 'rgba(15, 35, 24, 0.4)',
+                    boxShadow: wheelType === 'european' ? '0 4px 15px rgba(201, 164, 76, 0.4)' : 'none',
+                  }}
+                >
+                  European (0)
+                </button>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <button
+              className={styles.enterButton}
+              onClick={handleStartTournament}
+              disabled={isCreating}
+            >
+              {isCreating ? 'PREPARING ARENA...' : 'ENTER TOURNAMENT'}
+            </button>
+
+            {/* Stats row */}
+            <div className={styles.statsRow}>
+              <div className={styles.statItem}>
+                <svg className={styles.statIcon} viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                </svg>
+                <span className={styles.statText}>6 PLAYERS</span>
+              </div>
+              <div className={styles.statDivider} />
+              <div className={styles.statItem}>
+                <svg className={styles.statIcon} viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z" />
+                </svg>
+                <span className={styles.statText}>PRIZE: CHAMPIONSHIP POINTS</span>
+              </div>
+              <div className={styles.statDivider} />
+              <div className={styles.statItem}>
+                <svg className={styles.statIcon} viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6.92 5H5L14 12 5 19h2l9-7z M19 5h-2L8 12l9 7h2L10 12z" opacity="0.9" />
+                </svg>
+                <span className={styles.statText}>5 ROUND ELIMINATION</span>
+              </div>
+            </div>
+
+            {/* Championship points card */}
+            <div className={styles.champCard}>
+              <div className={styles.champTop}>
+                <div className={styles.champIconCircle}>
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                    <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z" />
+                  </svg>
+                </div>
+                <div className={styles.champInfo}>
+                  <div className={styles.champTitle}>CHAMPIONSHIP POINTS</div>
+                  <div className={styles.champDesc}>
+                    Only the Top 3 players with a positive chip balance earn championship points.
+                  </div>
+                </div>
               </div>
 
-              {/* Decorative Scooped Corners */}
-              <div className={styles.cornerTL} />
-              <div className={styles.cornerTR} />
-              <div className={styles.cornerBL} />
-              <div className={styles.cornerBR} />
-              
-              <div className={styles.cardContent}>
-                <div className={styles.topLabel}>THE CALM BEFORE THE STORM</div>
-                <h1 className={styles.title}>ELITE TOURNAMENT</h1>
-                
-                <div className={styles.separator}>
-                  <div className={styles.sepLine} />
-                  <div className={styles.sepDiamond} />
-                  <div className={styles.sepLine} />
+              <div className={styles.champPoints}>
+                <div className={styles.champCol}>
+                  <div className={styles.champPlace}>1ST PLACE</div>
+                  <div className={`${styles.champValue} ${styles.champGold}`}>+1000</div>
+                  <LaurelIcon />
+                  <div className={styles.champUnit}>POINTS</div>
                 </div>
-                
-                <p className={styles.subtitle}>
-                  Step into the high-stakes arena where legends are made.<br />
-                  Test your luck and strategy against the finest players.
-                </p>
-
-                <div className={styles.playerBanner}>
-                  <div className={styles.bannerLeft}>
-                    <div className={styles.trophyIcon}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#d4bc81', fill: 'rgba(212,188,129,0.1)' }}>
-                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                        <path d="M4 22h16" />
-                        <path d="M10 14.66V17c0 .55-.47.98-1 1h6c-.53-.02-1-.45-1-1v-2.34" />
-                        <path d="M8 4h8l-1 10.66A2 2 0 0 1 13.01 16h-2.02A2 2 0 0 1 9 14.66L8 4z" />
-                      </svg>
-                    </div>
-                    <div className={styles.playerInfo}>
-                      <div className={styles.challengerLabel}>CHALLENGER</div>
-                      <div className={styles.playerName}>{userProfile.name}</div>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.bannerDivider} />
-                  
-                  <div className={styles.bannerRight}>
-                    <div className={styles.readyText}>Are You Ready?</div>
-                    <div className={styles.precisionText}>PRECISION • GLORY</div>
-                  </div>
+                <div className={styles.champDivider} />
+                <div className={styles.champCol}>
+                  <div className={styles.champPlace}>2ND PLACE</div>
+                  <div className={`${styles.champValue} ${styles.champGold}`}>+100</div>
+                  <LaurelIcon />
+                  <div className={styles.champUnit}>POINTS</div>
                 </div>
-
-                <button
-                  className={styles.enterButton}
-                  onClick={handleStartTournament}
-                  disabled={isCreating}
-                >
-                  {isCreating ? 'PREPARING ARENA...' : 'ENTER TOURNAMENT'}
-                </button>
-
-                <div className={styles.footerText}>
-                  ENTRY: FREE <span className={styles.dot}>•</span> PRIZE: GLORY & GOLD
+                <div className={styles.champDivider} />
+                <div className={styles.champCol}>
+                  <div className={styles.champPlace}>3RD PLACE</div>
+                  <div className={`${styles.champValue} ${styles.champGold}`}>+50</div>
+                  <LaurelIcon />
+                  <div className={styles.champUnit}>POINTS</div>
+                </div>
+                <div className={styles.champDivider} />
+                <div className={styles.champCol}>
+                  <div className={styles.champPlace}>BUSTED (0 CHIPS)</div>
+                  <div className={`${styles.champValue} ${styles.champRed}`}>-50</div>
+                  <LaurelIcon dimmed />
+                  <div className={styles.champUnit}>POINTS</div>
                 </div>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
+  );
+}
+
+function LaurelIcon({ dimmed = false }: { dimmed?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 80 24"
+      width="56"
+      height="16"
+      style={{ opacity: dimmed ? 0.35 : 0.75, margin: '4px auto 0' }}
+    >
+      {/* Left laurel */}
+      <path d="M8 12 Q4 8 2 4 Q6 5 8 9 Q6 4 7 1 Q10 4 9 8 Q11 3 13 2 Q13 6 10 9 Q14 5 16 5 Q14 9 11 11" fill="none" stroke="#c9a44c" strokeWidth="1.2" strokeLinecap="round" />
+      {/* Right laurel (mirrored) */}
+      <path d="M72 12 Q76 8 78 4 Q74 5 72 9 Q74 4 73 1 Q70 4 71 8 Q69 3 67 2 Q67 6 70 9 Q66 5 64 5 Q66 9 69 11" fill="none" stroke="#c9a44c" strokeWidth="1.2" strokeLinecap="round" />
+      {/* Center stem */}
+      <path d="M36 18 Q40 14 44 18" fill="none" stroke="#c9a44c" strokeWidth="1" strokeLinecap="round" />
+    </svg>
   );
 }

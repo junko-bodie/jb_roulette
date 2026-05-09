@@ -48,7 +48,8 @@ function AnimatedCounter({ value, duration = 1200 }: { value: number; duration?:
 export default function ResultDisplay({ result, payout, visible, onDismiss, tournamentMode }: ResultDisplayProps) {
   useEffect(() => {
     if (visible && result) {
-      const duration = tournamentMode ? 3500 : 5000;
+      // Auto-dismiss after 3 seconds for both modes as per user request
+      const duration = 3000;
       const timer = setTimeout(onDismiss, duration);
       return () => clearTimeout(timer);
     }
@@ -63,198 +64,88 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
           className="fixed inset-0 z-50 flex items-center justify-center px-6"
-          style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(12px)' }}
+          style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(16px)' }}
           onClick={onDismiss}
         >
           <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.97 }}
-            transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
-            className={`relative w-full ${tournamentMode ? 'overflow-visible' : 'overflow-hidden'} rounded-2xl ${tournamentMode ? 'max-w-md' : 'max-w-sm'}`}
-            style={{
-              background: tournamentMode ? 'transparent' : 'rgba(10, 12, 16, 0.98)',
-              border: tournamentMode ? 'none' : '1px solid rgba(255,255,255,0.06)',
-              boxShadow: tournamentMode ? 'none' : '0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)',
-            }}
+            exit={{ opacity: 0, y: 12, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+            className={`relative w-full ${tournamentMode ? 'max-w-md' : 'max-w-xl'} flex flex-col items-center justify-center`}
             onClick={e => e.stopPropagation()}
           >
-            {/* Header */}
-            {!tournamentMode && (
-              <div className="px-6 pt-6 pb-5 flex items-center justify-between border-b border-white/[0.05]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-1 h-5 rounded-full bg-amber-400" />
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
-                    Result
-                  </span>
-                </div>
-                <span className="text-[10px] text-white/25 font-medium uppercase tracking-wider">
-                  Round complete
-                </span>
-              </div>
-            )}
-
-            {/* Winning Number */}
-            <div className={`flex flex-col items-center ${tournamentMode ? 'py-16' : 'py-10'} gap-2 ${!tournamentMode ? 'border-b border-white/[0.05]' : ''}`}>
+            {/* 1. Winning Number (The last number spun) */}
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
+              className="relative flex flex-col items-center mb-12"
+            >
+              <div
+                className="absolute inset-0 rounded-full blur-[80px] opacity-40"
+                style={{ backgroundColor: getNumberColor(result.color) }}
+              />
+              <span
+                className="relative font-black tabular-nums"
+                style={{
+                  color: getNumberColor(result.color),
+                  fontFamily: "'Georgia', serif",
+                  fontSize: tournamentMode ? 'min(240px, 50vw)' : '160px',
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1,
+                  textShadow: `0 0 40px ${getNumberColor(result.color)}44`,
+                }}
+              >
+                {result.displayNumber}
+              </span>
               {!tournamentMode && (
-                <span className="text-[10px] text-white/25 font-medium uppercase tracking-[0.2em] mb-2">
+                <span className="text-[14px] text-white/30 font-bold uppercase tracking-[0.4em] mt-4">
                   Winning Number
                 </span>
               )}
+            </motion.div>
 
-              <motion.div
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.1, duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
-                className="relative flex items-center justify-center"
-              >
-                {/* Subtle glow behind number */}
-                <div
-                  className="absolute inset-0 rounded-full blur-3xl opacity-30"
-                  style={{
-                    backgroundColor: getNumberColor(result.color),
-                    transform: tournamentMode ? 'scale(2.5)' : 'scale(1.8)'
-                  }}
-                />
-                <span
-                  className="relative font-black tabular-nums"
-                  style={{
-                    color: getNumberColor(result.color),
-                    fontFamily: "'Georgia', serif",
-                    fontSize: tournamentMode ? 'min(240px, 50vw)' : '96px',
-                    letterSpacing: '-0.02em',
-                    textShadow: tournamentMode ? `0 0 40px ${getNumberColor(result.color)}44` : 'none',
-                    lineHeight: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: tournamentMode ? '280px' : 'auto',
-                    paddingTop: tournamentMode ? '20px' : '0',
-                    paddingBottom: tournamentMode ? '20px' : '0'
-                  }}
-                >
-                  {result.displayNumber}
-                </span>
-              </motion.div>
-
-              {!tournamentMode && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="flex items-center gap-2 mt-1"
-                >
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: getNumberColor(result.color) }}
-                  />
-                  <span className="text-[11px] font-medium text-white/35 uppercase tracking-widest">
-                    {result.color}
-                  </span>
-                </motion.div>
-              )}
-            </div>
-
-            {/* Payout rows */}
+            {/* 2. NET WIN ($ NET WIN) */}
             {payout && !tournamentMode && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.35, duration: 0.4 }}
-                className="divide-y divide-white/[0.04]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="flex flex-col items-center"
               >
-                {/* Total Won */}
-                <div className="flex items-center justify-between px-6 py-4">
-                  <span className="text-[11px] text-white/35 font-medium uppercase tracking-wider">
-                    Total Won
-                  </span>
-                  <span className="text-[14px] font-bold text-white/75 tabular-nums">
-                    $<AnimatedCounter value={payout.totalWon} duration={900} />
-                  </span>
-                </div>
-
-                {/* Total Bet */}
-                <div className="flex items-center justify-between px-6 py-4">
-                  <span className="text-[11px] text-white/35 font-medium uppercase tracking-wider">
-                    Total Bet
-                  </span>
-                  <span className="text-[14px] font-bold text-white/75 tabular-nums">
-                    $<AnimatedCounter value={payout.totalWagered} duration={700} />
-                  </span>
-                </div>
-
-                {/* Net Result — highlighted */}
-                <div className="flex items-center justify-between px-6 py-5">
-                  <span className="text-[11px] text-white/35 font-medium uppercase tracking-wider">
-                    {payout.netResult >= 0 ? 'Net Profit' : 'Net Loss'}
-                  </span>
-                  <motion.span
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.55, duration: 0.35 }}
-                    className="text-[22px] font-black tabular-nums"
-                    style={{
-                      color:
-                        payout.netResult > 0
-                          ? '#f59e0b'
-                          : payout.netResult === 0
-                            ? 'rgba(255,255,255,0.5)'
-                            : '#ef4444',
-                      fontFamily: 'var(--font-playfair)',
-                    }}
-                  >
+                <span className="text-[14px] text-white/30 font-bold uppercase tracking-[0.4em] mb-4">
+                  Net Win
+                </span>
+                <motion.span
+                  className="text-[84px] font-black tabular-nums flex items-baseline"
+                  style={{
+                    color:
+                      payout.netResult > 0
+                        ? '#f59e0b'
+                        : payout.netResult === 0
+                          ? 'rgba(255,255,255,0.4)'
+                          : '#ef4444',
+                    fontFamily: "'Georgia', serif",
+                  }}
+                >
+                  <span className="text-[48px] mr-2 opacity-80">
                     {payout.netResult > 0 ? '+' : payout.netResult < 0 ? '-' : ''}$
-                    <AnimatedCounter value={Math.abs(payout.netResult)} duration={1400} />
-                  </motion.span>
-                </div>
+                  </span>
+                  <AnimatedCounter value={Math.abs(payout.netResult)} duration={1500} />
+                </motion.span>
               </motion.div>
             )}
 
-            {/* Footer */}
-            {!tournamentMode && (
-              <div className="relative px-6 py-4 border-t border-white/[0.05] flex items-center justify-between">
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2 }}
-                  className="text-[10px] font-semibold uppercase tracking-[0.2em]"
-                  style={{
-                    color:
-                      payout && payout.netResult > 0
-                        ? 'rgba(245,158,11,0.6)'
-                        : 'rgba(255,255,255,0.2)',
-                  }}
-                >
-                  {payout
-                    ? payout.netResult > 3000
-                      ? 'Incredible streak'
-                      : payout.netResult > 0
-                        ? 'Nice win'
-                        : payout.netResult === 0
-                          ? 'Keep going'
-                          : 'Try again'
-                    : ''}
-                </motion.span>
-
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.4 }}
-                  className="text-[10px] text-white/20 font-medium uppercase tracking-wider"
-                >
-                  Tap to continue
-                </motion.span>
-
-                {/* Shimmer bar */}
-                <div className="absolute bottom-0 left-0 right-0 h-px bg-white/[0.04] overflow-hidden">
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ duration: 3.5, repeat: Infinity, ease: 'linear' }}
-                  />
-                </div>
-              </div>
-            )}
+            {/* Tap to continue indicator (subtle) */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              transition={{ delay: 2, duration: 1 }}
+              className="mt-20 text-[11px] text-white/40 font-medium uppercase tracking-[0.3em]"
+            >
+              Tap to continue
+            </motion.div>
           </motion.div>
         </motion.div>
       )}
