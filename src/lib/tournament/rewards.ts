@@ -114,10 +114,11 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
             rankings: {
               player_id: profile._id,
               username: profile.name,
+              avatar_url: profile.avatar_url,
               points: newPoints,
               tournaments_played: (profile.stats?.tournaments_played || 0) + 1,
               tournaments_won: totalWins,
-              rank: 0
+              rank: 1
             }
           }
         } as any

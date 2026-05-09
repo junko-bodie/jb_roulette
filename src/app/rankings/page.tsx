@@ -46,8 +46,10 @@ export default function RankingsPage() {
     fetchRankings();
   }, []);
 
-  const myEntry = rankings.find(r => r.player_id === user?.id || r.username === user?.email?.split('@')[0]);
-  const isQualified = myEntry && myEntry.rank <= 50;
+  const myIndex = rankings.findIndex(r => r.player_id === user?.id || r.username === (user?.email?.split('@')[0] || user?.user_metadata?.name));
+  const myEntry = myIndex !== -1 ? rankings[myIndex] : null;
+  const myRank = myIndex !== -1 ? myIndex + 1 : 0;
+  const isQualified = myRank > 0 && myRank <= 50;
 
   if (loading) {
     return (
@@ -105,7 +107,7 @@ export default function RankingsPage() {
                     <div className="flex gap-12">
                        <div className="text-center">
                           <span className="text-[10px] font-bold text-[#8b6914] uppercase tracking-widest block mb-1">Global Rank</span>
-                          <span className="text-4xl font-bold text-[#b8892e]" style={{ fontFamily: 'Georgia, serif' }}>#{myEntry.rank}</span>
+                          <span className="text-4xl font-bold text-[#b8892e]" style={{ fontFamily: 'Georgia, serif' }}>#{myRank}</span>
                        </div>
                        <div className="text-center">
                           <span className="text-[10px] font-bold text-[#8b6914] uppercase tracking-widest block mb-1">Total Points</span>
@@ -159,9 +161,10 @@ export default function RankingsPage() {
                   </thead>
                   <tbody className="divide-y divide-[#c9a44c]/10 bg-white/40">
                     {rankings.map((entry, idx) => {
+                      const displayRank = idx + 1;
                       const isMe = entry.player_id === user?.id || entry.username === user?.email?.split('@')[0];
-                      const isTop3 = entry.rank <= 3;
-                      const isElite = entry.rank <= 50;
+                      const isTop3 = displayRank <= 3;
+                      const isElite = displayRank <= 50;
 
                       return (
                         <tr 
@@ -172,13 +175,13 @@ export default function RankingsPage() {
                             <span className={`text-2xl font-bold italic tabular-nums ${
                               isTop3 ? 'text-[#b8892e]' : isMe ? 'text-[#0f2318]' : 'text-[#0f2318]/20'
                             }`} style={{ fontFamily: 'Georgia, serif' }}>
-                              {entry.rank}
+                              {displayRank}
                             </span>
                           </td>
                           <td className="py-6 px-4">
                             <div className="flex items-center gap-4">
                                 <Avatar 
-                                   type={entry.avatar_url || entry.avatar || 'default'} 
+                                   type={isMe ? (userProfile?.avatar || entry.avatar_url || 'default') : (entry.avatar_url || entry.avatar || (['crown', 'diamond', 'star', 'spade', 'heart', 'club', 'dice', 'chip', 'trophy', 'bolt'][idx % 10]))} 
                                    size="md"
                                    className={isMe ? 'border-[#c9a44c]' : 'border-black/5'}
                                 />
@@ -253,7 +256,7 @@ export default function RankingsPage() {
                  </div>
                  <div>
                     <span className="text-[9px] font-bold text-[#c9a44c]/50 uppercase tracking-[0.3em] block mb-0.5">Your Position</span>
-                    <span className="text-lg font-bold text-white tracking-widest uppercase">Rank #{myEntry.rank}</span>
+                    <span className="text-lg font-bold text-white tracking-widest uppercase">Rank #{myRank}</span>
                  </div>
               </div>
               
