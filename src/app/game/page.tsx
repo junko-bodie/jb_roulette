@@ -302,7 +302,7 @@ export default function GamePage() {
           justifyContent: 'center',
         }}
       >
-        <div className="flex items-center justify-between w-full px-12 md:px-24 max-w-[1200px] mx-auto min-w-0">
+        <div className="flex items-center justify-between w-full px-12 md:px-24 max-w-[1250px] mx-auto min-w-0">
           <div className="flex items-center gap-4 min-w-0">
             <button
               onClick={() => window.location.href = '/lobby'}
@@ -388,8 +388,8 @@ export default function GamePage() {
         {/* Right: Balance + Stats */}
         <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto justify-center overflow-x-auto flex-nowrap py-1 sm:py-0">
           {/* Balance */}
-          <div className="flex flex-col items-center px-1 sm:px-1.5 lg:px-2 py-1 sm:py-2 lg:py-5 rounded-lg bg-gradient-to-b from-[#5c3b27] to-[#1a110a] border border-[#c9a44c]/60 shadow-inner lg:min-w-[90px]">
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-[#f5edd5] font-bold">Balance</span>
+          <div className="flex flex-col items-center px-1 sm:px-1.5 lg:px-2 py-1 sm:py-2 lg:py-5 rounded-lg bg-gradient-to-b from-[#7a553a] to-[#2d1e12] border border-[#c9a44c]/60 shadow-inner lg:min-w-[90px]">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-[#fff] font-bold">Balance</span>
             <span className="text-sm sm:text-base font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.balance.toLocaleString()}
             </span>
@@ -401,8 +401,8 @@ export default function GamePage() {
           </div>
 
           {/* Total Bet */}
-          <div className="flex flex-col items-center px-1 sm:px-1.5 lg:px-2 py-1 sm:py-2 lg:py-5 rounded-lg bg-black/60 border border-[#c9a44c]/50 shadow-inner lg:min-w-[90px]">
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-[#c9a44c] font-bold">Total Bet</span>
+          <div className="flex flex-col items-center px-1 sm:px-1.5 lg:px-2 py-1 sm:py-2 lg:py-5 rounded-lg bg-white/10 border border-[#c9a44c]/50 shadow-inner lg:min-w-[90px]">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.1em] text-[#f5d68d] font-bold">Total Bet</span>
             <span className="text-sm sm:text-base font-black text-white" style={{ fontFamily: 'var(--font-playfair)' }}>
               ${game.totalBet.toLocaleString()}
             </span>
@@ -416,8 +416,9 @@ export default function GamePage() {
           soundEngine?.playClick();
           setIsProfileOpen(true);
         }}
-        className="hidden lg:flex absolute bottom-[10px] left-1/2 -translate-x-1/2 z-[20] items-center gap-4 px-6 py-2 rounded-full bg-black/60 border-2 border-[#c9a44c]/40 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.6),0_0_20px_rgba(201,164,76,0.15)] hover:bg-black/80 hover:border-[#c9a44c] transition-all cursor-pointer group active:scale-95"
+        className="hidden lg:flex absolute bottom-[10px] left-1/2 -translate-x-1/2 z-[20] items-center gap-4 px-6 py-2 rounded-full border-2 border-[#c9a44c]/40 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.6),0_0_20px_rgba(201,164,76,0.15)] hover:border-[#c9a44c] transition-all cursor-pointer group active:scale-95"
         style={{
+          background: 'linear-gradient(135deg, #5c3b27 0%, #3d271a 100%)',
           boxShadow: '0 -8px 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(201, 164, 76, 0.1)',
         }}
       >

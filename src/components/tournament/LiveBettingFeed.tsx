@@ -14,8 +14,8 @@ export default function LiveBettingFeed() {
     <div
       className="relative overflow-hidden rounded-2xl border border-white/[0.06] backdrop-blur-xl w-full h-full flex flex-col"
       style={{
-        background: 'linear-gradient(180deg, rgba(12, 35, 25, 0.97) 0%, rgba(8, 25, 18, 0.98) 100%)',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
+        background: 'linear-gradient(180deg, rgba(22, 60, 48, 0.96) 0%, rgba(12, 35, 25, 0.98) 100%)',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
       }}
     >
       {/* Header — improved spacing */}
@@ -61,10 +61,10 @@ export default function LiveBettingFeed() {
                 >
                   {event.username}
                 </span>
-                <span className="text-[9px] text-white/60 font-medium uppercase tracking-wider shrink-0">
+                <span className="text-[9px] text-white/80 font-medium uppercase tracking-wider shrink-0">
                   placed
                 </span>
-                <span className="text-[10px] text-white/70 font-medium shrink-0">
+                <span className="text-[10px] text-white/85 font-medium shrink-0">
                   {event.betZone
                     ? `on ${event.betZone.replace('num-', '').toUpperCase()}`
                     : 'a bet'}

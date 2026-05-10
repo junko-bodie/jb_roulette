@@ -77,8 +77,8 @@ export default function Scoreboard() {
         animate={{ x: 0, opacity: 1 }}
         className="relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.06] backdrop-blur-xl"
         style={{
-          background: 'linear-gradient(180deg, rgba(12, 35, 25, 0.97) 0%, rgba(8, 25, 18, 0.98) 100%)',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)',
+          background: 'linear-gradient(180deg, rgba(22, 60, 48, 0.96) 0%, rgba(12, 35, 25, 0.98) 100%)',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
         }}
       >
         {/* Header — improved spacing */}
@@ -197,7 +197,7 @@ export default function Scoreboard() {
                           At risk: ${s.currentWager.toLocaleString()}
                         </span>
                       ) : (
-                        <span className="text-[9px] text-white/55 font-medium uppercase tracking-wider">
+                        <span className="text-[9px] text-white/75 font-medium uppercase tracking-wider">
                           Active
                         </span>
                       )}

@@ -24,7 +24,7 @@ export default function TournamentRules() {
   }, []);
 
   return (
-    <div className="relative h-8 w-full max-w-sm overflow-hidden rounded-lg bg-black/40 border border-[#c9a44c]/20 flex items-center px-4 backdrop-blur-sm">
+    <div className="relative h-8 w-full max-w-sm overflow-hidden rounded-lg bg-white/5 border border-[#c9a44c]/30 flex items-center px-4 backdrop-blur-sm shadow-inner">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}

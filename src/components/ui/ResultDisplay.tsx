@@ -18,7 +18,7 @@ interface ResultDisplayProps {
 function getNumberColor(color: SpinResult['color']): string {
   switch (color) {
     case 'red': return '#ef4444';
-    case 'black': return 'rgba(255,255,255,0.85)';
+    case 'black': return 'rgba(255,255,255,1.0)';
     case 'green': return '#10b981';
   }
 }
@@ -100,7 +100,7 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
                 {result.displayNumber}
               </span>
               {!tournamentMode && (
-                <span className="text-[14px] text-white/30 font-bold uppercase tracking-[0.4em] mt-4">
+                <span className="text-[14px] text-white/70 font-bold uppercase tracking-[0.4em] mt-4">
                   Winning Number
                 </span>
               )}
@@ -114,7 +114,7 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
                 transition={{ delay: 0.4, duration: 0.5 }}
                 className="flex flex-col items-center"
               >
-                <span className="text-[14px] text-white/30 font-bold uppercase tracking-[0.4em] mb-4">
+                <span className="text-[14px] text-white/70 font-bold uppercase tracking-[0.4em] mb-4">
                   Net Win
                 </span>
                 <motion.span
@@ -124,7 +124,7 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
                       payout.netResult > 0
                         ? '#f59e0b'
                         : payout.netResult === 0
-                          ? 'rgba(255,255,255,0.4)'
+                          ? 'rgba(255,255,255,0.7)'
                           : '#ef4444',
                     fontFamily: "'Georgia', serif",
                   }}
@@ -142,7 +142,7 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.3 }}
               transition={{ delay: 2, duration: 1 }}
-              className="mt-20 text-[11px] text-white/40 font-medium uppercase tracking-[0.3em]"
+              className="mt-20 text-[11px] text-white/80 font-medium uppercase tracking-[0.3em]"
             >
               Tap to continue
             </motion.div>

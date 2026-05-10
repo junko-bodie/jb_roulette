@@ -232,6 +232,7 @@ export default function TournamentPage() {
   const [tournamentWheelSize, setTournamentWheelSize] = useState(420);
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     const updateWheelSize = () => {
@@ -682,7 +683,13 @@ export default function TournamentPage() {
           <div style={{ color: '#8b6914', fontWeight: 900, letterSpacing: '0.4em', fontSize: isMobile ? '11px' : '14px', textTransform: 'uppercase', marginBottom: isMobile ? '12px' : '20px', fontFamily: "'Arial Narrow', Arial, sans-serif" }}>
             Tournament Matchmaking
           </div>
-          <h2 className={styles.title} style={{ fontSize: isMobile ? '24px' : 'clamp(36px, 5vw, 52px)', marginBottom: isMobile ? '8px' : '16px' }}>
+          <h2 className={styles.title} style={{ 
+            fontSize: isMobile ? '24px' : 'clamp(36px, 5vw, 52px)', 
+            marginBottom: isMobile ? '8px' : '16px',
+            color: '#051410',
+            fontWeight: 900,
+            textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+          }}>
             Searching for Players...
           </h2>
           <p style={{ color: '#3a3028', fontSize: isMobile ? '14px' : '18px', marginBottom: isMobile ? '12px' : 'clamp(32px, 6vh, 52px)', fontWeight: 500, fontFamily: 'Georgia, serif', opacity: 0.9 }}>
@@ -941,7 +948,15 @@ export default function TournamentPage() {
                 Round {currentRound} of 5
               </span>
             )}
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: isMobile ? '8px' : '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: isMobile ? 0 : '3px' }}>
+            <span style={{ 
+              color: '#f5e9b8', 
+              fontSize: isMobile ? '9px' : '11px', 
+              fontWeight: 900, 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.2em', 
+              marginTop: isMobile ? 0 : '4px',
+              opacity: 0.9
+            }}>
               {isMobile ? `R${currentRound} S${currentSpin}/5` : `Spin ${currentSpin}/5`}
             </span>
           </div>
@@ -956,7 +971,7 @@ export default function TournamentPage() {
               alignItems: 'center',
               justifyContent: 'center',
               border: `2px solid ${isUrgent ? '#ef4444' : '#c9a44c'}`,
-              background: isUrgent ? 'rgba(239,68,68,0.1)' : 'rgba(0,0,0,0.6)',
+              background: isUrgent ? 'rgba(239,68,68,0.15)' : 'rgba(0,0,0,0.3)',
               boxShadow: isUrgent ? '0 0 20px rgba(239,68,68,0.4)' : '0 4px 12px rgba(0,0,0,0.5)',
               transition: 'all 0.3s ease',
               flexShrink: 0,
@@ -980,16 +995,6 @@ export default function TournamentPage() {
             )}
           </div>
 
-          {/* Player Profile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '8px', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-            {!isMobile && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <span style={{ fontSize: '12px', fontWeight: 900, color: '#fff' }}>{userProfile.name}</span>
-                <span style={{ fontSize: '9px', color: '#c9a44c', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Tournament</span>
-              </div>
-            )}
-            <Avatar type={userProfile.avatar} size={isMobile ? 'sm' : 'sm'} className="border-2 border-[#c9a44c]/40" />
-          </div>
         </div>
       </header>
 
@@ -1070,7 +1075,7 @@ export default function TournamentPage() {
           }}>
             {/* Compact rankings */}
             <div style={{
-              background: 'rgba(0,0,0,0.5)',
+              background: 'linear-gradient(180deg, rgba(22, 60, 48, 0.8) 0%, rgba(12, 35, 25, 0.9) 100%)',
               borderRadius: '10px',
               border: '1px solid rgba(255,255,255,0.07)',
               backdropFilter: 'blur(8px)',
@@ -1137,7 +1142,7 @@ export default function TournamentPage() {
 
             {/* Compact inline live feed — full LiveBettingFeed component is too large for sidebar */}
             <div style={{
-              background: 'rgba(0,0,0,0.35)',
+              background: 'linear-gradient(180deg, rgba(22, 60, 48, 0.7) 0%, rgba(12, 35, 25, 0.8) 100%)',
               borderRadius: '8px',
               border: '1px solid rgba(255,255,255,0.05)',
               backdropFilter: 'blur(6px)',
@@ -1208,8 +1213,8 @@ export default function TournamentPage() {
           flexShrink: 0,
           width: '100%',
           zIndex: 10,
-          background: 'linear-gradient(to top, #0a0603 0%, #160e07 100%)',
-          borderTop: '1px solid rgba(201, 164, 76, 0.25)',
+          background: 'linear-gradient(to top, #26170f 0%, #4a2f1f 100%)',
+          borderTop: '1px solid rgba(201, 164, 76, 0.5)',
           boxShadow: '0 -16px 60px rgba(0,0,0,0.95)',
           padding: isMobile ? '6px 12px' : '10px 16px', /* Better padding */
         }}
@@ -1317,9 +1322,9 @@ export default function TournamentPage() {
 
           </div>
         ) : (
-          /* ─── DESKTOP FOOTER LAYOUT (unchanged) ─── */
-          <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3">
-            <div className="flex-shrink-0 order-1">
+          /* ─── DESKTOP FOOTER LAYOUT — Grid-based to ensure perfect center gap ─── */
+          <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_280px_1fr] items-center gap-1 md:gap-1.5 w-full px-6">
+            <div className="flex-shrink-0 order-1 justify-self-start">
               <div className="max-w-full overflow-x-auto no-scrollbar">
                 <ChipTray
                   selectedChip={selectedChip}
@@ -1330,17 +1335,20 @@ export default function TournamentPage() {
                 />
               </div>
             </div>
+            
+            {/* Center Spacer for Floating Profile Card — Grid column 2 ensures geometric centering */}
+            <div className="hidden md:block order-2" />
 
-            <div className="flex items-center gap-2 order-2 tournament-controls-mobile" style={{ paddingRight: '20px' }}>
+            <div className="flex items-center gap-1 order-3 justify-self-end tournament-controls-mobile" style={{ marginRight: '60px' }}>
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '5px 12px',
+                padding: '4px 10px',
                 background: 'rgba(201,164,76,0.1)',
                 border: '1px solid rgba(201,164,76,0.3)',
                 borderRadius: '8px',
-                minWidth: '100px',
+                minWidth: '75px',
                 boxShadow: '0 0 12px rgba(201,164,76,0.1)',
               }}>
                 <span style={{ fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#c9a44c', fontWeight: 900, marginBottom: '1px' }}>Total Bet</span>
@@ -1362,10 +1370,10 @@ export default function TournamentPage() {
                     className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200"
                     style={{
                       fontFamily: 'var(--font-inter)',
-                      height: '50px',
-                      padding: '0 18px',
-                      borderRadius: '10px',
-                      fontSize: '12px',
+                      height: '42px',
+                      padding: '0 10px',
+                      borderRadius: '8px',
+                      fontSize: '11px',
                       fontWeight: 800,
                       letterSpacing: '0.12em',
                       textTransform: 'uppercase',
@@ -1376,10 +1384,10 @@ export default function TournamentPage() {
                         color: 'rgba(255,255,255,0.15)',
                         boxShadow: 'none',
                       } : {
-                        background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                        background: 'linear-gradient(180deg, #3a4a3e 0%, #2a3a2e 100%)',
                         border: '2.5px solid #c9a44c',
-                        color: '#e4e0d4',
-                        boxShadow: '0 3px 0 #1a0f09, 0 6px 12px rgba(0,0,0,0.5)',
+                        color: '#fff',
+                        boxShadow: '0 4px 0 #1a0f09, 0 8px 16px rgba(0,0,0,0.5)',
                       }),
                     }}
                   >
@@ -1393,10 +1401,10 @@ export default function TournamentPage() {
                   whileTap={(phase !== "betting" || myChips < totalBet * 2 || totalBet === 0) ? {} : { scale: 0.96, y: 2 }}
                   className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200"
                   style={{
-                    height: '50px',
-                    width: '50px',
+                    height: '42px',
+                    width: '42px',
                     borderRadius: '9999px',
-                    fontSize: '14px',
+                    fontSize: '13px',
                     fontWeight: 900,
                     letterSpacing: '0.04em',
                     display: 'flex',
@@ -1408,10 +1416,10 @@ export default function TournamentPage() {
                       color: 'rgba(255,255,255,0.15)',
                       boxShadow: 'none',
                     } : {
-                      background: 'linear-gradient(180deg, #3a3020 0%, #2a2010 100%)',
+                      background: 'linear-gradient(180deg, #4a4030 0%, #3a3020 100%)',
                       border: '2.5px solid #c9a44c',
                       color: '#c9a44c',
-                      boxShadow: '0 3px 0 #1a0f09, 0 6px 12px rgba(0,0,0,0.5), 0 0 14px rgba(201,164,76,0.12)',
+                      boxShadow: '0 4px 0 #1a0f09, 0 8px 16px rgba(0,0,0,0.5), 0 0 14px rgba(201,164,76,0.12)',
                     }),
                   }}
                 >
@@ -1424,10 +1432,10 @@ export default function TournamentPage() {
                   whileTap={phase !== "betting" ? {} : { scale: 0.96, y: 2 }}
                   className="flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200"
                   style={{
-                    height: '50px',
-                    width: '50px',
+                    height: '42px',
+                    width: '42px',
                     borderRadius: '9999px',
-                    fontSize: '15px',
+                    fontSize: '14px',
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
@@ -1458,11 +1466,11 @@ export default function TournamentPage() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '5px 12px',
+                padding: '4px 10px',
                 background: 'rgba(201,164,76,0.1)',
                 border: '1px solid rgba(201,164,76,0.3)',
                 borderRadius: '8px',
-                minWidth: '100px',
+                minWidth: '75px',
                 boxShadow: '0 0 12px rgba(201,164,76,0.1)',
               }}>
                 <span style={{ fontSize: '8px', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#c9a44c', fontWeight: 900, marginBottom: '1px' }}>Balance</span>
@@ -1493,6 +1501,46 @@ export default function TournamentPage() {
         player={eliminatedPlayer}
         visible={phase === "elimination" && currentRound < 5}
       />
+
+      {/* ═══ FLOATING PLAYER CARD — Bridges Footer & Table ═══ */}
+      {!isMobile && (
+        <div
+          onClick={() => {
+            soundEngine?.playClick();
+            // setIsProfileOpen(true);
+          }}
+          className="flex absolute bottom-[18px] left-1/2 -translate-x-1/2 z-[40] items-center gap-3 px-5 py-2 rounded-full border-2 border-[#c9a44c]/40 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.7),0_0_20px_rgba(201,164,76,0.2)] hover:border-[#c9a44c] transition-all cursor-pointer group active:scale-95"
+          style={{
+            background: 'linear-gradient(135deg, #5c3b27 0%, #3d271a 100%)',
+            boxShadow: '0 -8px 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(201, 164, 76, 0.1)',
+          }}
+        >
+          <div className="relative">
+            <div className="w-12 h-12 rounded-full border-2 border-[#c9a44c]/80 overflow-hidden bg-black/80 shadow-2xl group-hover:border-[#c9a44c] transition-all group-hover:scale-110">
+              <img
+                src={userProfile?.avatar || '/avatars/default.png'}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#160e07] rounded-full shadow-lg" />
+          </div>
+          <div className="flex flex-col">
+            <span
+              className="text-white font-black text-lg leading-tight tracking-tight shadow-black drop-shadow-lg group-hover:text-[#c9a44c] transition-colors"
+              style={{ fontFamily: "'Georgia', serif", fontStyle: 'italic' }}
+            >
+              {userProfile?.name}
+            </span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[9px] text-[#c9a44c] uppercase tracking-[0.4em] font-black leading-none">
+                Tournament Pro
+              </span>
+              <div className="w-1.5 h-1.5 rounded-full bg-[#c9a44c] animate-pulse" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

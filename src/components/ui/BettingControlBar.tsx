@@ -55,14 +55,14 @@ export default function BettingControlButtons({
         style={{
           background: canDouble
             ? `linear-gradient(135deg, ${COLORS.gold}, #e4c97b)`
-            : 'linear-gradient(135deg, #8b7355, #6b5345)',
-          color: canDouble ? '#000' : '#999',
+            : 'linear-gradient(135deg, #d4b896, #a88d7a)',
+          color: canDouble ? '#000' : '#fff',
           boxShadow: canDouble
             ? `0 8px 20px rgba(0,0,0,0.6), 0 0 20px ${COLORS.gold}a0, inset 0 3px 0 rgba(255,255,255,0.5)`
-            : 'inset 0 1px 0 rgba(0,0,0,0.3)',
+            : '0 4px 10px rgba(0,0,0,0.3), inset 0 3px 0 rgba(255,255,255,0.3)',
           borderWidth: '3px',
           borderStyle: 'solid',
-          borderColor: canDouble ? COLORS.gold : '#555',
+          borderColor: canDouble ? COLORS.gold : '#d4b896',
           fontWeight: 'bold',
         } as React.CSSProperties}
       >
@@ -84,15 +84,15 @@ export default function BettingControlButtons({
         title="Toggle delete mode (tap to remove chip, long press to clear zone)"
         style={{
           background: deleteMode
-            ? 'linear-gradient(135deg, #ff5555, #dd1111)'
-            : `linear-gradient(135deg, ${COLORS.gold}dd, #c4a042)`,
-          color: deleteMode ? '#fff' : '#0d0802',
+            ? 'linear-gradient(135deg, #ff7777, #ff3333)'
+            : `linear-gradient(135deg, ${COLORS.gold}, #e4c97b)`,
+          color: deleteMode ? '#fff' : '#000',
           boxShadow: deleteMode
             ? `0 8px 20px rgba(255,0,0,0.4), 0 0 25px #ff5555dd, inset 0 3px 0 rgba(255,255,255,0.4)`
             : `0 6px 16px rgba(0,0,0,0.5), 0 0 15px ${COLORS.gold}60, inset 0 3px 0 rgba(255,255,255,0.5)`,
           borderWidth: '3px',
           borderStyle: 'solid',
-          borderColor: deleteMode ? '#ff7777' : COLORS.gold,
+          borderColor: deleteMode ? '#ffbbbb' : COLORS.gold,
           cursor: 'pointer',
           fontWeight: 'bold',
         } as React.CSSProperties}

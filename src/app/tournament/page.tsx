@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useGame } from '@/context/GameContext';
 import { createClient } from '@/lib/supabase/client';
 import styles from './tournament.module.css';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function TournamentLobby() {
   const { user, userProfile, isLoading: isGameLoading } = useGame();
@@ -163,7 +164,7 @@ export default function TournamentLobby() {
               </span>
               <div style={{
                 display: 'flex',
-                background: 'rgba(15, 35, 24, 0.05)',
+                background: 'rgba(15, 35, 24, 0.15)',
                 padding: '6px',
                 borderRadius: '100px',
                 border: '1.5px solid rgba(201, 164, 76, 0.25)',
@@ -184,8 +185,8 @@ export default function TournamentLobby() {
                     transition: 'all 0.25s ease',
                     border: 'none',
                     cursor: 'pointer',
-                    background: wheelType === 'american' ? '#c9a44c' : 'transparent',
-                    color: wheelType === 'american' ? '#0f2318' : 'rgba(15, 35, 24, 0.4)',
+                    background: wheelType === 'american' ? '#c9a44c' : 'rgba(201, 164, 76, 0.08)',
+                    color: wheelType === 'american' ? '#0f2318' : '#8b6914',
                     boxShadow: wheelType === 'american' ? '0 4px 15px rgba(201, 164, 76, 0.4)' : 'none',
                   }}
                 >
@@ -204,8 +205,8 @@ export default function TournamentLobby() {
                     transition: 'all 0.25s ease',
                     border: 'none',
                     cursor: 'pointer',
-                    background: wheelType === 'european' ? '#c9a44c' : 'transparent',
-                    color: wheelType === 'european' ? '#0f2318' : 'rgba(15, 35, 24, 0.4)',
+                    background: wheelType === 'european' ? '#c9a44c' : 'rgba(201, 164, 76, 0.08)',
+                    color: wheelType === 'european' ? '#0f2318' : '#8b6914',
                     boxShadow: wheelType === 'european' ? '0 4px 15px rgba(201, 164, 76, 0.4)' : 'none',
                   }}
                 >
@@ -296,6 +297,49 @@ export default function TournamentLobby() {
           </div>
         </div>
       </main>
+
+      {/* ═══ TRANSITION OVERLAY — Loading Arena ═══ */}
+      <AnimatePresence>
+        {isCreating && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#0f2318]/95 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 20 }}
+              className="flex flex-col items-center"
+            >
+              <div className="w-24 h-24 mb-8 relative">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                  className="absolute inset-0 rounded-full border-4 border-dashed border-[#c9a44c]/30"
+                />
+                <motion.div
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                  className="absolute inset-2 rounded-full border-4 border-[#c9a44c] border-t-transparent shadow-[0_0_20px_rgba(201,164,76,0.4)]"
+                />
+              </div>
+              <motion.h2
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-3xl font-black text-white tracking-[0.3em] uppercase italic text-center px-6"
+                style={{ fontFamily: "'Georgia', serif", textShadow: '0 4px 10px rgba(0,0,0,0.5)' }}
+              >
+                Preparing Arena
+              </motion.h2>
+              <span className="text-[#c9a44c] text-[11px] uppercase tracking-[0.5em] mt-6 font-bold opacity-80">
+                Sharpening your chips...
+              </span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

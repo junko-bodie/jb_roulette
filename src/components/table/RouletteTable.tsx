@@ -152,7 +152,7 @@ const RouletteTable = memo(function RouletteTable({
         <div
           className="relative rounded-[14px] sm:rounded-[24px] md:rounded-[32px] border-b-4 border-black/40 flex flex-row items-center justify-start sm:justify-center gap-3 md:gap-4 lg:gap-6 mobile-felt-stack h-full md:h-full"
           style={{
-            background: 'radial-gradient(circle at 50% 50%, #0d2e23 0%, #051410 100%)',
+            background: 'radial-gradient(circle at 50% 50%, #143d30 0%, #081a15 100%)',
             padding: isMobile ? '0rem 0rem 0.1rem 0rem' : '0.02rem 1.8rem 1.2rem 0.8rem',
             zIndex: 2,
             boxShadow: `
@@ -266,8 +266,8 @@ const RouletteTable = memo(function RouletteTable({
                     padding: isMobile ? '5px 12px' : '10px 32px',
                     background: wheelType === 'american'
                       ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
-                      : 'rgba(255,255,255,0.05)',
-                    color: wheelType === 'american' ? '#000' : '#c2d7d580',
+                      : 'rgba(255,255,255,0.15)',
+                    color: wheelType === 'american' ? '#000' : 'rgba(245, 237, 213, 0.85)',
                     fontWeight: 900,
                     fontSize: isMobile ? '9px' : '14px',
                     letterSpacing: '0.05em',
@@ -288,8 +288,8 @@ const RouletteTable = memo(function RouletteTable({
                     padding: isMobile ? '5px 12px' : '10px 32px',
                     background: wheelType === 'european'
                       ? 'linear-gradient(180deg, #c9a44c 0%, #a68434 100%)'
-                      : 'rgba(255,255,255,0.05)',
-                    color: wheelType === 'european' ? '#000' : '#c2d7d580',
+                      : 'rgba(255,255,255,0.15)',
+                    color: wheelType === 'european' ? '#000' : 'rgba(245, 237, 213, 0.85)',
                     fontWeight: 900,
                     fontSize: isMobile ? '9px' : '14px',
                     letterSpacing: '0.05em',
@@ -543,7 +543,7 @@ const RouletteTable = memo(function RouletteTable({
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
                     color: (!canBet || !hasLastSpin) ? 'rgba(228, 224, 212, 0.25)' : '#e4e0d4',
-                    background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                    background: 'linear-gradient(180deg, #3d5443 0%, #2a2a2a 100%)',
                     borderWidth: isMobile ? '2.5px' : '3px',
                     borderStyle: 'solid',
                     borderColor: (!canBet || !hasLastSpin) ? 'rgba(201, 164, 76, 0.2)' : '#c9a44c',
@@ -567,7 +567,7 @@ const RouletteTable = memo(function RouletteTable({
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
                     color: (!canBet || !hasBets) ? 'rgba(228, 224, 212, 0.25)' : '#e4e0d4',
-                    background: 'linear-gradient(180deg, #2a3a2e 0%, #1a1a1a 100%)',
+                    background: 'linear-gradient(180deg, #3d5443 0%, #2a2a2a 100%)',
                     borderWidth: isMobile ? '2.5px' : '3px',
                     borderStyle: 'solid',
                     borderColor: (!canBet || !hasBets) ? 'rgba(201, 164, 76, 0.2)' : '#c9a44c',
@@ -591,7 +591,7 @@ const RouletteTable = memo(function RouletteTable({
                     letterSpacing: '0.12em',
                     textTransform: 'uppercase' as const,
                     color: (!canBet || !hasBets) ? 'rgba(228, 224, 212, 0.25)' : '#e4e0d4',
-                    background: 'linear-gradient(180deg, #2a3a2e 0%, #1a2a1e 100%)',
+                    background: 'linear-gradient(180deg, #3d5443 0%, #2a2a2a 100%)',
                     borderWidth: isMobile ? '2.5px' : '3px',
                     borderStyle: 'solid',
                     borderColor: (!canBet || !hasBets) ? 'rgba(201, 164, 76, 0.2)' : '#c9a44c',
@@ -620,8 +620,8 @@ const RouletteTable = memo(function RouletteTable({
                     background: isSpinning
                       ? 'linear-gradient(180deg, #0a1f1a 0%, #050f0d 100%)'
                       : spinEnabled
-                        ? 'linear-gradient(180deg, #1e5a3a 0%, #0f3d28 40%, #0a2e1e 100%)'
-                        : 'linear-gradient(180deg, #1a1a1a 0%, #111 100%)',
+                        ? 'linear-gradient(180deg, #2a7d51 0%, #1a5c3d 40%, #0f3d28 100%)'
+                        : 'linear-gradient(180deg, #333 0%, #222 100%)',
                     color: isSpinning ? '#c9a44c' : spinEnabled ? '#ffffff' : '#444',
                     fontFamily: "'Georgia', serif",
                     fontStyle: 'italic',
