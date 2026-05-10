@@ -47,7 +47,7 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
       is_bot: p.is_bot,
       position,
       total_points: finalPoints,
-      final_chips: p.current_chips,
+      final_chips: Math.max(0, p.current_chips),
       supabase_id: p.supabase_id
     };
   });
@@ -64,65 +64,83 @@ export async function awardTournamentRewards(tournamentId: string | ObjectId) {
     await db.collection('tournaments').bulkWrite(bulkUpdateOps);
   }
 
-  // Update Real Player Profile
-  const realPlayerResult = playersWithPoints.find((p: any) => !p.is_bot);
-  if (realPlayerResult) {
+  // Update Real Player Profiles and Season Rankings
+  const realPlayers = playersWithPoints.filter((p: any) => !p.is_bot);
+  
+  for (const playerResult of realPlayers) {
     const profile = await db.collection('user_profiles').findOne({ 
       $or: [
-        { _id: realPlayerResult.player_id },
-        { supabase_id: realPlayerResult.supabase_id }
+        { _id: playerResult.player_id },
+        { supabase_id: playerResult.supabase_id }
       ].filter(q => q._id || q.supabase_id)
     });
 
     if (profile) {
-      const isWinner = realPlayerResult.position === 1;
-      const newPoints = (profile.season?.points || 0) + realPlayerResult.total_points;
+      const isWinner = playerResult.position === 1;
+      const newPoints = (profile.season?.points || 0) + playerResult.total_points;
       const totalWins = (profile.stats?.tournaments_won || 0) + (isWinner ? 1 : 0);
       
-      // Use threshold from points.ts if available, else 5000
       const eliteThreshold = 5000; 
       const hasEliteStatus = newPoints >= eliteThreshold;
 
       const updateFields: any = {
         "stats.tournaments_played": (profile.stats?.tournaments_played || 0) + 1,
         "stats.tournaments_won": totalWins,
-        "stats.best_finish": Math.min(profile.stats?.best_finish || 6, realPlayerResult.position),
+        "stats.best_finish": Math.min(profile.stats?.best_finish || 6, playerResult.position),
         "season.points": newPoints,
         "season.year": currentYear,
         "updated_at": new Date()
       };
 
-      if (isWinner && realPlayerResult.final_chips > 0) updateFields["badges.champion"] = true;
+      if (isWinner && playerResult.final_chips > 0) updateFields["badges.champion"] = true;
       if (hasEliteStatus) updateFields["badges.elite_status"] = true;
 
       await db.collection('user_profiles').updateOne({ _id: profile._id }, { $set: updateFields });
 
-      // Update Season Rankings
+      // Update Season Rankings Ledger
+      const rankingDoc = await db.collection('season_rankings').findOne({ year: currentYear });
+      let currentRankings = rankingDoc?.rankings || [];
+      
+      // Remove existing entry for this player
+      currentRankings = currentRankings.filter((r: any) => r.player_id.toString() !== profile._id.toString());
+      
+      // Add updated entry
+      currentRankings.push({
+        player_id: profile._id,
+        username: profile.name,
+        avatar_url: profile.avatar_url || profile.avatar,
+        points: newPoints,
+        tournaments_played: (profile.stats?.tournaments_played || 0) + 1,
+        tournaments_won: totalWins,
+        updated_at: new Date()
+      });
+
+      // Sort and update ranks
+      currentRankings.sort((a: any, b: any) => b.points - a.points);
+      currentRankings.forEach((r: any, idx: number) => {
+        r.rank = idx + 1;
+      });
+
+      // Save back to season_rankings
       await db.collection('season_rankings').updateOne(
         { year: currentYear },
         { 
-          $set: { updated_at: new Date() },
-          $pull: { rankings: { username: profile.name } } as any
+          $set: { 
+            rankings: currentRankings,
+            updated_at: new Date() 
+          }
         },
         { upsert: true }
       );
 
-      await db.collection('season_rankings').updateOne(
-        { year: currentYear },
-        { 
-          $push: { 
-            rankings: {
-              player_id: profile._id,
-              username: profile.name,
-              avatar_url: profile.avatar_url,
-              points: newPoints,
-              tournaments_played: (profile.stats?.tournaments_played || 0) + 1,
-              tournaments_won: totalWins,
-              rank: 1
-            }
-          }
-        } as any
-      );
+      // Update player's individual season rank in their profile
+      const myUpdatedEntry = currentRankings.find((r: any) => r.player_id.toString() === profile._id.toString());
+      if (myUpdatedEntry) {
+        await db.collection('user_profiles').updateOne(
+          { _id: profile._id },
+          { $set: { "season.rank": myUpdatedEntry.rank } }
+        );
+      }
     }
   }
 

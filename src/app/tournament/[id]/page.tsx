@@ -299,7 +299,7 @@ export default function TournamentPage() {
     return scores.find(s => s.player_id.toString() === player?.player_id.toString())?.color || '#c9a44c';
   }, [scores, player]);
 
-  const myChips = player?.current_chips || 0;
+  const myChips = Math.max(0, player?.current_chips || 0);
 
   const lastSubmittedSpinRef = useRef<number>(-1);
 
@@ -683,8 +683,8 @@ export default function TournamentPage() {
           <div style={{ color: '#8b6914', fontWeight: 900, letterSpacing: '0.4em', fontSize: isMobile ? '11px' : '14px', textTransform: 'uppercase', marginBottom: isMobile ? '12px' : '20px', fontFamily: "'Arial Narrow', Arial, sans-serif" }}>
             Tournament Matchmaking
           </div>
-          <h2 className={styles.title} style={{ 
-            fontSize: isMobile ? '24px' : 'clamp(36px, 5vw, 52px)', 
+          <h2 className={styles.title} style={{
+            fontSize: isMobile ? '24px' : 'clamp(36px, 5vw, 52px)',
             marginBottom: isMobile ? '8px' : '16px',
             color: '#051410',
             fontWeight: 900,
@@ -948,12 +948,12 @@ export default function TournamentPage() {
                 Round {currentRound} of 5
               </span>
             )}
-            <span style={{ 
-              color: '#f5e9b8', 
-              fontSize: isMobile ? '9px' : '11px', 
-              fontWeight: 900, 
-              textTransform: 'uppercase', 
-              letterSpacing: '0.2em', 
+            <span style={{
+              color: '#f5e9b8',
+              fontSize: isMobile ? '9px' : '11px',
+              fontWeight: 900,
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
               marginTop: isMobile ? 0 : '4px',
               opacity: 0.9
             }}>
@@ -1335,7 +1335,7 @@ export default function TournamentPage() {
                 />
               </div>
             </div>
-            
+
             {/* Center Spacer for Floating Profile Card — Grid column 2 ensures geometric centering */}
             <div className="hidden md:block order-2" />
 

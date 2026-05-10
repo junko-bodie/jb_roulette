@@ -46,7 +46,12 @@ export default function RankingsPage() {
     fetchRankings();
   }, []);
 
-  const myIndex = rankings.findIndex(r => r.player_id === user?.id || r.username === (user?.email?.split('@')[0] || user?.user_metadata?.name));
+  // Use profile ID from context to match database records
+  const myIdStr = userProfile?.id?.toString();
+  const myIndex = rankings.findIndex(r => 
+    r.player_id?.toString() === myIdStr || 
+    r.username === userProfile?.name
+  );
   const myEntry = myIndex !== -1 ? rankings[myIndex] : null;
   const myRank = myIndex !== -1 ? myIndex + 1 : 0;
   const isQualified = myRank > 0 && myRank <= 50;
@@ -138,13 +143,12 @@ export default function RankingsPage() {
             <div className={styles.cornerBR} />
             
             <div className={styles.cardContent} style={{ padding: '0' }}>
-              {/* Ledger Header */}
               <div className="w-full bg-[#0f2318] text-[#f2e8d0] p-8 flex flex-col items-center">
                  <div className="flex items-center gap-4 mb-2">
                     <Trophy size={24} className="text-[#c9a44c]" />
                     <h2 className="text-2xl font-bold tracking-[0.2em] uppercase" style={{ fontVariant: 'small-caps' }}>The Elite Registry</h2>
                  </div>
-                 <span className="text-[10px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.4em]">Official 2024 Season Standings</span>
+                 <span className="text-[10px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.4em]">Official {year} Season Standings</span>
               </div>
 
               {/* Table */}
@@ -162,7 +166,8 @@ export default function RankingsPage() {
                   <tbody className="divide-y divide-[#c9a44c]/10 bg-white/40">
                     {rankings.map((entry, idx) => {
                       const displayRank = idx + 1;
-                      const isMe = entry.player_id === user?.id || entry.username === user?.email?.split('@')[0];
+                      const myIdStr = userProfile?.id?.toString();
+                      const isMe = entry.player_id?.toString() === myIdStr || entry.username === userProfile?.name;
                       const isTop3 = displayRank <= 3;
                       const isElite = displayRank <= 50;
 
@@ -263,8 +268,17 @@ export default function RankingsPage() {
               <div className="h-8 w-px bg-white/10" />
 
               <div className="flex flex-col items-end">
-                 <span className="text-[9px] font-bold text-[#c9a44c]/50 uppercase tracking-[0.3em] block mb-0.5">Next Tier In</span>
-                 <span className="text-lg font-bold text-gold tabular-nums">+850 pts</span>
+                 <span className="text-[9px] font-bold text-[#c9a44c]/50 uppercase tracking-[0.3em] block mb-0.5">
+                   {myRank > 50 ? 'Points to Elite' : myRank > 1 ? 'Next Rank In' : 'Status'}
+                 </span>
+                 <span className="text-lg font-bold text-gold tabular-nums">
+                   {myRank === 0 ? '---' : 
+                    myRank === 1 ? 'Championship' : 
+                    myRank > 50 ? 
+                    `+${Math.max(0, (rankings[49]?.points || 0) - myEntry.points + 1).toLocaleString()} pts` : 
+                    `+${Math.max(0, (rankings[myRank - 2]?.points || 0) - myEntry.points + 1).toLocaleString()} pts`
+                   }
+                 </span>
               </div>
            </div>
         </motion.div>

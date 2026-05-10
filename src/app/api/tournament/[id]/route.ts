@@ -371,7 +371,7 @@ export async function GET(
                   }
 
                   const payout = calculatePayouts(bets, result as any);
-                  const newChips = player.current_chips + payout.netResult;
+                  const newChips = Math.max(0, player.current_chips + payout.netResult);
                   chipUpdates[pidStr] = newChips;
 
                   playerResults.push({

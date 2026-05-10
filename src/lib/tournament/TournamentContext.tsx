@@ -247,7 +247,13 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       const data = await res.json();
       const serverPhase = data.calculated_phase as TournamentPhase;
 
-      setTournament(data);
+      setTournament({
+        ...data,
+        players: (data.players || []).map((p: any) => ({
+          ...p,
+          current_chips: Math.max(0, p.current_chips || 0)
+        }))
+      });
       setCurrentRound(data.current_round || 1);
       
       // ── Restore local bets from server if we just reloaded/reconnected ──
@@ -707,7 +713,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
           players: prev.players?.map(p => {
             const standing = data.standings?.find((s: any) => s.player_id.toString() === p.player_id.toString());
             return standing
-              ? { ...p, status: (standing.position === 1 ? 'completed' : 'eliminated') as any, final_position: standing.position, current_chips: standing.final_chips }
+              ? { ...p, status: (standing.position === 1 ? 'completed' : 'eliminated') as any, final_position: standing.position, current_chips: Math.max(0, standing.final_chips), points_earned: standing.total_points }
               : p;
           }),
         };

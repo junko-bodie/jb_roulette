@@ -63,7 +63,11 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
   }, [isWinner]);
 
   const standings = useMemo(() => {
-    return [...tournament.players].sort((a, b) => {
+    return [...tournament.players].map(p => ({
+      ...p,
+      current_chips: Math.max(0, p.current_chips || 0),
+      final_chips: Math.max(0, p.final_chips || 0)
+    })).sort((a, b) => {
       const posA = a.final_position || (a.status === 'active' ? 1 : 6);
       const posB = b.final_position || (b.status === 'active' ? 1 : 6);
       return posA - posB;
@@ -268,7 +272,7 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                   color: '#1a3024',
                   whiteSpace: 'nowrap',
                 }}>
-                  ${player.final_chips.toLocaleString()}
+                  ${Math.max(0, player.final_chips).toLocaleString()}
                 </span>
               </div>
             </motion.div>
@@ -425,9 +429,10 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                         <span style={{
                           fontFamily: "'Georgia', serif",
                           fontSize: '18px',
-                          color: 'rgba(26,42,26,0.3)',
-                          fontWeight: 700,
+                          color: '#1a5c35',
+                          fontWeight: 800,
                           marginLeft: '12px',
+                          opacity: 0.6
                         }}>
                           {rank}
                         </span>
@@ -471,7 +476,7 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                         color: chips < 0 ? '#b83232' : isBusted ? 'rgba(26,42,26,0.2)' : '#1a2e1a',
                         whiteSpace: 'nowrap',
                       }}>
-                        {chips < 0 ? `-$${Math.abs(chips).toLocaleString()}` : `$${chips.toLocaleString()}`}
+                        ${chips.toLocaleString()}
                       </span>
                     </div>
 
@@ -530,7 +535,8 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                 fontWeight: 700,
                 letterSpacing: '0.4em',
                 textTransform: 'uppercase',
-                color: 'rgba(26,92,53,0.5)',
+                color: '#1a5c35',
+                opacity: 0.8
               }}>
                 Points System
               </span>
@@ -561,7 +567,8 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                       fontWeight: 800,
                       letterSpacing: '0.18em',
                       textTransform: 'uppercase',
-                      color: 'rgba(26,42,26,0.5)',
+                      color: '#1a5c35',
+                      opacity: 0.7,
                       whiteSpace: 'nowrap',
                       textAlign: 'center',
                     }}>
