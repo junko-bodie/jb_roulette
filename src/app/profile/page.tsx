@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { useRef } from 'react';
 import { 
   User, 
   Trophy, 
@@ -12,7 +14,9 @@ import {
   Award, 
   ShieldCheck, 
   Target,
-  Crown
+  Crown,
+  Zap,
+  ChevronLeft
 } from 'lucide-react';
 import styles from '@/app/tournament/tournament.module.css';
 
@@ -28,6 +32,10 @@ export default function ProfilePage() {
   const [name, setName] = useState(userProfile?.name || '');
   const [selectedAvatar, setSelectedAvatar] = useState(userProfile?.avatar || 'default');
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const supabase = createClient();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -46,13 +54,73 @@ export default function ProfilePage() {
     if (!name.trim()) return;
     setIsSaving(true);
     try {
-      await setUserProfile({ name: name.trim(), avatar: selectedAvatar });
-      router.push('/lobby');
+      await setUserProfile({ ...userProfile, name: name.trim(), avatar: selectedAvatar });
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        router.push('/lobby');
+      }, 1500);
     } catch (error) {
       console.error('Failed to save profile', error);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleFileClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file.');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size exceeds 2MB limit.');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setSelectedAvatar(publicUrl);
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const generateRandomAvatar = () => {
+    const others = AVAILABLE_AVATARS.filter(a => a !== selectedAvatar);
+    const random = others[Math.floor(Math.random() * others.length)];
+    setSelectedAvatar(random);
+  };
+
+  const generateDynamicAvatar = () => {
+    const styles = ['avataaars', 'bottts', 'pixel-art', 'lorelei', 'notionists'];
+    const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+    const seed = Math.random().toString(36).substring(7);
+    const url = `https://api.dicebear.com/7.x/${randomStyle}/svg?seed=${seed}`;
+    setSelectedAvatar(url);
   };
 
   if (isLoading || !user) {
@@ -69,14 +137,21 @@ export default function ProfilePage() {
     <div className={styles.page} style={{ height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <header className={styles.header}>
-        <div className={styles.logoGroup}>
-          <span className={styles.logoText}>JUNKO BODIE</span>
-          <span className={styles.logoSeparator}>|</span>
-          <span className={styles.logoSub}>Member Registry</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button 
+            onClick={() => router.push('/lobby')}
+            className={styles.backBtn}
+            title="Back to Lobby"
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+          <div className={styles.logoGroup}>
+            <span className={styles.logoText}>JUNKO BODIE</span>
+            <span className={styles.logoSeparator}>|</span>
+            <span className={styles.logoSub}>Member Registry</span>
+          </div>
         </div>
-        <button className={styles.signOutBtn} onClick={() => router.push('/lobby')}>
-          Return to Lobby
-        </button>
+        <div /> {/* Spacer for flex-between */}
       </header>
 
       <main className={styles.main} style={{ padding: '0vh 20px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -115,10 +190,26 @@ export default function ProfilePage() {
                     ) : (
                       <AvatarIcon type={selectedAvatar} size={72} color="#0f2318" />
                     )}
+                    {isUploading && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="w-8 h-8 border-4 border-[#c9a44c] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
                   </div>
-                  <div className="absolute bottom-1 right-1 bg-[#0f2318] p-2.5 rounded-full border-2 border-[#c9a44c] text-[#c9a44c]">
+                  <button 
+                    onClick={handleFileClick}
+                    disabled={isUploading}
+                    className="absolute bottom-1 right-1 bg-[#0f2318] p-2.5 rounded-full border-2 border-[#c9a44c] text-[#c9a44c] hover:bg-[#c9a44c] hover:text-[#0f2318] transition-all cursor-pointer shadow-lg active:scale-95"
+                  >
                     <Camera size={16} />
-                  </div>
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleFileUpload} 
+                    accept="image/*" 
+                    className="hidden" 
+                  />
                 </div>
 
                 <div className="w-full space-y-2">
@@ -180,6 +271,20 @@ export default function ProfilePage() {
                         <AvatarIcon type={avatar} size={20} color="currentColor" />
                       </button>
                     ))}
+                    <button
+                      onClick={generateRandomAvatar}
+                      className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-white/60 text-[#0f2318]/30 hover:bg-[#c9a44c]/20 hover:text-[#0f2318] transition-all border border-dashed border-[#c9a44c]/40"
+                      title="Generate Random Icon"
+                    >
+                      <Zap size={20} />
+                    </button>
+                    <button
+                      onClick={generateDynamicAvatar}
+                      className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center bg-white/60 text-[#0f2318]/30 hover:bg-[#c9a44c]/20 hover:text-[#0f2318] transition-all border border-dashed border-[#c9a44c]/40"
+                      title="Create Unique Avatar"
+                    >
+                      <User size={20} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -191,9 +296,9 @@ export default function ProfilePage() {
                  className={styles.enterButton}
                  style={{ maxWidth: '480px', width: '100%', padding: '20px 48px', fontSize: '16px' }}
                  onClick={handleSave}
-                 disabled={isSaving || !name.trim()}
+                 disabled={isSaving || isUploading || !name.trim()}
                >
-                 {isSaving ? 'Verifying Identity...' : 'Authorize & Update Registry'}
+                 {isSaving ? 'Verifying Identity...' : showSuccess ? 'Identity Verified ✓' : 'Authorize & Update Registry'}
                </button>
             </div>
           </div>

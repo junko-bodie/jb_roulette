@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import SettingsModal from '@/components/ui/SettingsModal';
 import dynamic from 'next/dynamic';
 const WelcomeVideoModal = dynamic(() => import('@/components/ui/WelcomeVideoModal'), { ssr: false, loading: () => null });
-import { User, Settings, BarChart2, LogOut, Play, Trophy } from 'lucide-react';
+import { User, Settings, BarChart2, LogOut, Play, Trophy, ChevronLeft } from 'lucide-react';
 
 export default function Home() {
   const { user, isLoading, userProfile, balance } = useGame();
@@ -18,6 +18,7 @@ export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState<string | null>(null);
   const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
+  const [videoDestination, setVideoDestination] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function Home() {
     const updateMobile = () => setIsMobile(window.innerWidth <= 768);
     updateMobile();
     window.addEventListener('resize', updateMobile);
+    
     return () => window.removeEventListener('resize', updateMobile);
   }, []);
 
@@ -173,6 +175,7 @@ export default function Home() {
                 if (hidden) {
                   router.push('/tournament');
                 } else {
+                  setVideoDestination('/tournament');
                   setIsWelcomeVideoOpen(true);
                 }
               }}
@@ -257,7 +260,10 @@ export default function Home() {
         isOpen={isWelcomeVideoOpen}
         onClose={() => {
           setIsWelcomeVideoOpen(false);
-          router.push('/tournament');
+          if (videoDestination) {
+            router.push(videoDestination);
+            setVideoDestination(null);
+          }
         }}
       />
     </div>

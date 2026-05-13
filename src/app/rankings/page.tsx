@@ -68,14 +68,21 @@ export default function RankingsPage() {
     <div className={styles.page}>
       {/* Header */}
       <header className={styles.header}>
-        <div className={styles.logoGroup}>
-          <span className={styles.logoText}>JUNKO BODIE</span>
-          <span className={styles.logoSeparator}>|</span>
-          <span className={styles.logoSub}>Elite Registry {year}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button 
+            onClick={() => router.push('/lobby')}
+            className={styles.backBtn}
+            title="Back to Lobby"
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+          <div className={styles.logoGroup}>
+            <span className={styles.logoText}>JUNKO BODIE</span>
+            <span className={styles.logoSeparator}>|</span>
+            <span className={styles.logoSub}>Elite Registry {year}</span>
+          </div>
         </div>
-        <button className={styles.signOutBtn} onClick={() => router.push('/lobby')}>
-          Return to Lobby
-        </button>
+        <div /> {/* Spacer for flex-between */}
       </header>
 
       <main className={styles.main}>

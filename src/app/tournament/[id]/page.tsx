@@ -283,7 +283,7 @@ export default function TournamentPage() {
       setShowResult(true);
       const timer = setTimeout(() => {
         handleDismissResult();
-      }, 3500);
+      }, 4500); // Extended by 1s as per user request
       return () => clearTimeout(timer);
     } else if (phase === "betting") {
       setShowResult(false);

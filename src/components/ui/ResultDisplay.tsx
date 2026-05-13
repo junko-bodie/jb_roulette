@@ -47,10 +47,10 @@ function AnimatedCounter({ value, duration = 1200 }: { value: number; duration?:
 
 export default function ResultDisplay({ result, payout, visible, onDismiss, tournamentMode }: ResultDisplayProps) {
   useEffect(() => {
-    if (visible && result) {
-      // Auto-dismiss after 3 seconds for both modes as per user request
-      const duration = 3000;
-      const timer = setTimeout(onDismiss, duration);
+    if (visible && result && !tournamentMode) {
+      // Auto-dismiss after 3 seconds for regular mode
+      // Tournament mode is controlled by the parent
+      const timer = setTimeout(onDismiss, 3000);
       return () => clearTimeout(timer);
     }
   }, [visible, result, onDismiss, tournamentMode]);
@@ -137,15 +137,17 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
               </motion.div>
             )}
 
-            {/* Tap to continue indicator (subtle) */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.3 }}
-              transition={{ delay: 2, duration: 1 }}
-              className="mt-20 text-[11px] text-white/80 font-medium uppercase tracking-[0.3em]"
-            >
-              Tap to continue
-            </motion.div>
+            {/* Tap to continue indicator (subtle) - Only for regular mode */}
+            {!tournamentMode && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.3 }}
+                transition={{ delay: 2, duration: 1 }}
+                className="mt-20 text-[11px] text-white/80 font-medium uppercase tracking-[0.3em]"
+              >
+                Tap to continue
+              </motion.div>
+            )}
           </motion.div>
         </motion.div>
       )}

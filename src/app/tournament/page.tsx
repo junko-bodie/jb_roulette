@@ -5,6 +5,7 @@ import { useGame } from '@/context/GameContext';
 import { createClient } from '@/lib/supabase/client';
 import styles from './tournament.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft } from 'lucide-react';
 
 export default function TournamentLobby() {
   const { user, userProfile, isLoading: isGameLoading } = useGame();
@@ -22,7 +23,7 @@ export default function TournamentLobby() {
   const handleStartTournament = async () => {
     setIsCreating(true);
     try {
-      const response = await fetch('/api/tournament/create', { 
+      const response = await fetch('/api/tournament/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ wheel_type: wheelType })
@@ -59,10 +60,19 @@ export default function TournamentLobby() {
     <div className={styles.page}>
       {/* Thin dark header */}
       <header className={styles.header}>
-        <div className={styles.logoGroup}>
-          <span className={styles.logoText}>JUNKO BODIE ROULETTE</span>
-          <span className={styles.logoSeparator}>|</span>
-          <span className={styles.logoSub}>PRO TOURNAMENT SERIES</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button 
+            onClick={() => router.push('/lobby')}
+            className={styles.backBtn}
+            title="Back to Lobby"
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+          <div className={styles.logoGroup}>
+            <span className={styles.logoText}>JUNKO BODIE ROULETTE</span>
+            <span className={styles.logoSeparator}>|</span>
+            <span className={styles.logoSub}>PRO TOURNAMENT SERIES</span>
+          </div>
         </div>
         <button className={styles.signOutBtn} onClick={handleSignOut}>SIGN OUT</button>
       </header>
@@ -172,7 +182,7 @@ export default function TournamentLobby() {
                 boxSizing: 'border-box',
                 boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
               }}>
-                <button 
+                <button
                   onClick={() => setWheelType('american')}
                   style={{
                     flex: 1,
@@ -192,7 +202,7 @@ export default function TournamentLobby() {
                 >
                   American (00)
                 </button>
-                <button 
+                <button
                   onClick={() => setWheelType('european')}
                   style={{
                     flex: 1,
@@ -216,13 +226,15 @@ export default function TournamentLobby() {
             </div>
 
             {/* CTA Button */}
-            <button
+            <motion.button
               className={styles.enterButton}
               onClick={handleStartTournament}
               disabled={isCreating}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               {isCreating ? 'PREPARING ARENA...' : 'ENTER TOURNAMENT'}
-            </button>
+            </motion.button>
 
             {/* Stats row */}
             <div className={styles.statsRow}>
