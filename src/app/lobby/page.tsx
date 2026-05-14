@@ -31,7 +31,7 @@ export default function Home() {
     const updateMobile = () => setIsMobile(window.innerWidth <= 768);
     updateMobile();
     window.addEventListener('resize', updateMobile);
-    
+
     return () => window.removeEventListener('resize', updateMobile);
   }, []);
 
@@ -168,7 +168,7 @@ export default function Home() {
             </motion.div>
 
             {/* Tournament Mode */}
-            <motion.div
+            {/* <motion.div
               className={styles.playCard}
               onClick={() => {
                 const hidden = localStorage.getItem('hideWelcomeVideo');
@@ -192,7 +192,7 @@ export default function Home() {
                   Test Yourself Against Other Top Players In A Live Tournament Experience.
                 </div>
               </div>
-            </motion.div>
+            </motion.div> */}
           </div>
 
           <motion.div
