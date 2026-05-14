@@ -25,6 +25,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  max-height: 90vh;
 }
 
 .cardProfile {
@@ -39,7 +40,7 @@
 
 /* ── Header ── */
 .header {
-  padding: 24px 32px;
+  padding: 18px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(255, 255, 255, 0.02);
   display: flex;
@@ -85,10 +86,11 @@
 
 /* ── Content ── */
 .content {
-  padding: 32px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 16px;
+  overflow-y: auto;
 }
 
 /* ── Form Elements ── */
@@ -169,7 +171,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 12px 16px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 20px;
@@ -230,7 +232,7 @@
 
 .segmentBtn {
   flex: 1;
-  padding: 8px 4px;
+  padding: 6px 4px;
   border-radius: 8px;
   background: transparent;
   border: none;
@@ -261,7 +263,7 @@
 
 /* ── Footer ── */
 .footer {
-  padding: 24px 32px;
+  padding: 16px 24px;
   background: rgba(0, 0, 0, 0.4);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;

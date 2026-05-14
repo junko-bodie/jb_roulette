@@ -68,7 +68,7 @@ export function generateServerBotBets(bot: TournamentPlayer, spinNumber: number 
     if (zoneAmount > 0) {
       // Reveal timing: Spread bets randomly across the 30s window (1s to 28s)
       // This ensures bots don't all bet at the same time and stay within the phase.
-      const revealAt = 1000 + Math.floor(Math.random() * 27000);
+      const revealAt = 1000 + Math.floor(Math.random() * 42000);
 
       bets.push({
         player_id: bot.player_id,

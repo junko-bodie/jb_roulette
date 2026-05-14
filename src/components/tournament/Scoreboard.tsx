@@ -4,6 +4,7 @@ import { useTournament } from '@/lib/tournament/useTournament';
 import { useGame } from '@/context/GameContext';
 import { ChevronUp, ChevronDown, User, Skull, Trophy } from 'lucide-react';
 import { COLORS, FONTS } from '@/styles/theme';
+import Avatar from '@/components/ui/Avatar';
 
 const RankMovement = memo(({ direction }: { direction: 'up' | 'down' }) => (
   <motion.div
@@ -173,6 +174,18 @@ export default function Scoreboard() {
                   </div>
 
 
+
+                  {/* Avatar */}
+                  <div className="flex-shrink-0 relative">
+                    <Avatar 
+                      type={(s as any).avatar_url || 'default'} 
+                      size="sm" 
+                      className={`border ${isMe ? 'border-amber-400/50' : 'border-white/10'}`} 
+                    />
+                    {isMe && (
+                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full border border-[#0d2a20]" />
+                    )}
+                  </div>
 
                   {/* Name + meta */}
                   <div className="flex flex-col min-w-0 flex-1">

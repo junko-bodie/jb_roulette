@@ -183,7 +183,10 @@ export default function TournamentPage() {
     addEvent,
     events,
     wheelType,
-    updateWheelType
+    updateWheelType,
+    lastSpinBets,
+    setLastSpinBets,
+    showResult
   } = useTournament();
   const { userProfile } = useGame();
 
@@ -201,7 +204,6 @@ export default function TournamentPage() {
   const handleClearFundError = useCallback(() => setFundError(null), []);
 
   const handleDismissResult = useCallback(() => {
-    setShowResult(false);
     dismissResult();
   }, [dismissResult]);
 
@@ -227,7 +229,6 @@ export default function TournamentPage() {
 
   const [selectedChip, setSelectedChip] = useState(10);
   const [deleteMode, setDeleteMode] = useState(false);
-  const [showResult, setShowResult] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
   const [tournamentWheelSize, setTournamentWheelSize] = useState(420);
   const [isMobile, setIsMobile] = useState(false);
@@ -248,24 +249,24 @@ export default function TournamentPage() {
 
       if (isLandscapeMobile) {
         const SIDEBAR_W = 108;
-        const FOOTER_H = 60;
-        const HEADER_H = 38;
+        const FOOTER_H = 50; // Reduced from 60
+        const HEADER_H = 34; // Reduced from 38
         const availableH = window.innerHeight - HEADER_H - FOOTER_H;
         const tableColW = window.innerWidth - SIDEBAR_W;
 
         setTournamentWheelSize(Math.min(
-          availableH * 0.90,
-          tableColW * 0.32,
-          260
+          availableH * 0.88,
+          tableColW * 0.30,
+          240
         ));
       } else if (window.innerHeight < 600) {
-        setTournamentWheelSize(320);
+        setTournamentWheelSize(280);
       } else if (window.innerHeight < 750) {
-        setTournamentWheelSize(400);
+        setTournamentWheelSize(360);
       } else if (window.innerWidth < 1300 || window.innerHeight < 900) {
-        setTournamentWheelSize(480);
+        setTournamentWheelSize(440);
       } else {
-        setTournamentWheelSize(550);
+        setTournamentWheelSize(500);
       }
     };
 
@@ -278,17 +279,7 @@ export default function TournamentPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (phase === "result") {
-      setShowResult(true);
-      const timer = setTimeout(() => {
-        handleDismissResult();
-      }, 4500); // Extended by 1s as per user request
-      return () => clearTimeout(timer);
-    } else if (phase === "betting") {
-      setShowResult(false);
-    }
-  }, [phase]);
+
 
   const player = useMemo(() => {
     if (!userProfile?.id || !tournament) return tournament?.players?.find(p => !p.is_bot);
@@ -427,7 +418,6 @@ export default function TournamentPage() {
   }, [phase, allSpinBets, bets, botBets, tournament?.players, userProfile?.id, userProfile.name, scores, myColor]);
 
   const [betPlacementHistory, setBetPlacementHistory] = useState<{ betId: string; amount: number }[]>([]);
-  const [lastSpinBets, setLastSpinBets] = useState<Map<string, PlacedBet>>(new Map());
 
   const lastTotal = useMemo(() =>
     Array.from(lastSpinBets.values()).reduce((sum, b) => sum + b.amount, 0),
@@ -532,8 +522,20 @@ export default function TournamentPage() {
       prev.map(entry => ({ ...entry, amount: entry.amount * 2 }))
     );
     soundEngine?.play2XClick();
+
+    // Push events to live feed for the doubled amounts
+    bets.forEach((bet, id) => {
+      addEvent({
+        username: player?.username || userProfile.name,
+        amount: bet.amount, // Broadcasting the addition
+        betId: id,
+        betZone: id,
+        color: myColor
+      });
+    });
+
     return true;
-  }, [phase, bets, myChips, totalBet, setBets]);
+  }, [phase, bets, myChips, totalBet, setBets, addEvent, player?.username, userProfile.name, myColor]);
 
   const handleRebet = useCallback(() => {
     if (phase !== 'betting' || lastSpinBets.size === 0) return;
@@ -545,12 +547,24 @@ export default function TournamentPage() {
     ]));
     setBets(clonedBets);
     soundEngine?.playRebetSound();
+    
+    // Push events to live feed for each rebet zone
+    clonedBets.forEach((bet, id) => {
+      addEvent({
+        username: player?.username || userProfile.name,
+        amount: bet.amount,
+        betId: id,
+        betZone: id,
+        color: myColor
+      });
+    });
+
     const newHistory: { betId: string; amount: number }[] = [];
     clonedBets.forEach((bet, id) => {
       bet.chips.forEach(c => newHistory.push({ betId: id, amount: c }));
     });
     setBetPlacementHistory(newHistory);
-  }, [phase, lastSpinBets, myChips, setBets]);
+  }, [phase, lastSpinBets, myChips, setBets, addEvent, player?.username, userProfile.name, myColor]);
 
   const handlePopLastChip = useCallback((betId: string) => {
     setBets(prev => {
@@ -632,16 +646,16 @@ export default function TournamentPage() {
         player_id: player.player_id
       };
       return (
-        <WinnerScreen 
-          tournament={tournament} 
-          player={summaryPlayer as any} 
-          isCompleted={tournament.status === 'completed'} 
+        <WinnerScreen
+          tournament={tournament}
+          player={summaryPlayer as any}
+          isCompleted={tournament.status === 'completed'}
         />
       );
     }
   }
 
-  const displayTime = Math.min(30, timeRemaining);
+  const displayTime = Math.min(45, timeRemaining);
   const isUrgent = phase === 'betting' && displayTime > 0 && displayTime <= 5;
 
   // ════════════ MATCHMAKING LOBBY OVERLAY ════════════
@@ -1346,7 +1360,48 @@ export default function TournamentPage() {
             {/* Center Spacer for Floating Profile Card — Grid column 2 ensures geometric centering */}
             <div className="hidden md:block order-2" />
 
+            {/* Session Stats (Last Bet, Last Win) */}
             <div className="flex items-center gap-1 order-3 justify-self-end tournament-controls-mobile" style={{ marginRight: '60px' }}>
+              {!isMobile && lastPlayerPayout && (
+                <div className="mr-4 flex items-center gap-2">
+                   <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '4px 10px',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    minWidth: '70px',
+                  }}>
+                    <span style={{ fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: 800 }}>Last Bet</span>
+                    <span style={{ fontSize: '16px', fontWeight: 900, color: '#fff' }}>${lastPlayerPayout.totalWagered.toLocaleString()}</span>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '4px 10px',
+                    background: lastPlayerPayout.netResult > 0 ? 'rgba(74,222,128,0.1)' : lastPlayerPayout.netResult < 0 ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.05)',
+                    border: '1px solid',
+                    borderColor: lastPlayerPayout.netResult > 0 ? 'rgba(74,222,128,0.3)' : lastPlayerPayout.netResult < 0 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    minWidth: '70px',
+                  }}>
+                    <span style={{ fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', color: lastPlayerPayout.netResult > 0 ? '#4ade80' : lastPlayerPayout.netResult < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)', fontWeight: 800 }}>
+                      {lastPlayerPayout.netResult >= 0 ? 'Last Win' : 'Last Loss'}
+                    </span>
+                    <span style={{ 
+                      fontSize: '16px', 
+                      fontWeight: 900, 
+                      color: lastPlayerPayout.netResult > 0 ? '#4ade80' : lastPlayerPayout.netResult < 0 ? '#ef4444' : '#fff' 
+                    }}>
+                      {lastPlayerPayout.netResult < 0 ? '-' : ''}${Math.abs(lastPlayerPayout.netResult).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1516,20 +1571,17 @@ export default function TournamentPage() {
             soundEngine?.playClick();
             // setIsProfileOpen(true);
           }}
-          className="flex absolute bottom-[18px] left-1/2 -translate-x-1/2 z-[40] items-center gap-3 px-5 py-2 rounded-full border-2 border-[#c9a44c]/40 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.7),0_0_20px_rgba(201,164,76,0.2)] hover:border-[#c9a44c] transition-all cursor-pointer group active:scale-95"
+          className="flex absolute bottom-[14px] left-1/2 -translate-x-1/2 z-[40] items-center gap-3 px-5 py-2 rounded-full border-2 border-[#c9a44c]/40 backdrop-blur-md shadow-[0_-10px_40px_rgba(0,0,0,0.7),0_0_20px_rgba(201,164,76,0.2)] hover:border-[#c9a44c] transition-all cursor-pointer group active:scale-95"
           style={{
             background: 'linear-gradient(135deg, #5c3b27 0%, #3d271a 100%)',
             boxShadow: '0 -8px 30px rgba(0,0,0,0.8), inset 0 0 15px rgba(201, 164, 76, 0.1)',
           }}
         >
           <div className="relative">
-            <div className="w-12 h-12 rounded-full border-2 border-[#c9a44c]/80 overflow-hidden bg-black/80 shadow-2xl group-hover:border-[#c9a44c] transition-all group-hover:scale-110">
-              <img
-                src={userProfile?.avatar || '/avatars/default.png'}
-                alt="avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <Avatar 
+              type={userProfile?.avatar || 'default'} 
+              className="w-12 h-12 border-2 border-[#c9a44c]/80 shadow-2xl group-hover:border-[#c9a44c] transition-all group-hover:scale-110"
+            />
             <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#160e07] rounded-full shadow-lg" />
           </div>
           <div className="flex flex-col">

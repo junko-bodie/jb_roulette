@@ -47,10 +47,10 @@ function AnimatedCounter({ value, duration = 1200 }: { value: number; duration?:
 
 export default function ResultDisplay({ result, payout, visible, onDismiss, tournamentMode }: ResultDisplayProps) {
   useEffect(() => {
-    if (visible && result && !tournamentMode) {
-      // Auto-dismiss after 3 seconds for regular mode
-      // Tournament mode is controlled by the parent
-      const timer = setTimeout(onDismiss, 3000);
+    if (visible && result) {
+      // Auto-dismiss: 3.5s for tournament mode, 3s for regular mode
+      const duration = tournamentMode ? 3500 : 3000;
+      const timer = setTimeout(onDismiss, duration);
       return () => clearTimeout(timer);
     }
   }, [visible, result, onDismiss, tournamentMode]);
@@ -107,7 +107,7 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
             </motion.div>
 
             {/* 2. NET WIN ($ NET WIN) */}
-            {payout && !tournamentMode && (
+            {payout && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -115,17 +115,17 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
                 className="flex flex-col items-center"
               >
                 <span className="text-[14px] text-white/70 font-bold uppercase tracking-[0.4em] mb-4">
-                  Net Win
+                  {payout.netResult >= 0 ? 'Net Win' : 'Net Loss'}
                 </span>
                 <motion.span
                   className="text-[84px] font-black tabular-nums flex items-baseline"
                   style={{
                     color:
                       payout.netResult > 0
-                        ? '#f59e0b'
+                        ? '#4ade80' // Bright Green for win
                         : payout.netResult === 0
                           ? 'rgba(255,255,255,0.7)'
-                          : '#ef4444',
+                          : '#ef4444', // Red for loss
                     fontFamily: "'Georgia', serif",
                   }}
                 >

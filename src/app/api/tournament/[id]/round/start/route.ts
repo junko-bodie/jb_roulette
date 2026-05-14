@@ -3,7 +3,7 @@ import { getDb } from '@/lib/db/mongodb';
 import { ObjectId } from 'mongodb';
 import { generateAllRoundBotBets } from '@/lib/tournament/serverBotBetting';
 
-const BETTING_DURATION = 30000; // ms
+const BETTING_DURATION = 45000; // ms
 
 export async function POST(
   request: NextRequest,

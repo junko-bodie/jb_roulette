@@ -11,7 +11,7 @@ import { TOURNAMENT_POINTS } from '@/lib/tournament/points';
 // Phase timing constants (ms)
 const SPINNING_DURATION = 5000;  // 5s wheel animation
 const RESULT_DURATION   = 2000;  // 2s result screen
-const BETTING_DURATION  = 30000; // 30s betting window
+const BETTING_DURATION = 45000; // 45s betting window
 const ELIMINATION_DURATION = 6000; // 6s elimination show
 const BOT_AVATARS = ['default', 'crown', 'diamond', 'star', 'spade', 'heart', 'club', 'dice', 'chip', 'trophy', 'bolt'];
 // Full cycle per spin: SPINNING + RESULT + BETTING = 50s
@@ -279,7 +279,7 @@ export async function GET(
               eliminated_player_id: null,
               created_at: roundNow,
               last_spin_completed_at: roundNow,
-              betting_ends_at: new Date(roundNow.getTime() + BETTING_DURATION),
+              betting_ends_at: new Date(now + 45000),
               completed_at: null,
               bot_bets: allBotBets,
             };

@@ -20,6 +20,7 @@ import {
   Globe
 } from 'lucide-react';
 import { COLORS, FONTS } from '@/styles/theme';
+import Avatar from '@/components/ui/Avatar';
 
 interface WinnerScreenProps {
   tournament: any;
@@ -71,9 +72,9 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
     })).sort((a, b) => {
       const posA = a.final_position || (a.status === 'active' ? 0 : 7);
       const posB = b.final_position || (b.status === 'active' ? 0 : 7);
-      
+
       if (posA !== posB) return posA - posB;
-      
+
       // Tie-break for active players by chips
       return b.current_chips - a.current_chips;
     });
@@ -132,7 +133,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
           href="/lobby"
           className="group flex items-center gap-2 transition-all active:scale-[0.97]"
           style={{
-            padding: '14px 32px',
+            padding: '10px 24px',
             borderRadius: '14px',
             background: '#1a5c35',
             boxShadow: '0 4px 0 #0f3d22, 0 8px 20px rgba(26,92,53,0.3)',
@@ -156,113 +157,113 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
       </motion.div>
 
       {/* Main Container */}
-      <div className="relative w-full flex flex-col items-center py-8 px-6" style={{ zIndex: 1 }}>
-        <div className="w-full max-w-5xl flex flex-col items-center gap-6">
+      <div className="relative w-full flex flex-col items-center py-4 px-6" style={{ zIndex: 1 }}>
+        <div className="w-full max-w-5xl flex flex-col items-center gap-5">
 
           {/* ── HEADER SECTION ── */}
-            {/* Main Heading */}
-            <motion.h1
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'spring', stiffness: 100 }}
-              style={{
-                fontFamily: "'Georgia', serif",
-                fontSize: 'clamp(42px, 7vw, 64px)',
-                fontWeight: 700,
-                fontStyle: 'italic',
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-                marginBottom: '4px',
-                color: '#0d2a20',
-                textShadow: '0 1px 0 rgba(201,168,76,0.1)',
-                textAlign: 'center'
-              }}
-            >
-              {isWinner ? 'Champion!' : isCompleted ? 'Tournament Results' : 'Personal Summary'}
-            </motion.h1>
+          {/* Main Heading */}
+          <motion.h1
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 100 }}
+            style={{
+              fontFamily: "'Georgia', serif",
+              fontSize: 'clamp(32px, 5vw, 48px)',
+              fontWeight: 700,
+              fontStyle: 'italic',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              marginBottom: '4px',
+              color: '#0d2a20',
+              textShadow: '0 1px 0 rgba(201,168,76,0.1)',
+              textAlign: 'center'
+            }}
+          >
+            {isWinner ? 'Champion!' : isCompleted ? 'Tournament Results' : 'Personal Summary'}
+          </motion.h1>
 
-            {!isCompleted && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 mb-2"
-              >
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-700">
-                  Tournament Still In Progress
-                </span>
-              </motion.div>
-            )}
-
-            {/* Hero emblem */}
+          {!isCompleted && (
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="relative flex flex-col items-center mb-4 mt-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 mb-2"
+            >
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-700">
+                Tournament Still In Progress
+              </span>
+            </motion.div>
+          )}
+
+          {/* Hero emblem */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="relative flex flex-col items-center mb-4 mt-1"
+          >
+            <div
+              className="relative z-20"
+              style={{ width: 'auto', minWidth: '320px', maxWidth: '480px' }}
             >
               <div
-                className="relative z-20"
-                style={{ width: 'auto', minWidth: '320px', maxWidth: '480px' }}
+                className="relative flex flex-col items-center justify-center"
+                style={{
+                  paddingTop: '12px',
+                  paddingBottom: '10px',
+                  paddingLeft: '40px',
+                  paddingRight: '40px',
+                  background: 'linear-gradient(135deg, #1a4d28 0%, #1a5c35 50%, #1a4d28 100%)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  borderTop: '2px solid rgba(201,168,76,0.5)',
+                  borderBottom: '2px solid rgba(201,168,76,0.5)',
+                  whiteSpace: 'nowrap',
+                }}
               >
-                <div
-                  className="relative flex flex-col items-center justify-center"
-                  style={{
-                    paddingTop: '16px',
-                    paddingBottom: '14px',
-                    paddingLeft: '50px',
-                    paddingRight: '50px',
-                    background: 'linear-gradient(135deg, #1a4d28 0%, #1a5c35 50%, #1a4d28 100%)',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15)',
-                    borderTop: '2px solid rgba(201,168,76,0.5)',
-                    borderBottom: '2px solid rgba(201,168,76,0.5)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {/* Left ribbon tail */}
-                  <div className="absolute -left-4 top-1 bottom-1 w-4" style={{
-                    background: '#143d20',
-                    clipPath: 'polygon(100% 0, 100% 100%, 0 50%)',
-                  }} />
-                  {/* Right ribbon tail */}
-                  <div className="absolute -right-4 top-1 bottom-1 w-4" style={{
-                    background: '#143d20',
-                    clipPath: 'polygon(0 0, 0 100%, 100% 50%)',
-                  }} />
+                {/* Left ribbon tail */}
+                <div className="absolute -left-4 top-1 bottom-1 w-4" style={{
+                  background: '#143d20',
+                  clipPath: 'polygon(100% 0, 100% 100%, 0 50%)',
+                }} />
+                {/* Right ribbon tail */}
+                <div className="absolute -right-4 top-1 bottom-1 w-4" style={{
+                  background: '#143d20',
+                  clipPath: 'polygon(0 0, 0 100%, 100% 50%)',
+                }} />
 
-                  <span style={{
-                    fontFamily: "'Georgia', serif",
-                    fontSize: '26px',
-                    fontWeight: 800,
-                    color: '#f5e9b8',
-                    letterSpacing: '0.04em',
-                    lineHeight: 1.1,
-                    textTransform: 'uppercase',
-                  }}>
-                    {player.username}
-                  </span>
-                  <span style={{
-                    fontFamily: "'Helvetica Neue', sans-serif",
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    color: '#C9A84C',
-                    letterSpacing: '0.4em',
-                    textTransform: 'uppercase',
-                    marginTop: '4px',
-                  }}>
-                    {positionLabel(player.final_position)}
-                  </span>
-                </div>
+                <span style={{
+                  fontFamily: "'Georgia', serif",
+                  fontSize: '22px',
+                  fontWeight: 800,
+                  color: '#f5e9b8',
+                  letterSpacing: '0.04em',
+                  lineHeight: 1.1,
+                  textTransform: 'uppercase',
+                }}>
+                  {player.username}
+                </span>
+                <span style={{
+                  fontFamily: "'Helvetica Neue', sans-serif",
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  color: '#C9A84C',
+                  letterSpacing: '0.4em',
+                  textTransform: 'uppercase',
+                  marginTop: '4px',
+                }}>
+                  {positionLabel(player.final_position)}
+                </span>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
 
           {/* ── SUMMARY CARDS ── */}
-          <div className="grid grid-cols-3 gap-4 w-full">
+          <div className="grid grid-cols-3 gap-3 w-full">
             {/* Final Chips */}
             <motion.div
               initial={{ opacity: 0, x: -15 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex flex-col items-center gap-3 p-6"
+              className="flex flex-col items-center gap-1.5 p-3"
               style={{
                 background: 'rgba(255,255,255,0.92)',
                 border: '1px solid rgba(255,255,255,0.95)',
@@ -284,7 +285,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
                 <CircleDollarSign className="w-5 h-5 flex-shrink-0" style={{ color: '#B8960C' }} />
                 <span style={{
                   fontFamily: "'Georgia', serif",
-                  fontSize: '22px',
+                  fontSize: '20px',
                   fontWeight: 800,
                   color: '#1a3024',
                   whiteSpace: 'nowrap',
@@ -299,7 +300,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 }}
-              className="flex flex-col items-center gap-2 p-4"
+              className="flex flex-col items-center gap-1 p-3"
               style={{
                 background: 'rgba(255,255,255,0.92)',
                 border: '1px solid rgba(255,255,255,0.95)',
@@ -320,7 +321,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
               <div className="flex items-center gap-2">
                 <span style={{
                   fontFamily: "'Georgia', serif",
-                  fontSize: '32px',
+                  fontSize: '24px',
                   fontWeight: 700,
                   color: pointsEarned >= 0 ? '#1a5c35' : '#b83232',
                 }}>
@@ -338,7 +339,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
               initial={{ opacity: 0, x: 15 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-col items-center gap-3 p-6"
+              className="flex flex-col items-center gap-1.5 p-3"
               style={{
                 background: 'rgba(255,255,255,0.92)',
                 border: '1px solid rgba(255,255,255,0.95)',
@@ -360,7 +361,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
                 <Globe className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(26,42,26,0.35)' }} />
                 <span style={{
                   fontFamily: "'Georgia', serif",
-                  fontSize: '32px',
+                  fontSize: '24px',
                   fontWeight: 700,
                   color: '#1a3024',
                 }}>
@@ -387,7 +388,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
           >
             {/* Table Header */}
             <div
-              className="grid px-6 py-3"
+              className="grid px-6 py-1.5"
               style={{
                 gridTemplateColumns: '70px 1fr 140px 130px 100px',
                 borderBottom: '2px solid rgba(26,92,53,0.12)',
@@ -409,12 +410,12 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
 
             {/* Table Body */}
             <div className="flex flex-col">
-              {standings.slice(0, 8).map((s, idx) => {
+              {standings.slice(0, 6).map((s, idx) => {
                 const isMe = s.username === realPlayer?.username;
                 const chips = s.final_chips || s.current_chips || 0;
                 const isActive = s.status === 'active';
                 const rank = idx + 1;
-                
+
                 // For active players, calculate projected points
                 let points = s.points_earned;
                 if (isActive && (points === null || points === undefined)) {
@@ -423,13 +424,13 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
                   else if (rank === 3) points = 50;
                   else points = 0;
                 }
-                
+
                 const isBusted = chips <= 0;
 
                 return (
                   <div
                     key={s.player_id?.toString() ?? idx}
-                    className="grid items-center px-6 py-3.5 transition-colors"
+                    className="grid items-center px-6 py-1 transition-colors"
                     style={{
                       gridTemplateColumns: '70px 1fr 140px 130px 100px',
                       borderBottom: idx < Math.min(standings.length, 8) - 1 ? '1px solid rgba(26,42,26,0.06)' : 'none',
@@ -468,19 +469,11 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
 
                     {/* Player */}
                     <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className="flex items-center justify-center flex-shrink-0 rounded-full"
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          background: isMe ? '#1a5c35' : 'rgba(26,42,26,0.07)',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          color: isMe ? '#f5e9b8' : 'rgba(26,42,26,0.45)',
-                        }}
-                      >
-                        {s.username.substring(0, 2).toUpperCase()}
-                      </div>
+                      <Avatar
+                        type={s.avatar_url || 'default'}
+                        size="md"
+                        className={`flex-shrink-0 border-2 ${isMe ? 'border-[#1a5c35]/40 shadow-md' : 'border-black/5'}`}
+                      />
                       <span style={{
                         fontFamily: "'Georgia', serif",
                         fontSize: '16px',
@@ -552,18 +545,13 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
 
             {/* Exit CTA for non-winners */}
             {!isWinner && (
-              <div className="flex flex-col items-center gap-4 mt-8 pb-4">
-                 <Link
-                   href="/lobby"
-                   className="px-10 py-4 rounded-2xl bg-[#1a5c35] text-[#f5e9b8] font-bold uppercase tracking-widest text-[13px] shadow-xl hover:bg-[#144327] transition-all active:scale-95"
-                 >
-                   Return to Lobby
-                 </Link>
-                 {!isCompleted && (
-                   <span className="text-[10px] text-[#1a5c35]/60 font-bold uppercase tracking-widest">
-                     You can also stay and watch the finale
-                   </span>
-                 )}
+              <div className="flex flex-col items-center gap-2 mt-2 pb-2">
+                <Link
+                  href="/lobby"
+                  className="px-8 py-3 rounded-xl bg-[#1a5c35] text-[#f5e9b8] font-bold uppercase tracking-widest text-[12px] shadow-lg hover:bg-[#144327] transition-all active:scale-95"
+                >
+                  Return to Lobby
+                </Link>
               </div>
             )}
           </motion.div>
@@ -599,7 +587,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
               ].map((rule) => (
                 <div
                   key={rule.label}
-                  className="flex flex-col items-center justify-center gap-1 px-4 py-3"
+                  className="flex flex-col items-center justify-center gap-0.5 px-4 py-2"
                   style={{
                     background: rule.bg,
                     borderRadius: '18px',

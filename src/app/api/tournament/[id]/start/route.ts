@@ -115,7 +115,7 @@ export async function POST(
          eliminated_player_id: null,
          created_at: now,
          last_spin_completed_at: now,
-         betting_ends_at: new Date(now.getTime() + 30000), // Exactly 30 second betting window
+         betting_ends_at: new Date(now.getTime() + 45000), // Exactly 45 second betting window
          completed_at: null,
          bot_bets: allBotBets
        };

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, XCircle, Target, TrendingDown } from 'lucide-react';
+import { ShieldAlert, XCircle, Target, TrendingDown, Skull } from 'lucide-react';
 import { COLORS, FONTS } from '@/styles/theme';
 
 interface EliminationScreenProps {
@@ -11,9 +11,12 @@ interface EliminationScreenProps {
     is_bot: boolean;
     current_chips: number;
     final_position: number;
+    avatar_url?: string;
   } | null;
   visible: boolean;
 }
+
+import Avatar from '@/components/ui/Avatar';
 
 export default function EliminationScreen({ player, visible }: EliminationScreenProps) {
   if (!player) return null;
@@ -49,9 +52,16 @@ export default function EliminationScreen({ player, visible }: EliminationScreen
               initial={{ rotate: -20, scale: 0 }}
               animate={{ rotate: 0, scale: 1 }}
               transition={{ delay: 0.2, type: 'spring' }}
-              className="w-28 h-28 rounded-3xl bg-red-600/20 border border-red-500/60 flex items-center justify-center mb-10 shadow-[0_0_60px_rgba(220,38,38,0.4)]"
+              className="relative mb-10"
             >
-              <ShieldAlert size={56} className="text-red-400" />
+              <Avatar 
+                type={player.avatar_url || 'default'} 
+                size="xl" 
+                className="border-4 border-red-500/60 shadow-[0_0_60px_rgba(220,38,38,0.4)] grayscale" 
+              />
+              <div className="absolute -top-4 -right-4 w-12 h-12 rounded-2xl bg-red-600 border-2 border-white flex items-center justify-center shadow-xl rotate-12">
+                <Skull size={24} className="text-white" />
+              </div>
             </motion.div>
 
             <motion.div

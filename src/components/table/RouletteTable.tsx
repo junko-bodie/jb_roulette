@@ -457,7 +457,7 @@ const RouletteTable = memo(function RouletteTable({
 
             {/* Betting Grid Section with Blur & Overlay */}
             <div className="w-full relative" style={isMobile && tournamentMode ? {
-              zoom: 0.82,
+              zoom: 0.78,
             } : {}}>
               <div
                 className="transition-all duration-700 w-full"

@@ -73,6 +73,8 @@ interface TournamentContextType {
   addEvent: (event: Omit<BettingEvent, 'id' | 'timestamp'>) => void;
   wheelType: 'american' | 'european';
   updateWheelType: (type: 'american' | 'european') => Promise<void>;
+  lastSpinBets: Map<string, PlacedBet>;
+  setLastSpinBets: React.Dispatch<React.SetStateAction<Map<string, PlacedBet>>>;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(undefined);
@@ -110,7 +112,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const [phase, setPhase] = useState<TournamentPhase>('waiting');
   const [currentRound, setCurrentRound] = useState(1);
   const [currentSpin, setCurrentSpin] = useState(1);
-  const [timeRemaining, setTimeRemaining] = useState<number>(30);
+  const [timeRemaining, setTimeRemaining] = useState<number>(45);
   const [botBets, setBotBets] = useState<any[]>([]);
   const [roundId, setRoundId] = useState<string | null>(null);
   const [lastSpinResult, setLastSpinResult] = useState<any>(null);
@@ -128,6 +130,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const [dismissedSpinId, setDismissedSpinId] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [events, setEvents] = useState<BettingEvent[]>([]);
+  const [lastSpinBets, setLastSpinBets] = useState<Map<string, PlacedBet>>(new Map());
   const [prevLeaderId, setPrevLeaderId] = useState<string | null>(null);
   const announcedElimId = useRef<string | null>(null);
   const announcedLeaderId = useRef<string | null>(null);
@@ -353,6 +356,16 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       const currentPriority = PHASE_PRIORITY[phaseRef.current] ?? 0;
       const serverPriority = PHASE_PRIORITY[serverPhase] ?? 0;
 
+      // Transitioning to spinning: Clear local bets and save for rebet
+      if ((serverPhase === 'spinning' || serverPhase === 'result') && (phaseRef.current === 'betting' || phaseRef.current === 'locked')) {
+        if (betsRef.current.size > 0) {
+          console.log('[Tournament] Clearing local bets as spin starts...');
+          setLastSpinBets(new Map(betsRef.current));
+          setBets(new Map());
+          hasRestoredBetsRef.current = true; // Prevent restoration for this spin
+        }
+      }
+
       // Only allow server to advance phase forward, or reset to betting for a new spin
       // GUARD: Don't jump to betting if we are still animating a spin or showing a result locally
       if (serverPhase === 'betting' && (phaseRef.current === 'spinning' || phaseRef.current === 'result')) {
@@ -361,8 +374,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         if (data.active_round?.betting_ends_at) {
           const deadline = new Date(data.active_round.betting_ends_at).getTime();
           const serverNow = Date.now() + (data.server_time - now);
-          // If less than 28s remaining in 30s window, we've stayed in result too long
-          if (deadline - serverNow < 28000) {
+          // If more than 5s has passed in the 45s window, we've stayed in result too long
+          if (deadline - serverNow < 40000) {
             setPhase('betting');
           }
         }
@@ -370,6 +383,9 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         // STAY LOCKED while server is still in betting phase
       } else if (serverPhase === 'result' && phaseRef.current === 'spinning') {
         // Keep spinning until wheel animation completes
+        if (data.latest_spin && !pendingSpinData) {
+          setPendingSpinData(data.latest_spin);
+        }
       } else if (serverPriority > currentPriority || serverPhase === 'betting') {
         const spinId = data.latest_spin?.id || `${data.latest_spin?.round_id}-${data.latest_spin?.spin_number}`;
         if (serverPhase === 'result' && dismissedSpinId === spinId) {
@@ -377,12 +393,20 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
           setPhase('betting');
         } else {
           setPhase(serverPhase);
+          // If server is in result and we just transitioned to it (not spinning), set pending data
+          if (serverPhase === 'result' && data.latest_spin) {
+            setPendingSpinData(data.latest_spin);
+          }
         }
       }
 
       // ── Manage result popup visibility ──
       if (serverPhase === 'spinning') {
         setShowResult(false);
+        // Also capture pending data when server starts spinning
+        if (data.latest_spin && !pendingSpinData) {
+          setPendingSpinData(data.latest_spin);
+        }
       } else if (serverPhase === 'result') {
         // Only show popup if not already dismissed for this spin
         const spinId = data.latest_spin?.id || `${data.latest_spin?.round_id}-${data.latest_spin?.spin_number}`;
@@ -408,6 +432,20 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
              const combinedBets: any[] = [];
              ls.player_results?.forEach((pr: any) => pr.bets_placed?.forEach((b: any) => combinedBets.push(b)));
              setAllSpinBets(combinedBets);
+
+             // Recovery: also set lastPlayerPayout for UI
+             const myResult = userProfile?.id
+               ? ls.player_results?.find((pr: any) => pr.player_id?.toString() === userProfile.id)
+               : ls.player_results?.find((pr: any) => !pr.is_bot);
+             
+             if (myResult) {
+               const totalWagered = myResult.bets_placed?.reduce((a: number, b: any) => a + b.amount, 0) || 0;
+               setLastPlayerPayout({
+                 netResult: myResult.net_change,
+                 totalWagered,
+                 totalReturned: myResult.net_change + totalWagered,
+               });
+             }
           }
         }
       }
@@ -424,7 +462,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       setIsLoading(false);
       isFetchingRef.current = false;
     }
-  }, [id, serverTimeOffset, currentRoundData?.spins_completed, lastSpinResult, dismissedSpinId]);
+  }, [id, serverTimeOffset, currentRoundData?.spins_completed, lastSpinResult, dismissedSpinId, userProfile]);
 
   // ── Initial load ──
   useEffect(() => {
@@ -512,8 +550,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   // ── Reset table on new spin ──
   useEffect(() => {
     const key = `${currentRound}-${currentSpin}`;
-    if (phase === 'betting' && lastResetKeyRef.current !== key) {
-      console.log('[Tournament] Resetting board for', key);
+    if ((phase === 'betting' || phase === 'locked') && lastResetKeyRef.current !== key) {
+      console.log('[Tournament] Authoritative board reset for', key);
       
       // Reset restoration flag so we can potentially restore for THIS spin if we refresh later
       hasRestoredBetsRef.current = false;
@@ -546,13 +584,13 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     // We calculate how much time has already passed in this 30s betting window
     // to ensure bots reveal at the correct absolute time even after a refresh.
     const serverNow = Date.now() + serverTimeOffset;
-    const startTime = bettingDeadline - 30000;
+    const startTime = bettingDeadline - 45000;
     const elapsed = Math.max(0, serverNow - startTime);
     
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
     spinBotBets.forEach((bet: any) => {
-      // reveal_at_ms is the intended delay from the START of the betting phase (0-30000ms)
+      // reveal_at_ms is the intended delay from the START of the betting phase (0-45000ms)
       const intendedDelay = bet.reveal_at_ms || 0;
       const remainingDelay = Math.max(0, intendedDelay - elapsed);
       
@@ -599,9 +637,11 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       setDismissedSpinId(lastSpinResult.id);
     }
     setShowResult(false);
-    // If we are currently in result phase (from server), we can stay in it but hide popup
-    // Or if we want to force betting phase:
-    // setPhase('betting');
+    
+    // Explicitly transition to betting if server is ready
+    if (phaseRef.current === 'result') {
+      setPhase('betting');
+    }
     
     // Sync history when result is acknowledged/dismissed
     setDisplayHistory(rawHistory);
@@ -611,13 +651,23 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const completeSpin = useCallback(() => {
     if (!pendingSpinData) {
       // Recover from server if we have a lastSpinResult (reconnect case)
-      if (lastSpinResult) setPhase('result');
+      if (lastSpinResult) {
+        setPhase('result');
+        setShowResult(true);
+      }
       return;
     }
 
     setPhase('result');
     setShowResult(true);
     const data = pendingSpinData;
+
+    // Ensure lastSpinResult is updated so the popup has the correct data
+    setLastSpinResult({
+      ...data.result,
+      spin_number: data.spin_number,
+      id: data._id || `${data.round_id}-${data.spin_number}`,
+    } as any);
 
     const myResult = userProfile.id
       ? data.player_results?.find((pr: any) => pr.player_id?.toString() === userProfile.id)
@@ -793,7 +843,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         has_champion_badge: p.has_champion_badge,
         color: PLAYER_COLORS[originalIndex % PLAYER_COLORS.length],
         currentWager,
-        points_earned: p.points_earned
+        points_earned: p.points_earned,
+        avatar_url: p.avatar_url
       };
     });
 
@@ -866,6 +917,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     addEvent,
     wheelType,
     updateWheelType,
+    lastSpinBets,
+    setLastSpinBets,
   }), [
     tournament,
     currentRound,
@@ -896,7 +949,11 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     displayHistory,
     showResult,
     events,
-    addEvent
+    addEvent,
+    wheelType,
+    updateWheelType,
+    lastSpinBets,
+    setLastSpinBets
   ]);
 
   return (
