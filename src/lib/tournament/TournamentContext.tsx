@@ -47,6 +47,7 @@ interface TournamentContextType {
     color: string;
     currentWager: number;
     isEliminating?: boolean; // For animation
+    points_earned?: number | null;
   }>;
   timeRemaining: number;
   setPhase: (phase: TournamentPhase) => void;

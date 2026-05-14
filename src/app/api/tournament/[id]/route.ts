@@ -6,6 +6,7 @@ import { AMERICAN_WHEEL_ORDER, EUROPEAN_WHEEL_ORDER, getDisplayNumber, getNumber
 import { generateAllRoundBotBets } from '@/lib/tournament/serverBotBetting';
 import { awardTournamentRewards } from '@/lib/tournament/rewards';
 import { getRandomBotName } from '@/lib/tournament/botNames';
+import { TOURNAMENT_POINTS } from '@/lib/tournament/points';
 
 // Phase timing constants (ms)
 const SPINNING_DURATION = 5000;  // 5s wheel animation
@@ -215,6 +216,9 @@ export async function GET(
 
             console.log(`[Watchdog] Eliminating ${loser.username} (pos ${finalPosition})`);
 
+            // Calculate points for the eliminated player
+            const pointsEarned = loser.current_chips > 0 ? (TOURNAMENT_POINTS[finalPosition] || 0) : -50;
+
             await db.collection('tournaments').updateOne(
               { _id: new ObjectId(id), 'players.player_id': loser.player_id },
               {
@@ -222,6 +226,7 @@ export async function GET(
                   'players.$.status': 'eliminated',
                   'players.$.eliminated_round': currentRound,
                   'players.$.final_position': finalPosition,
+                  'players.$.points_earned': pointsEarned,
                 },
                 $inc: { current_round: 1 },
               }

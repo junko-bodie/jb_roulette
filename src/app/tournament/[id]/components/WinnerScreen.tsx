@@ -30,9 +30,10 @@ interface WinnerScreenProps {
     final_position: number;
     eliminated_round: number;
   };
+  isCompleted?: boolean;
 }
 
-export default function WinnerScreen({ tournament, player }: WinnerScreenProps) {
+export default function WinnerScreen({ tournament, player, isCompleted = true }: WinnerScreenProps) {
   const isWinner = player.final_position === 1;
 
   useEffect(() => {
@@ -68,9 +69,13 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
       current_chips: Math.max(0, p.current_chips || 0),
       final_chips: Math.max(0, p.final_chips || 0)
     })).sort((a, b) => {
-      const posA = a.final_position || (a.status === 'active' ? 1 : 6);
-      const posB = b.final_position || (b.status === 'active' ? 1 : 6);
-      return posA - posB;
+      const posA = a.final_position || (a.status === 'active' ? 0 : 7);
+      const posB = b.final_position || (b.status === 'active' ? 0 : 7);
+      
+      if (posA !== posB) return posA - posB;
+      
+      // Tie-break for active players by chips
+      return b.current_chips - a.current_chips;
     });
   }, [tournament]);
 
@@ -145,7 +150,7 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
             textTransform: 'uppercase',
             color: '#f5e9b8',
           }}>
-            Back to Lobby
+            Exit Tournament
           </span>
         </Link>
       </motion.div>
@@ -173,8 +178,20 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                 textAlign: 'center'
               }}
             >
-              {isWinner ? 'Champion!' : 'Tournament Results'}
+              {isWinner ? 'Champion!' : isCompleted ? 'Tournament Results' : 'Personal Summary'}
             </motion.h1>
+
+            {!isCompleted && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 mb-2"
+              >
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-700">
+                  Tournament Still In Progress
+                </span>
+              </motion.div>
+            )}
 
             {/* Hero emblem */}
             <motion.div
@@ -395,8 +412,18 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
               {standings.slice(0, 8).map((s, idx) => {
                 const isMe = s.username === realPlayer?.username;
                 const chips = s.final_chips || s.current_chips || 0;
+                const isActive = s.status === 'active';
                 const rank = idx + 1;
-                const points = s.points_earned || 0;
+                
+                // For active players, calculate projected points
+                let points = s.points_earned;
+                if (isActive && (points === null || points === undefined)) {
+                  if (rank === 1) points = 1000;
+                  else if (rank === 2) points = 100;
+                  else if (rank === 3) points = 50;
+                  else points = 0;
+                }
+                
                 const isBusted = chips <= 0;
 
                 return (
@@ -502,6 +529,9 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                         whiteSpace: 'nowrap',
                       }}>
                         {points >= 0 ? `+${points}` : points}
+                        {isActive && (
+                          <span className="block text-[8px] opacity-60 font-bold uppercase mt-0.5">Projected</span>
+                        )}
                       </span>
                     </div>
 
@@ -519,6 +549,23 @@ export default function WinnerScreen({ tournament, player }: WinnerScreenProps) 
                 );
               })}
             </div>
+
+            {/* Exit CTA for non-winners */}
+            {!isWinner && (
+              <div className="flex flex-col items-center gap-4 mt-8 pb-4">
+                 <Link
+                   href="/lobby"
+                   className="px-10 py-4 rounded-2xl bg-[#1a5c35] text-[#f5e9b8] font-bold uppercase tracking-widest text-[13px] shadow-xl hover:bg-[#144327] transition-all active:scale-95"
+                 >
+                   Return to Lobby
+                 </Link>
+                 {!isCompleted && (
+                   <span className="text-[10px] text-[#1a5c35]/60 font-bold uppercase tracking-widest">
+                     You can also stay and watch the finale
+                   </span>
+                 )}
+              </div>
+            )}
           </motion.div>
 
           {/* ── CHAMPIONSHIP POINTS SYSTEM ── */}

@@ -627,10 +627,17 @@ export default function TournamentPage() {
         username: player.username,
         is_bot: player.is_bot,
         final_chips: player.current_chips,
-        final_position: player.final_position || 1,
-        eliminated_round: player.eliminated_round || 5
+        final_position: player.final_position || (player.status === 'active' ? 1 : 6),
+        eliminated_round: player.eliminated_round || 5,
+        player_id: player.player_id
       };
-      return <WinnerScreen tournament={tournament} player={summaryPlayer} />;
+      return (
+        <WinnerScreen 
+          tournament={tournament} 
+          player={summaryPlayer as any} 
+          isCompleted={tournament.status === 'completed'} 
+        />
+      );
     }
   }
 

@@ -27,60 +27,66 @@ export default function EliminationScreen({ player, visible }: EliminationScreen
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[300] flex items-center justify-center backdrop-blur-2xl"
+          className="fixed inset-0 z-[300] flex items-center justify-center backdrop-blur-3xl"
           style={{ 
-            background: `radial-gradient(circle at 50% 50%, rgba(20, 0, 0, 0.95) 0%, ${COLORS.black} 100%)`
+            background: `radial-gradient(circle at 50% 50%, rgba(80, 10, 10, 0.95) 0%, rgba(20, 0, 0, 0.98) 100%)`
           }}
         >
-          {/* Subtle Red Pulse Background */}
+          {/* Brighter Red Pulse Background */}
           <motion.div 
-            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.3, 0.15] }}
             transition={{ duration: 4, repeat: Infinity }}
-            className="absolute w-[800px] h-[800px] bg-red-600 rounded-full blur-[120px]"
+            className="absolute w-[900px] h-[900px] bg-red-500 rounded-full blur-[150px]"
           />
 
           <motion.div
             initial={{ scale: 0.9, y: 30, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 1.1, opacity: 0 }}
-            className="relative z-10 text-center p-12 max-w-3xl flex flex-col items-center"
+            className="relative z-10 text-center p-12 max-w-4xl flex flex-col items-center"
           >
             <motion.div
               initial={{ rotate: -20, scale: 0 }}
               animate={{ rotate: 0, scale: 1 }}
               transition={{ delay: 0.2, type: 'spring' }}
-              className="w-24 h-24 rounded-2xl bg-red-600/10 border border-red-500/40 flex items-center justify-center mb-10 shadow-[0_0_50px_rgba(220,38,38,0.2)]"
+              className="w-28 h-28 rounded-3xl bg-red-600/20 border border-red-500/60 flex items-center justify-center mb-10 shadow-[0_0_60px_rgba(220,38,38,0.4)]"
             >
-              <ShieldAlert size={48} className="text-red-500" />
+              <ShieldAlert size={56} className="text-red-400" />
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="px-6 py-2 bg-red-600/20 border border-red-500/40 rounded-full text-red-500 font-black uppercase tracking-[0.4em] text-[11px] mb-8"
+              className="px-8 py-2.5 bg-red-600/40 border border-red-400/60 rounded-full text-red-100 font-black uppercase tracking-[0.5em] text-[13px] mb-8 shadow-[0_0_30px_rgba(220,38,38,0.3)]"
             >
               System Elimination Active
             </motion.div>
 
-            <h2 className="text-6xl md:text-8xl font-black text-white uppercase tracking-tighter mb-4 italic leading-none" style={{ fontFamily: FONTS.primary }}>
+            <h2 className="text-7xl md:text-9xl font-black text-white uppercase tracking-tighter mb-4 italic leading-none drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]" style={{ fontFamily: FONTS.primary }}>
               {isRealUser ? "You Have Been" : player.username}
             </h2>
-            <h3 className="text-5xl md:text-7xl font-black text-red-600 uppercase tracking-tighter mb-12 italic leading-none" style={{ fontFamily: FONTS.primary }}>
+            <h3 className="text-6xl md:text-8xl font-black text-red-500 uppercase tracking-tighter mb-12 italic leading-none drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]" style={{ fontFamily: FONTS.primary }}>
               Eliminated
             </h3>
 
-            <div className="grid grid-cols-2 gap-8 w-full max-w-md bg-white/[0.02] border border-white/5 rounded-3xl p-10 backdrop-blur-xl">
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Final Rank</span>
-                <span className="text-4xl font-black text-white leading-none" style={{ fontFamily: FONTS.primary }}>
+            <div className="grid grid-cols-3 gap-8 w-full max-w-3xl bg-white/[0.08] border border-white/20 rounded-[40px] p-10 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-[11px] font-black text-white/90 uppercase tracking-[0.5em]">Final Rank</span>
+                <span className="text-5xl font-black text-white leading-none drop-shadow-md" style={{ fontFamily: FONTS.primary }}>
                    #{player.final_position || '?'}
                 </span>
               </div>
-              <div className="flex flex-col items-center gap-2 border-l border-white/5">
-                <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Settled Assets</span>
-                <span className="text-4xl font-black text-white leading-none" style={{ fontFamily: FONTS.primary }}>
+              <div className="flex flex-col items-center gap-3 border-l border-white/10">
+                <span className="text-[11px] font-black text-white/90 uppercase tracking-[0.5em]">Settled Assets</span>
+                <span className="text-5xl font-black text-white leading-none drop-shadow-md" style={{ fontFamily: FONTS.primary }}>
                    ${(player.current_chips || 0).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex flex-col items-center gap-3 border-l border-white/10">
+                <span className="text-[11px] font-black text-white/90 uppercase tracking-[0.5em]">Points Earned</span>
+                <span className={`text-5xl font-black leading-none drop-shadow-md ${player.current_chips <= 0 ? 'text-rose-400' : 'text-emerald-400'}`} style={{ fontFamily: FONTS.primary }}>
+                   {player.current_chips <= 0 ? '-50' : '0'}
                 </span>
               </div>
             </div>
@@ -89,15 +95,15 @@ export default function EliminationScreen({ player, visible }: EliminationScreen
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
-              className="mt-16 flex flex-col items-center gap-4"
+              className="mt-20 flex flex-col items-center gap-6"
             >
-              <div className="flex items-center gap-4">
-                 <div className="w-2 h-2 rounded-full bg-white/20 animate-bounce" />
-                 <div className="w-2 h-2 rounded-full bg-white/20 animate-bounce [animation-delay:0.2s]" />
-                 <div className="w-2 h-2 rounded-full bg-white/20 animate-bounce [animation-delay:0.4s]" />
+              <div className="flex items-center gap-6">
+                 <div className="w-3 h-3 rounded-full bg-white/40 animate-bounce" />
+                 <div className="w-3 h-3 rounded-full bg-white/40 animate-bounce [animation-delay:0.2s]" />
+                 <div className="w-3 h-3 rounded-full bg-white/40 animate-bounce [animation-delay:0.4s]" />
               </div>
-              <span className="text-[12px] font-black text-white/30 uppercase tracking-[0.6em] italic">
-                {isRealUser ? "Synchronizing Results..." : "Preparing Field for Next Round..."}
+              <span className="text-[16px] font-black text-white/80 uppercase tracking-[0.7em] italic drop-shadow-sm">
+                {isRealUser ? "Synchronizing Championship Results..." : "Preparing Field for Next Round..."}
               </span>
             </motion.div>
           </motion.div>

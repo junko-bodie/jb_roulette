@@ -24,7 +24,7 @@ export default function TournamentSummary({ tournament, player }: TournamentSumm
   return (
     <div 
       className="fixed inset-0 z-[350] flex items-center justify-center" 
-      style={{ background: `radial-gradient(circle at 50% 50%, ${COLORS.deepGreen} 0%, ${COLORS.black} 100%)` }}
+      style={{ background: `radial-gradient(circle at 50% 50%, rgba(13, 42, 32, 0.98) 0%, ${COLORS.black} 100%)` }}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -46,7 +46,7 @@ export default function TournamentSummary({ tournament, player }: TournamentSumm
           <h1 className="text-6xl font-black text-white uppercase tracking-tighter italic leading-none mb-3" style={{ fontFamily: FONTS.primary }}>
             Round Result
           </h1>
-          <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.7em] italic">Official Classification Summary</span>
+          <span className="text-[12px] font-black text-white/50 uppercase tracking-[0.7em] italic">Official Classification Summary</span>
         </div>
 
         <div className="space-y-4 mb-16 relative z-10">
@@ -60,7 +60,7 @@ export default function TournamentSummary({ tournament, player }: TournamentSumm
                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/30 group-hover:text-gold transition-colors">
                     <item.icon size={20} />
                  </div>
-                 <span className="text-[12px] font-black text-white/30 uppercase tracking-[0.4em]">{item.label}</span>
+                 <span className="text-[12px] font-black text-white/60 uppercase tracking-[0.4em]">{item.label}</span>
               </div>
               <span className={`text-3xl font-black ${item.color} leading-none`} style={{ fontFamily: FONTS.primary }}>
                 {item.value}

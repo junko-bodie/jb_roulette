@@ -201,6 +201,28 @@ export default function Scoreboard() {
                           Active
                         </span>
                       )}
+
+                      {/* Points badge */}
+                      <div className="flex items-center">
+                        <div className="w-[1px] h-2.5 bg-white/10 mx-1.5" />
+                        <span 
+                          className={`text-[9px] font-black tracking-widest uppercase ${
+                            (s.points_earned ?? 0) < 0 ? 'text-rose-400/80' : 'text-emerald-400/80'
+                          }`}
+                        >
+                          {(() => {
+                            let pts = s.points_earned;
+                            if (pts === null || pts === undefined) {
+                              if (s.rank === 1) pts = 1000;
+                              else if (s.rank === 2) pts = 100;
+                              else if (s.rank === 3) pts = 50;
+                              else pts = 0;
+                              return `${pts >= 0 ? '+' : ''}${pts} pts (Proj)`;
+                            }
+                            return `${pts >= 0 ? '+' : ''}${pts} pts`;
+                          })()}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
