@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import SettingsModal from '@/components/ui/SettingsModal';
 import dynamic from 'next/dynamic';
+import Avatar from '@/components/ui/Avatar';
 const WelcomeVideoModal = dynamic(() => import('@/components/ui/WelcomeVideoModal'), { ssr: false, loading: () => null });
 import { User, Settings, BarChart2, LogOut, Play, Trophy, ChevronLeft } from 'lucide-react';
 
@@ -108,9 +109,10 @@ export default function Home() {
             onClick={() => router.push('/profile')}
             style={{ cursor: 'pointer' }}
           >
-            <div className={styles.avatarBtn}>
-              <Trophy size={22} strokeWidth={1.5} className={styles.trophyIcon} />
-            </div>
+            <Avatar 
+              type={userProfile?.avatar || 'default'} 
+              className="w-[52px] h-[52px] border border-[#c9a44c]/40 shadow-lg"
+            />
             <div className={styles.profileInfo}>
               <div className="flex items-center gap-2">
                 <span className={styles.playerName}>{userProfile?.name || 'Player'}</span>

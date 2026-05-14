@@ -16,6 +16,7 @@ import SettingsModal from '@/components/ui/SettingsModal';
 import ProfileModal from '@/components/ui/ProfileModal';
 import { soundEngine } from '@/lib/audioEngine';
 import Toast from '@/components/ui/Toast';
+import Avatar from '@/components/ui/Avatar';
 
 import { useRouter } from 'next/navigation';
 
@@ -423,13 +424,10 @@ export default function GamePage() {
         }}
       >
         <div className="relative">
-          <div className="w-14 h-14 rounded-full border-2 border-[#c9a44c]/80 overflow-hidden bg-black/80 shadow-2xl group-hover:border-[#c9a44c] transition-all group-hover:scale-110">
-            <img
-              src={userProfile?.avatar || '/avatars/default.png'}
-              alt="avatar"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <Avatar 
+            type={userProfile?.avatar || 'default'} 
+            className="w-14 h-14 border-2 border-[#c9a44c]/80 shadow-2xl group-hover:border-[#c9a44c] transition-all group-hover:scale-110"
+          />
           <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-black rounded-full shadow-lg" />
         </div>
         <div className="flex flex-col">
