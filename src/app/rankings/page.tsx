@@ -98,8 +98,8 @@ export default function RankingsPage() {
         <div /> {/* Spacer for flex-between */}
       </header>
 
-      <main className={styles.main} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 h-full overflow-hidden">
+      <main className={styles.main} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 h-full overflow-hidden justify-center py-4">
           
           {/* ═══ MY STANDING CARD (Tournament Style) ═══ */}
           {myEntry && (
@@ -205,12 +205,13 @@ export default function RankingsPage() {
                     {searchQuery && (
                       <button 
                         onClick={() => setSearchQuery('')}
-                        className="absolute inset-y-0 right-6 flex items-center text-white/30 hover:text-white transition-colors"
+                        className="absolute right-6 top-1/2 -translate-y-1/2 text-[#c9a44c]/40 hover:text-[#c9a44c] transition-all p-1"
                       >
-                        <History size={16} />
+                        <X size={16} />
                       </button>
                     )}
                  </div>
+                 <div className="h-4" /> {/* Space below search bar */}
                </div>
  
                {/* Table Wrapper with Flex-1 for scrollability */}
