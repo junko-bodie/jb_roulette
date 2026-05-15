@@ -25,6 +25,7 @@ export default function RankingsPage() {
   const { user, userProfile } = useGame();
   const router = useRouter();
   const [rankings, setRankings] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [year, setYear] = useState(new Date().getFullYear());
 
@@ -45,6 +46,14 @@ export default function RankingsPage() {
     }
     fetchRankings();
   }, []);
+
+  // Filter and Search Logic
+  const filteredRankings = rankings
+    .filter(r => r.points >= 0) // Exclude negative points
+    .filter(r => 
+      r.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.player_id?.toString() === searchQuery
+    );
 
   // Use profile ID from context to match database records
   const myIdStr = userProfile?.id?.toString();
@@ -156,11 +165,47 @@ export default function RankingsPage() {
                     <h2 className="text-2xl font-bold tracking-[0.2em] uppercase" style={{ fontVariant: 'small-caps' }}>The Elite Registry</h2>
                  </div>
                  <span className="text-[10px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.4em]">Official {year} Season Standings</span>
+                 
+                 <div className="flex gap-16 mt-10">
+                    <div className="flex flex-col items-center gap-1">
+                       <span className="text-[9px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.2em]">Contenders</span>
+                       <span className="text-2xl font-bold text-white tabular-nums tracking-tight">{rankings.length.toLocaleString()}</span>
+                    </div>
+                    <div className="w-px h-10 bg-[#c9a44c]/20" />
+                    <div className="flex flex-col items-center gap-1">
+                       <span className="text-[9px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.2em]">Active Pool</span>
+                       <span className="text-2xl font-bold text-white tabular-nums tracking-tight">{rankings.filter(r => r.points > 0).length.toLocaleString()}</span>
+                    </div>
+                 </div>
+
+                 {/* Search Bar */}
+                 <div className="mt-10 w-full max-w-lg relative group px-4 sm:px-0">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-[#c9a44c] z-10">
+                      <Target size={20} strokeWidth={2.5} />
+                    </div>
+                    <input 
+                      type="text"
+                      placeholder="Search Contender Name..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-[#1a2e23] border-2 border-[#c9a44c]/30 rounded-2xl py-5 pr-6 text-sm font-bold text-white placeholder:text-white/30 focus:outline-none focus:border-[#c9a44c] focus:bg-[#1d3327] transition-all tracking-wider shadow-2xl"
+                      style={{ paddingLeft: '72px' }}
+                    />
+                    {searchQuery && (
+                      <button 
+                        onClick={() => setSearchQuery('')}
+                        className="absolute inset-y-0 right-6 flex items-center text-white/30 hover:text-white transition-colors"
+                      >
+                        <History size={16} />
+                      </button>
+                    )}
+                 </div>
+                 <div className="h-6" /> {/* Bottom spacing */}
               </div>
 
-              {/* Table */}
-              <div className="w-full overflow-x-auto">
-                <table className="w-full border-collapse">
+              {/* Table Wrapper with Max Height for Scrollability */}
+              <div className={`w-full max-h-[600px] overflow-y-auto ${styles.customScrollbar}`}>
+                <table className={`w-full border-collapse ${styles.stickyTable}`}>
                   <thead>
                     <tr className="border-b border-[#c9a44c]/20 bg-[#f5edd5]">
                       <th className="py-6 px-8 text-[11px] font-bold uppercase tracking-[0.2em] text-[#8b6914] text-center w-24">Rank</th>
@@ -171,8 +216,10 @@ export default function RankingsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#c9a44c]/10 bg-white/40">
-                    {rankings.map((entry, idx) => {
-                      const displayRank = idx + 1;
+                    {filteredRankings.length > 0 ? filteredRankings.map((entry) => {
+                      // Find actual global rank from original rankings array
+                      const globalRank = rankings.findIndex(r => r.player_id === entry.player_id) + 1;
+                      const displayRank = globalRank;
                       const myIdStr = userProfile?.id?.toString();
                       const isMe = entry.player_id?.toString() === myIdStr || entry.username === userProfile?.name;
                       const isTop3 = displayRank <= 3;
@@ -180,7 +227,7 @@ export default function RankingsPage() {
 
                       return (
                         <tr 
-                          key={idx} 
+                          key={entry.player_id} 
                           className={`group transition-all ${isMe ? 'bg-[#c9a44c]/10' : 'hover:bg-[#c9a44c]/5'}`}
                         >
                           <td className="py-6 px-8 text-center">
@@ -193,7 +240,7 @@ export default function RankingsPage() {
                           <td className="py-6 px-4">
                             <div className="flex items-center gap-4">
                                 <Avatar 
-                                   type={isMe ? (userProfile?.avatar || entry.avatar_url || 'default') : (entry.avatar_url || entry.avatar || (['crown', 'diamond', 'star', 'spade', 'heart', 'club', 'dice', 'chip', 'trophy', 'bolt'][idx % 10]))} 
+                                   type={isMe ? (userProfile?.avatar || entry.avatar_url || 'default') : (entry.avatar_url || entry.avatar || (['crown', 'diamond', 'star', 'spade', 'heart', 'club', 'dice', 'chip', 'trophy', 'bolt'][displayRank % 10]))} 
                                    size="md"
                                    className={isMe ? 'border-[#c9a44c]' : 'border-black/5'}
                                 />
@@ -202,7 +249,7 @@ export default function RankingsPage() {
                                     {entry.username}
                                   </span>
                                   <span className="text-[9px] font-bold text-black/20 uppercase tracking-widest mt-0.5">
-                                    Season Participant
+                                    {isMe ? 'Official Profile' : 'Season Participant'}
                                   </span>
                                </div>
                             </div>
@@ -228,7 +275,16 @@ export default function RankingsPage() {
                           </td>
                         </tr>
                       );
-                    })}
+                    }) : (
+                      <tr>
+                        <td colSpan={5} className="py-20 text-center">
+                           <div className="flex flex-col items-center gap-4 opacity-30">
+                              <Target size={48} className="text-[#0f2318]" />
+                              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-[#0f2318]">No Contenders Found</span>
+                           </div>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

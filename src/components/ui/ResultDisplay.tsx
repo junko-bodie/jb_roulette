@@ -48,8 +48,8 @@ function AnimatedCounter({ value, duration = 1200 }: { value: number; duration?:
 export default function ResultDisplay({ result, payout, visible, onDismiss, tournamentMode }: ResultDisplayProps) {
   useEffect(() => {
     if (visible && result) {
-      // Auto-dismiss: 3.5s for tournament mode, 3s for regular mode
-      const duration = tournamentMode ? 3500 : 3000;
+      // Auto-dismiss: 3s for both modes
+      const duration = 3000;
       const timer = setTimeout(onDismiss, duration);
       return () => clearTimeout(timer);
     }
