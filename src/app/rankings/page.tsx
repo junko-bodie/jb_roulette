@@ -78,7 +78,7 @@ export default function RankingsPage() {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} style={{ height: '100vh', overflow: 'hidden' }}>
       {/* Header */}
       <header className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -98,8 +98,8 @@ export default function RankingsPage() {
         <div /> {/* Spacer for flex-between */}
       </header>
 
-      <main className={styles.main}>
-        <div className="w-full max-w-6xl flex flex-col gap-8">
+      <main className={styles.main} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 h-full overflow-hidden">
           
           {/* ═══ MY STANDING CARD (Tournament Style) ═══ */}
           {myEntry && (
@@ -113,8 +113,8 @@ export default function RankingsPage() {
                <div className={styles.cornerBL} />
                <div className={styles.cornerBR} />
                
-               <div className={styles.cardContent} style={{ padding: '32px' }}>
-                 <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6">
+               <div className={styles.cardContent} style={{ padding: '24px' }}>
+                 <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-6">
                        <Avatar 
                           type={userProfile?.avatar || 'default'} 
@@ -155,22 +155,29 @@ export default function RankingsPage() {
             </motion.div>
           )}
 
-          {/* ═══ THE REGISTRY LEDGER ═══ */}
-          <div className={styles.card}>
-            <div className={styles.cornerTL} />
-            <div className={styles.cornerTR} />
-            <div className={styles.cornerBL} />
-            <div className={styles.cornerBR} />
-            
-            <div className={styles.cardContent} style={{ padding: '0' }}>
-              <div className="w-full bg-[#0f2318] text-[#f2e8d0] p-8 flex flex-col items-center">
-                 <div className="flex items-center gap-4 mb-2">
-                    <Trophy size={24} className="text-[#c9a44c]" />
-                    <h2 className="text-2xl font-bold tracking-[0.2em] uppercase" style={{ fontVariant: 'small-caps' }}>The Elite Registry</h2>
+          {/* ═══ REGISTRY REGISTRY CARD ═══ */}
+          <motion.div 
+            className={`${styles.card} flex-1 flex flex-col overflow-hidden mb-2`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+             <div className={styles.cornerTL} />
+             <div className={styles.cornerTR} />
+             <div className={styles.cornerBL} />
+             <div className={styles.cornerBR} />
+             
+             <div className={`${styles.cardContent} flex-1 flex flex-col overflow-hidden`} style={{ padding: '0' }}>
+               {/* Header Section - COMPACT */}
+               <div className="w-full bg-[#0f2318] border-b border-[#c9a44c]/30 p-6 flex flex-col items-center">
+                 <div className="flex items-center gap-3 mb-1">
+                    <Trophy size={18} className="text-[#c9a44c]" />
+                    <h2 className="text-xl md:text-2xl font-bold text-[#f2e8d0] uppercase tracking-[0.3em] m-0" style={{ fontFamily: 'Georgia, serif' }}>
+                      The Elite Registry
+                    </h2>
                  </div>
-                 <span className="text-[10px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.4em]">Official {year} Season Standings</span>
+                 <p className="text-[9px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.4em] mb-4">Official {year} Season Standings</p>
                  
-                 <div className="flex gap-16 mt-10">
+                 <div className="flex gap-12 mb-6">
                     <div className="flex flex-col items-center gap-1">
                        <span className="text-[9px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.2em]">Total Contenders</span>
                        <span className="text-2xl font-bold text-white tabular-nums tracking-tight">{rankings.length.toLocaleString()}</span>
@@ -183,7 +190,7 @@ export default function RankingsPage() {
                  </div>
 
                  {/* Search Bar */}
-                 <div className="mt-10 w-full max-w-lg relative group px-4 sm:px-0">
+                 <div className="w-full max-w-lg relative group px-4 sm:px-0">
                     <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-[#c9a44c] z-10">
                       <Target size={20} strokeWidth={2.5} />
                     </div>
@@ -192,7 +199,7 @@ export default function RankingsPage() {
                       placeholder="Search Contender Name..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-[#1a2e23] border-2 border-[#c9a44c]/30 rounded-2xl py-5 pr-6 text-sm font-bold text-white placeholder:text-white/30 focus:outline-none focus:border-[#c9a44c] focus:bg-[#1d3327] transition-all tracking-wider shadow-2xl"
+                      className="w-full bg-[#1a2e23] border-2 border-[#c9a44c]/30 rounded-2xl py-3 pr-6 text-sm font-bold text-white placeholder:text-white/30 focus:outline-none focus:border-[#c9a44c] focus:bg-[#1d3327] transition-all tracking-wider shadow-2xl"
                       style={{ paddingLeft: '72px' }}
                     />
                     {searchQuery && (
@@ -204,11 +211,10 @@ export default function RankingsPage() {
                       </button>
                     )}
                  </div>
-                 <div className="h-6" /> {/* Bottom spacing */}
-              </div>
-
-              {/* Table Wrapper with Max Height for Scrollability */}
-              <div className={`w-full min-h-[450px] max-h-[650px] overflow-y-auto ${styles.customScrollbar} bg-white/5`}>
+               </div>
+ 
+               {/* Table Wrapper with Flex-1 for scrollability */}
+               <div className={`w-full flex-1 overflow-y-auto ${styles.customScrollbar} bg-white/5`}>
                 <table className={`w-full border-collapse ${styles.stickyTable}`}>
                   <thead>
                     <tr className="border-b border-[#c9a44c]/20 bg-[#f5edd5]">
@@ -294,62 +300,56 @@ export default function RankingsPage() {
               </div>
 
               {/* Footer Registry Note */}
-              <div className="p-12 bg-[#f5edd5] border-t border-[#c9a44c]/20 flex flex-col items-center gap-6 opacity-40">
-                 <p className="text-[10px] font-bold text-[#0f2318] uppercase tracking-[0.5em] text-center leading-loose">
-                   This ledger is an official record of the Junko Bodie Global Protocol. <br/> Access is restricted to authorized personnel and active contenders.
+              <div className="p-4 bg-[#f5edd5] border-t border-[#c9a44c]/20 flex flex-col items-center gap-3 opacity-40">
+                 <p className="text-[9px] font-bold text-[#0f2318] uppercase tracking-[0.4em] text-center leading-relaxed m-0">
+                   Official record of the Junko Bodie Global Protocol. Access restricted to authorized contenders.
                  </p>
-                 <div className="flex gap-12">
+                 <div className="flex gap-8">
                     <div className="flex items-center gap-2">
-                       <div className="w-2 h-2 rounded-full bg-[#c9a44c]" />
-                       <span className="text-[9px] font-bold uppercase tracking-widest">Qualified Zone (Top 50)</span>
+                       <div className="w-1.5 h-1.5 rounded-full bg-[#c9a44c]" />
+                       <span className="text-[8px] font-bold uppercase tracking-widest">Elite (Top 50)</span>
                     </div>
                     <div className="flex items-center gap-2">
-                       <div className="w-2 h-2 rounded-full bg-black/20" />
-                       <span className="text-[9px] font-bold uppercase tracking-widest">Contender Field</span>
+                       <div className="w-1.5 h-1.5 rounded-full bg-black/20" />
+                       <span className="text-[8px] font-bold uppercase tracking-widest">Field</span>
                     </div>
                  </div>
               </div>
-            </div>
-          </div>
+
+              {/* Status Bar - Integrated into Card */}
+              {myEntry && (
+                <div className="bg-[#0f2318] p-4 flex items-center justify-between gap-6 border-t border-[#c9a44c]/40">
+                  <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-[#c9a44c]/10 border border-[#c9a44c]/30 flex items-center justify-center text-[#c9a44c]">
+                        <TrendingUp size={20} />
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-[#c9a44c]/50 uppercase tracking-[0.3em] block mb-0.5">Your Position</span>
+                        <span className="text-lg font-bold text-white tracking-widest uppercase">Rank #{myRank}</span>
+                      </div>
+                  </div>
+                  
+                  <div className="h-8 w-px bg-white/10" />
+
+                  <div className="flex flex-col items-end">
+                      <span className="text-[9px] font-bold text-[#c9a44c]/50 uppercase tracking-[0.3em] block mb-0.5">
+                        {myRank > 50 ? 'Points to Elite' : myRank > 1 ? 'Next Rank In' : 'Status'}
+                      </span>
+                      <span className="text-lg font-bold text-[#c9a44c] tabular-nums">
+                        {myRank === 0 ? '---' : 
+                        myRank === 1 ? 'Championship' : 
+                        myRank > 50 ? 
+                        `+${Math.max(0, (rankings[49]?.points || 0) - myEntry.points + 1).toLocaleString()} pts` : 
+                        `+${Math.max(0, (rankings[myRank - 2]?.points || 0) - myEntry.points + 1).toLocaleString()} pts`
+                        }
+                      </span>
+                  </div>
+                </div>
+              )}
+             </div>
+          </motion.div>
         </div>
       </main>
-
-      {/* Floating Status Bar (Always Visible) */}
-      {myEntry && (
-        <motion.div 
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4"
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-        >
-           <div className="bg-[#0f2318] border border-[#c9a44c]/40 p-4 rounded-xl shadow-2xl flex items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-full bg-[#c9a44c]/10 border border-[#c9a44c]/30 flex items-center justify-center text-[#c9a44c]">
-                    <TrendingUp size={20} />
-                 </div>
-                 <div>
-                    <span className="text-[9px] font-bold text-[#c9a44c]/50 uppercase tracking-[0.3em] block mb-0.5">Your Position</span>
-                    <span className="text-lg font-bold text-white tracking-widest uppercase">Rank #{myRank}</span>
-                 </div>
-              </div>
-              
-              <div className="h-8 w-px bg-white/10" />
-
-              <div className="flex flex-col items-end">
-                 <span className="text-[9px] font-bold text-[#c9a44c]/50 uppercase tracking-[0.3em] block mb-0.5">
-                   {myRank > 50 ? 'Points to Elite' : myRank > 1 ? 'Next Rank In' : 'Status'}
-                 </span>
-                 <span className="text-lg font-bold text-gold tabular-nums">
-                   {myRank === 0 ? '---' : 
-                    myRank === 1 ? 'Championship' : 
-                    myRank > 50 ? 
-                    `+${Math.max(0, (rankings[49]?.points || 0) - myEntry.points + 1).toLocaleString()} pts` : 
-                    `+${Math.max(0, (rankings[myRank - 2]?.points || 0) - myEntry.points + 1).toLocaleString()} pts`
-                   }
-                 </span>
-              </div>
-           </div>
-        </motion.div>
-      )}
     </div>
   );
 }

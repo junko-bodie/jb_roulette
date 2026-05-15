@@ -34,6 +34,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [latestSeasonData, setLatestSeasonData] = useState<{ rank: number; points: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -47,6 +48,38 @@ export default function ProfilePage() {
     if (userProfile) {
       setName(userProfile.name);
       setSelectedAvatar(userProfile.avatar);
+    }
+  }, [userProfile]);
+
+  // Fetch latest season data to ensure rank and points are up to date
+  useEffect(() => {
+    const fetchLatestStats = async () => {
+      if (!userProfile?.id) return;
+      try {
+        const res = await fetch('/api/season/rankings');
+        if (!res.ok) return;
+        const data = await res.json();
+        const rankings = data.rankings || [];
+        
+        const myIdStr = userProfile.id.toString();
+        const myIndex = rankings.findIndex((r: any) => 
+          r.player_id?.toString() === myIdStr || 
+          (r.username && r.username === userProfile.name)
+        );
+        
+        if (myIndex !== -1) {
+          setLatestSeasonData({
+            rank: myIndex + 1,
+            points: rankings[myIndex].points
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch latest season stats:", err);
+      }
+    };
+    
+    if (userProfile?.id) {
+      fetchLatestStats();
     }
   }, [userProfile]);
 
@@ -245,11 +278,15 @@ export default function ProfilePage() {
                   <div className="flex">
                     <div className="flex-1 p-8 text-center border-r border-[#c9a44c]/10">
                       <span className="text-[10px] font-bold text-[#8b6914] uppercase tracking-widest block mb-1 opacity-60">Global Rank</span>
-                      <span className="text-5xl font-bold text-[#b8892e] block" style={{ fontFamily: 'Georgia, serif' }}>#{userProfile?.season?.rank || '—'}</span>
+                      <span className="text-5xl font-bold text-[#b8892e] block" style={{ fontFamily: 'Georgia, serif' }}>
+                        #{latestSeasonData?.rank || userProfile?.season?.rank || '—'}
+                      </span>
                     </div>
                     <div className="flex-1 p-8 text-center">
                       <span className="text-[10px] font-bold text-[#8b6914] uppercase tracking-widest block mb-1 opacity-60">Total Points</span>
-                      <span className="text-5xl font-bold text-[#0f2318] block" style={{ fontFamily: 'Georgia, serif' }}>{(userProfile?.season?.points || 0).toLocaleString()}</span>
+                      <span className="text-5xl font-bold text-[#0f2318] block" style={{ fontFamily: 'Georgia, serif' }}>
+                        {(latestSeasonData?.points ?? userProfile?.season?.points ?? 0).toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>
