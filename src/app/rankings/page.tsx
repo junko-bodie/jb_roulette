@@ -250,7 +250,7 @@ export default function RankingsPage() {
                                 />
                                <div className="flex flex-col">
                                   <span className={`text-sm font-bold uppercase tracking-wider ${isMe ? 'text-[#0f2318]' : 'text-[#0f2318]/80'}`}>
-                                    {entry.username}
+                                    {entry.username || 'Anonymous Contender'}
                                   </span>
                                   <span className="text-[9px] font-bold text-black/20 uppercase tracking-widest mt-0.5">
                                     {isMe ? 'Official Profile' : 'Season Participant'}
