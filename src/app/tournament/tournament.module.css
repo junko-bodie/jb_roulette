@@ -676,17 +676,20 @@
 }
 
 .customScrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 .customScrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(201, 164, 76, 0.05);
+  border-radius: 4px;
 }
 .customScrollbar::-webkit-scrollbar-thumb {
-  background: rgba(201, 164, 76, 0.2);
-  border-radius: 10px;
+  background: rgba(201, 164, 76, 0.5);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 .customScrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(201, 164, 76, 0.4);
+  background: rgba(201, 164, 76, 0.8);
 }
 
 .stickyTable thead th {

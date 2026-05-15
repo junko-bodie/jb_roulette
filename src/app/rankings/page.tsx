@@ -49,17 +49,21 @@ export default function RankingsPage() {
 
   // Filter and Search Logic
   const filteredRankings = rankings
-    .filter(r => r.points >= 0) // Exclude negative points
-    .filter(r => 
-      r.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.player_id?.toString() === searchQuery
-    );
+    .filter(r => r.points >= 0) // Exclude negative points as requested
+    .filter(r => {
+      const search = searchQuery.toLowerCase();
+      if (!search) return true;
+      return (
+        (r.username || '').toLowerCase().includes(search) ||
+        r.player_id?.toString() === search
+      );
+    });
 
   // Use profile ID from context to match database records
   const myIdStr = userProfile?.id?.toString();
   const myIndex = rankings.findIndex(r => 
     r.player_id?.toString() === myIdStr || 
-    r.username === userProfile?.name
+    (r.username && r.username === userProfile?.name)
   );
   const myEntry = myIndex !== -1 ? rankings[myIndex] : null;
   const myRank = myIndex !== -1 ? myIndex + 1 : 0;
@@ -168,13 +172,13 @@ export default function RankingsPage() {
                  
                  <div className="flex gap-16 mt-10">
                     <div className="flex flex-col items-center gap-1">
-                       <span className="text-[9px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.2em]">Contenders</span>
+                       <span className="text-[9px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.2em]">Total Contenders</span>
                        <span className="text-2xl font-bold text-white tabular-nums tracking-tight">{rankings.length.toLocaleString()}</span>
                     </div>
                     <div className="w-px h-10 bg-[#c9a44c]/20" />
                     <div className="flex flex-col items-center gap-1">
-                       <span className="text-[9px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.2em]">Active Pool</span>
-                       <span className="text-2xl font-bold text-white tabular-nums tracking-tight">{rankings.filter(r => r.points > 0).length.toLocaleString()}</span>
+                       <span className="text-[9px] font-bold text-[#c9a44c]/60 uppercase tracking-[0.2em]">Registry Count</span>
+                       <span className="text-2xl font-bold text-white tabular-nums tracking-tight">{filteredRankings.length.toLocaleString()}</span>
                     </div>
                  </div>
 
@@ -204,7 +208,7 @@ export default function RankingsPage() {
               </div>
 
               {/* Table Wrapper with Max Height for Scrollability */}
-              <div className={`w-full max-h-[600px] overflow-y-auto ${styles.customScrollbar}`}>
+              <div className={`w-full min-h-[450px] max-h-[650px] overflow-y-auto ${styles.customScrollbar} bg-white/5`}>
                 <table className={`w-full border-collapse ${styles.stickyTable}`}>
                   <thead>
                     <tr className="border-b border-[#c9a44c]/20 bg-[#f5edd5]">
@@ -217,11 +221,11 @@ export default function RankingsPage() {
                   </thead>
                   <tbody className="divide-y divide-[#c9a44c]/10 bg-white/40">
                     {filteredRankings.length > 0 ? filteredRankings.map((entry) => {
-                      // Find actual global rank from original rankings array
-                      const globalRank = rankings.findIndex(r => r.player_id === entry.player_id) + 1;
+                      // Find actual global rank from original rankings array using string ID comparison
+                      const globalRank = rankings.findIndex(r => r.player_id?.toString() === entry.player_id?.toString()) + 1;
                       const displayRank = globalRank;
                       const myIdStr = userProfile?.id?.toString();
-                      const isMe = entry.player_id?.toString() === myIdStr || entry.username === userProfile?.name;
+                      const isMe = entry.player_id?.toString() === myIdStr || (entry.username && entry.username === userProfile?.name);
                       const isTop3 = displayRank <= 3;
                       const isElite = displayRank <= 50;
 
