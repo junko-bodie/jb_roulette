@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { type SpinResult, spinWheel, recordSpinResult, type WheelType } from '@/lib/rng';
 import { type GamePhase } from '@/lib/gamePhases';
 import { type PlacedBet, BET_MAP } from '@/lib/bets';
@@ -79,6 +79,32 @@ export function useGameState() {
 
   // Calculate total bet
   const totalBet = Array.from(bets.values()).reduce((sum, b) => sum + b.amount, 0);
+
+  // Auto-disable delete mode when no bets remain (prevents locked state)
+  useEffect(() => {
+    if (deleteMode && bets.size === 0) {
+      setDeleteMode(false);
+    }
+  }, [bets, deleteMode]);
+
+  // Load history from local storage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('roulette_history');
+    if (saved) {
+      try {
+        setHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse history', e);
+      }
+    }
+  }, []);
+
+  // Save history to local storage when it changes
+  useEffect(() => {
+    if (history.length > 0) {
+      localStorage.setItem('roulette_history', JSON.stringify(history));
+    }
+  }, [history]);
 
   /**
    * Place a chip on a bet zone.
@@ -381,6 +407,14 @@ export function useGameState() {
     setDeleteMode(false);
   }, []);
 
+  const resetSessionStats = useCallback(() => {
+    setSessionStats({
+      lastBet: 0,
+      lastWin: 0,
+      sessionWin: 0
+    });
+  }, []);
+
   return {
     // State
     balance,
@@ -415,6 +449,7 @@ export function useGameState() {
     executeSpin,
     resolveResult,
     startNewRound,
+    resetSessionStats,
     setPhase,
   };
 }

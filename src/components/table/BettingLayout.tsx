@@ -699,7 +699,7 @@ const BettingLayout = memo(function BettingLayout({
         style={{ boxShadow: '0 0 30px rgba(0,0,0,0.5)' }}
       >
         {/* ZEROS BLOCK */}
-        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-t border-l border-b border-[#a5f3e0] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
+        <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-t border-l border-b border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
           <NumberCell
             num={0}
             bet={bets.get('straight-0')}
@@ -710,7 +710,7 @@ const BettingLayout = memo(function BettingLayout({
             phase={phase}
             style={{
               borderWidth: '0 1px 1px 0',
-              borderColor: '#a5f3e0', // Even brighter teal for maximum definition
+              borderColor: '#5ea896', // Match rest of the table
             }}
             isHovered={hoveredNumbers.includes(0)}
             onNumberHover={handleNumberHover}
@@ -735,7 +735,7 @@ const BettingLayout = memo(function BettingLayout({
               phase={phase}
               style={{
                 borderWidth: '0 1px 1px 0',
-                borderColor: '#a5f3e0'
+                borderColor: '#5ea896'
               }}
               isHovered={hoveredNumbers.includes(37)}
               onNumberHover={handleNumberHover}
@@ -842,7 +842,9 @@ const BettingLayout = memo(function BettingLayout({
             <DropZone betId="trio-0-1-2" x="0%" y="66.6%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-1-2')} phase={phase} numbers={[0, 1, 2]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('trio-0-1-2') : true} />
             {wheelType === 'american' ? (
               <DropZone betId="trio-0-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-2-3')} phase={phase} numbers={[0, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('trio-0-2-3') : true} />
-            ) : null}
+            ) : (
+              <DropZone betId="trio-0-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-0-2-3')} phase={phase} numbers={[0, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('trio-0-2-3') : true} />
+            )}
             {wheelType === 'american' && (
               <DropZone betId="trio-00-2-3" x="0%" y="33.3%" bets={bets} onPlace={onPlaceBet} onRemove={onRemoveBet} disabled={disabled} isWinner={isBetWinner('trio-00-2-3')} phase={phase} numbers={[37, 2, 3]} onHover={handleHover} onHoverEnd={handleHoverEnd} deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('trio-00-2-3') : true} />
             )}
@@ -886,9 +888,9 @@ const BettingLayout = memo(function BettingLayout({
       </div>
 
       {/* SECTION 2: Dozens */}
-      <div className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full bg-black/10">
+      <div className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full">
         <div className="bg-transparent" />
-        <div className="grid grid-cols-3 gap-0 border-l border-[#5ea896]">
+        <div className="grid grid-cols-3 gap-0 border-l border-[#5ea896] bg-black/10">
           <OutsideBetCell label="1st 12" bet={bets.get('dozen-1st')} onPlace={() => onPlaceBet('dozen-1st')} onRemove={() => onRemoveBet('dozen-1st')} disabled={disabled} isWinner={isBetWinner('dozen-1st')} phase={phase} numbers={DOZEN_1ST} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-1st" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-1st') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_1ST.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
           <OutsideBetCell label="2nd 12" bet={bets.get('dozen-2nd')} onPlace={() => onPlaceBet('dozen-2nd')} onRemove={() => onRemoveBet('dozen-2nd')} disabled={disabled} isWinner={isBetWinner('dozen-2nd')} phase={phase} numbers={DOZEN_2ND} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-2nd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-2nd') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_2ND.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
           <OutsideBetCell label="3rd 12" bet={bets.get('dozen-3rd')} onPlace={() => onPlaceBet('dozen-3rd')} onRemove={() => onRemoveBet('dozen-3rd')} disabled={disabled} isWinner={isBetWinner('dozen-3rd')} phase={phase} numbers={DOZEN_3RD} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="dozen-3rd" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('dozen-3rd') : true} style={{ borderRight: '1px solid #5ea896', borderBottom: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 12 && DOZEN_3RD.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
@@ -897,9 +899,9 @@ const BettingLayout = memo(function BettingLayout({
       </div>
 
       {/* SECTION 3: Even Chances */}
-      <div className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full rounded-b-lg bg-black/10">
+      <div className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[48px_1fr_40px] md:grid-cols-[60px_1fr_48px] gap-0 w-full">
         <div className="bg-transparent" />
-        <div className="grid grid-cols-6 gap-0 border-l border-b border-[#5ea896]">
+        <div className="grid grid-cols-6 gap-0 border-l border-b border-[#5ea896] bg-black/10 rounded-bl-lg">
           <OutsideBetCell label="1-18" bet={bets.get('low')} onPlace={() => onPlaceBet('low')} onRemove={() => onRemoveBet('low')} disabled={disabled} isWinner={isBetWinner('low')} phase={phase} numbers={LOW_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="low" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('low') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && LOW_NUMBERS.every(n => hoveredNumbers.includes(n))} className="rounded-bl-lg" isCompact={isCompact} />
           <OutsideBetCell label="Even" bet={bets.get('even')} onPlace={() => onPlaceBet('even')} onRemove={() => onRemoveBet('even')} disabled={disabled} isWinner={isBetWinner('even')} phase={phase} numbers={EVEN_NUMBERS} onHover={handleHover} onHoverEnd={handleHoverEnd} betId="even" deleteMode={deleteMode} onPopLastChip={onPopLastChip} onClearZone={onClearZone} isMine={myBets ? myBets.has('even') : true} style={{ borderRight: '1px solid #5ea896' }} isHovered={hoveredNumbers.length === 18 && EVEN_NUMBERS.every(n => hoveredNumbers.includes(n))} isCompact={isCompact} />
           <OutsideBetCell

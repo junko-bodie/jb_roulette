@@ -6,9 +6,10 @@ import styles from './modal.module.css';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onResetSession?: () => void;
 }
 
-export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export default function SettingsModal({ isOpen, onClose, onResetSession }: SettingsModalProps) {
   const { 
     isSoundEnabled, 
     setIsSoundEnabled, 
@@ -23,6 +24,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   } = useGame();
 
   const [resetState, setResetState] = useState<'idle' | 'resetting' | 'success'>('idle');
+  const [resetSessionState, setResetSessionState] = useState<'idle' | 'resetting' | 'success'>('idle');
 
   const handleResetBalance = async () => {
     setResetState('resetting');
@@ -33,6 +35,15 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     
     // Return to idle after feedback
     setTimeout(() => setResetState('idle'), 2000);
+  };
+
+  const handleResetSession = async () => {
+    if (!onResetSession) return;
+    setResetSessionState('resetting');
+    await new Promise(r => setTimeout(r, 400));
+    onResetSession();
+    setResetSessionState('success');
+    setTimeout(() => setResetSessionState('idle'), 2000);
   };
 
   return (
@@ -195,6 +206,64 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   </AnimatePresence>
                 </motion.button>
               </div>
+
+              {onResetSession && (
+                <div className={styles.settingsRow} style={{ marginTop: '4px', border: '1px solid rgba(201, 164, 76, 0.2)', background: 'rgba(201, 164, 76, 0.05)' }}>
+                  <div className={styles.settingsInfo}>
+                    <span className={styles.settingsLabel} style={{ color: '#c9a44c' }}>Reset Session Stats</span>
+                    <span className={styles.settingsDesc}>Clear session win/loss totals</span>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleResetSession}
+                    disabled={resetSessionState !== 'idle'}
+                    className={styles.btnAction}
+                    style={{ 
+                      padding: '8px 16px', 
+                      fontSize: '11px', 
+                      background: resetSessionState === 'success' ? '#22c55e' : 'rgba(201, 164, 76, 0.1)', 
+                      color: resetSessionState === 'success' ? '#fff' : '#c9a44c',
+                      border: `1px solid ${resetSessionState === 'success' ? '#22c55e' : 'rgba(201, 164, 76, 0.3)'}`,
+                      minWidth: '100px',
+                      transition: 'background 0.3s, color 0.3s, border-color 0.3s'
+                    }}
+                  >
+                    <AnimatePresence mode="wait">
+                      {resetSessionState === 'idle' && (
+                        <motion.span
+                          key="idle"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                        >
+                          Clear Now
+                        </motion.span>
+                      )}
+                      {resetSessionState === 'resetting' && (
+                        <motion.span
+                          key="resetting"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                        >
+                          Clearing...
+                        </motion.span>
+                      )}
+                      {resetSessionState === 'success' && (
+                        <motion.span
+                          key="success"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                        >
+                          Done!
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                </div>
+              )}
             </div>
 
             <div className={styles.footer}>

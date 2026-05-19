@@ -80,7 +80,7 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.6 }}
-              className="relative flex flex-col items-center mb-12"
+              className="relative flex flex-col items-center mb-24"
             >
               <div
                 className="absolute inset-0 rounded-full blur-[80px] opacity-40"
@@ -112,7 +112,7 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
-                className="flex flex-col items-center"
+                className="flex flex-col items-center mt-6"
               >
                 <span className="text-[14px] text-white/70 font-bold uppercase tracking-[0.4em] mb-4">
                   {payout.netResult >= 0 ? 'Net Win' : 'Net Loss'}

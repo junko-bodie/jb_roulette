@@ -460,7 +460,7 @@ export default function GamePage() {
 
       {/* Modals */}
       <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} onResetSession={game.resetSessionStats} />
 
       {/* Insufficient Funds Toast */}
       <Toast
