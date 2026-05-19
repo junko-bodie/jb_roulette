@@ -700,27 +700,6 @@ const BettingLayout = memo(function BettingLayout({
       >
         {/* ZEROS BLOCK */}
         <div className={`grid ${wheelType === 'american' ? 'grid-rows-2' : 'grid-rows-1'} gap-0 border-t border-l border-b border-[#5ea896] rounded-tl-lg overflow-hidden bg-black/10 relative`}>
-          <NumberCell
-            num={0}
-            bet={bets.get('straight-0')}
-            onPlace={() => onPlaceBet('straight-0')}
-            onRemove={() => onRemoveBet('straight-0')}
-            disabled={disabled}
-            isWinner={isWinningNumber(0) || isBetWinner('straight-0')}
-            phase={phase}
-            style={{
-              borderWidth: '0 1px 1px 0',
-              borderColor: '#5ea896', // Match rest of the table
-            }}
-            isHovered={hoveredNumbers.includes(0)}
-            onNumberHover={handleNumberHover}
-            onNumberHoverEnd={handleNumberHoverEnd}
-            deleteMode={deleteMode}
-            onPopLastChip={onPopLastChip}
-            onClearZone={onClearZone}
-            isMine={myBets ? myBets.has('straight-0') : true}
-            isCompact={isCompact}
-          />
           {wheelType === 'american' && (
             <NumberCell
               num={37}
@@ -744,6 +723,27 @@ const BettingLayout = memo(function BettingLayout({
               isCompact={isCompact}
             />
           )}
+          <NumberCell
+            num={0}
+            bet={bets.get('straight-0')}
+            onPlace={() => onPlaceBet('straight-0')}
+            onRemove={() => onRemoveBet('straight-0')}
+            disabled={disabled}
+            isWinner={isWinningNumber(0) || isBetWinner('straight-0')}
+            phase={phase}
+            style={{
+              borderWidth: '0 1px 1px 0',
+              borderColor: '#5ea896', // Match rest of the table
+            }}
+            isHovered={hoveredNumbers.includes(0)}
+            onNumberHover={handleNumberHover}
+            onNumberHoverEnd={handleNumberHoverEnd}
+            deleteMode={deleteMode}
+            onPopLastChip={onPopLastChip}
+            onClearZone={onClearZone}
+            isMine={myBets ? myBets.has('straight-0') : true}
+            isCompact={isCompact}
+          />
           {/* Split 0-00 target (American only) */}
           {wheelType === 'american' && (
             <DropZone
