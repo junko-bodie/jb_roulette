@@ -150,7 +150,7 @@ function useIsPortraitMobile() {
 }
 
 export default function GamePage() {
-  const { user, isLoading: authLoading, userProfile, isSoundEnabled, isPopupEnabled } = useGame();
+  const { user, isLoading: authLoading, userProfile, isSoundEnabled, isMusicEnabled, isPopupEnabled } = useGame();
   const router = useRouter();
   const game = useGameState();
   const isPortraitMobile = useIsPortraitMobile();
@@ -173,7 +173,7 @@ export default function GamePage() {
 
   // Handle background music
   useEffect(() => {
-    if (isSoundEnabled) {
+    if (isMusicEnabled) {
       import('@/lib/audioEngine').then(({ soundEngine }) => {
         soundEngine?.playBackgroundMusic();
       });
@@ -188,7 +188,7 @@ export default function GamePage() {
         soundEngine?.stopBackgroundMusic();
       });
     };
-  }, [isSoundEnabled]);
+  }, [isMusicEnabled]);
 
   const handleSpin = useCallback(async () => {
     const result = await game.executeSpin();

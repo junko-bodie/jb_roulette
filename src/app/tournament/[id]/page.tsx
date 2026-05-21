@@ -188,7 +188,7 @@ export default function TournamentPage() {
     setLastSpinBets,
     showResult
   } = useTournament();
-  const { userProfile } = useGame();
+  const { userProfile, isMusicEnabled } = useGame();
 
   // Portrait-lock
   const isPortraitMobile = useIsPortraitMobile();
@@ -215,6 +215,7 @@ export default function TournamentPage() {
       const isVeryStart = currentRound === 1 && currentSpin === 1;
       if (isVeryStart) {
         setIsStarting(true);
+        soundEngine?.announceMatchFound?.();
         const timer = setTimeout(() => {
           setIsStarting(false);
           hasStartedRef.current = true;
@@ -226,6 +227,28 @@ export default function TournamentPage() {
       }
     }
   }, [tournament?.status, currentRound, currentSpin]);
+
+  // Handle background music based on tournament state
+  useEffect(() => {
+    if (!tournament) return;
+
+    if (isMusicEnabled) {
+      if (tournament.status === 'waiting') {
+        soundEngine?.playWaitingBackgroundMusic();
+      } else {
+        soundEngine?.stopWaitingBackgroundMusic();
+        soundEngine?.stopBackgroundMusic();
+      }
+    } else {
+      soundEngine?.stopWaitingBackgroundMusic();
+      soundEngine?.stopBackgroundMusic();
+    }
+
+    return () => {
+      soundEngine?.stopWaitingBackgroundMusic();
+      soundEngine?.stopBackgroundMusic();
+    };
+  }, [tournament?.status, isMusicEnabled]);
 
   const [selectedChip, setSelectedChip] = useState(10);
   const [deleteMode, setDeleteMode] = useState(false);

@@ -46,14 +46,24 @@ function AnimatedCounter({ value, duration = 1200 }: { value: number; duration?:
 }
 
 export default function ResultDisplay({ result, payout, visible, onDismiss, tournamentMode }: ResultDisplayProps) {
+  const onDismissRef = useRef(onDismiss);
+  
+  // Keep the ref updated with the latest callback
   useEffect(() => {
-    if (visible && result) {
-      // Auto-dismiss: 3s for both modes
-      const duration = 3000;
-      const timer = setTimeout(onDismiss, duration);
+    onDismissRef.current = onDismiss;
+  }, [onDismiss]);
+
+  useEffect(() => {
+    if (visible) {
+      // Auto-dismiss: 2.5s for tournament mode, 3s for normal mode
+      // It uses the ref so if the parent re-renders and provides a new onDismiss, the timeout doesn't restart
+      const duration = tournamentMode ? 2500 : 3000;
+      const timer = setTimeout(() => {
+        onDismissRef.current();
+      }, duration);
       return () => clearTimeout(timer);
     }
-  }, [visible, result, onDismiss, tournamentMode]);
+  }, [visible, tournamentMode]);
 
   return (
     <AnimatePresence>
@@ -132,7 +142,7 @@ export default function ResultDisplay({ result, payout, visible, onDismiss, tour
                   <span className="text-[48px] mr-2 opacity-80">
                     {payout.netResult > 0 ? '+' : payout.netResult < 0 ? '-' : ''}$
                   </span>
-                  <AnimatedCounter value={Math.abs(payout.netResult)} duration={1500} />
+                  <AnimatedCounter value={Math.abs(payout.netResult)} duration={tournamentMode ? 1500 : 1500} />
                 </motion.span>
               </motion.div>
             )}

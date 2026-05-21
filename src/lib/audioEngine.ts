@@ -14,7 +14,9 @@ import { Howl, Howler } from 'howler';
 class AudioEngine {
   private sounds: Record<string, Howl> = {};
   private enabled: boolean = true;
+  private musicEnabled: boolean = true;
   private spinId: number | null = null;
+  private activeBackground: 'standard' | 'waiting' | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -104,6 +106,12 @@ class AudioEngine {
           loop: true,
           preload: true,
         }),
+        waitingBackground: new Howl({
+          src: ['/sounds/waiting_background.mp3'],
+          volume: 0.2, // waiting background volume
+          loop: true,
+          preload: true,
+        }),
       };
 
       // ── Visibility Guard ──
@@ -114,6 +122,13 @@ class AudioEngine {
         }
         if (document.hidden) {
           this.stopAll();
+        } else {
+          // Resume appropriate background music when tab becomes visible again
+          if (this.activeBackground === 'waiting') {
+            this.playWaitingBackgroundMusic();
+          } else if (this.activeBackground === 'standard') {
+            this.playBackgroundMusic();
+          }
         }
       });
     }
@@ -138,7 +153,34 @@ class AudioEngine {
   
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
-    if (!enabled) this.stopAll();
+    if (!enabled) {
+      // Intentionally mapping everything off when 'Sound' is off
+      Object.values(this.sounds).forEach(s => {
+        if (s !== this.sounds.background) s.stop();
+      });
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      this.spinId = null;
+    }
+  }
+
+  setMusicEnabled(enabled: boolean) {
+    this.musicEnabled = enabled;
+    if (!enabled) {
+      if (this.sounds.background) {
+        this.sounds.background.stop();
+      }
+      if (this.sounds.waitingBackground) {
+        this.sounds.waitingBackground.stop();
+      }
+    } else {
+      if (this.activeBackground === 'waiting') {
+        this.playWaitingBackgroundMusic();
+      } else {
+        this.playBackgroundMusic();
+      }
+    }
   }
 
   play2XClick() {
@@ -203,11 +245,19 @@ class AudioEngine {
 
   startSpinSound() {
     if (typeof document !== 'undefined' && document.hidden) return;
-    if (this.enabled && this.sounds.spin) {
-      this.sounds.spin.stop();
-      this.sounds.spin.volume(0.25);
-      this.sounds.spin.rate(1.0);
-      this.spinId = this.sounds.spin.play();
+    
+    // Attempt to pause background music if it was playing, so we can resume later
+    if (this.musicEnabled && this.sounds.background && this.sounds.background.playing()) {
+      this.sounds.background.pause();
+    }
+    
+    if (this.enabled) {
+      if (this.sounds.spin) {
+        this.sounds.spin.stop();
+        this.sounds.spin.volume(0.25);
+        this.sounds.spin.rate(1.0);
+        this.spinId = this.sounds.spin.play();
+      }
     }
   }
 
@@ -286,18 +336,46 @@ class AudioEngine {
     this.playLossSound();
   }
 
+  announceMatchFound() {
+    this.announce("Match found!");
+  }
+
+
   // ── Global controls ───────────────────────────────────────────────────────
 
   playBackgroundMusic() {
     if (typeof document !== 'undefined' && document.hidden) return;
-    if (this.enabled && this.sounds.background && !this.sounds.background.playing()) {
+    this.activeBackground = 'standard';
+    if (this.sounds.waitingBackground && this.sounds.waitingBackground.playing()) {
+      this.sounds.waitingBackground.stop();
+    }
+    if (this.musicEnabled && this.sounds.background && !this.sounds.background.playing()) {
       this.sounds.background.play();
     }
   }
 
   stopBackgroundMusic() {
+    this.activeBackground = null;
     if (this.sounds.background) {
       this.sounds.background.stop();
+    }
+  }
+
+  playWaitingBackgroundMusic() {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    this.activeBackground = 'waiting';
+    if (this.sounds.background && this.sounds.background.playing()) {
+      this.sounds.background.stop();
+    }
+    if (this.musicEnabled && this.sounds.waitingBackground && !this.sounds.waitingBackground.playing()) {
+      this.sounds.waitingBackground.play();
+    }
+  }
+
+  stopWaitingBackgroundMusic() {
+    this.activeBackground = null;
+    if (this.sounds.waitingBackground) {
+      this.sounds.waitingBackground.stop();
     }
   }
 

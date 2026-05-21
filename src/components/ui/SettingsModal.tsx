@@ -13,6 +13,8 @@ export default function SettingsModal({ isOpen, onClose, onResetSession }: Setti
   const { 
     isSoundEnabled, 
     setIsSoundEnabled, 
+    isMusicEnabled,
+    setIsMusicEnabled,
     isTimerEnabled, 
     setIsTimerEnabled, 
     isPopupEnabled,
@@ -90,6 +92,23 @@ export default function SettingsModal({ isOpen, onClose, onResetSession }: Setti
                   <motion.div
                     className={styles.toggleThumb}
                     animate={{ x: isSoundEnabled ? 22 : 0 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                </button>
+              </div>
+
+              <div className={styles.settingsRow}>
+                <div className={styles.settingsInfo}>
+                  <span className={styles.settingsLabel}>Background Music</span>
+                  <span className={styles.settingsDesc}>Continuous casino ambiance</span>
+                </div>
+                <button
+                  onClick={() => setIsMusicEnabled(!isMusicEnabled)}
+                  className={`${styles.toggle} ${isMusicEnabled ? styles.toggleActive : ''}`}
+                >
+                  <motion.div
+                    className={styles.toggleThumb}
+                    animate={{ x: isMusicEnabled ? 22 : 0 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 </button>

@@ -118,7 +118,7 @@ const RouletteTable = memo(function RouletteTable({
   const canBet = !isSpinning && phase === 'BETTING';
   const isLocked = phase === 'LOCKED';
   const hasBets = bets.size > 0;
-  const spinEnabled = canBet && hasBets;
+  const spinEnabled = canBet; // Always allow spin, even without bets (test spins)
 
   return (
     <div className="mx-auto w-full max-w-[1500px] h-full flex flex-col">
@@ -236,6 +236,7 @@ const RouletteTable = memo(function RouletteTable({
               isSpinning={isSpinning}
               onSpinComplete={onSpinComplete}
               size={wheelSize}
+              tournamentMode={tournamentMode}
             />
 
             {/* Wheel type toggle — overlaid at bottom center of wheel */}

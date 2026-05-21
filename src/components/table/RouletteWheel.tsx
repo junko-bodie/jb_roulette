@@ -15,6 +15,7 @@ interface RouletteWheelProps {
   isSpinning: boolean;
   onSpinComplete: () => void;
   size?: number;
+  tournamentMode?: boolean;
 }
 
 const TWO_PI = Math.PI * 2;
@@ -34,7 +35,8 @@ const RouletteWheel = memo(function RouletteWheel({
   spinResult,
   isSpinning,
   onSpinComplete,
-  size = 480
+  size = 480,
+  tournamentMode = false
 }: RouletteWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cacheCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -445,7 +447,10 @@ const RouletteWheel = memo(function RouletteWheel({
         if (t >= 1) {
           s.spinning = false; s.ballSettled = true;
           s.wheelAngle = s.targetAngle; s.ballAngle = s.targetBallAngle; s.ballRadius = BALL_ORBIT_END; s.ballZ = 0;
-          soundEngine?.stopAll();
+          soundEngine?.stopSpinSound();
+          if (!tournamentMode) {
+            soundEngine?.playBackgroundMusic();
+          }
           if (onSpinComplete) onSpinComplete();
         }
       } else {
@@ -511,4 +516,4 @@ const RouletteWheel = memo(function RouletteWheel({
 });
 
 export default RouletteWheel;
-
+

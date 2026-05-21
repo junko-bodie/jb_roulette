@@ -31,6 +31,8 @@ interface GameContextType {
   setBalance: (value: number | ((prev: number) => number)) => void;
   isSoundEnabled: boolean;
   setIsSoundEnabled: (value: boolean) => void;
+  isMusicEnabled: boolean;
+  setIsMusicEnabled: (value: boolean) => void;
   isTimerEnabled: boolean;
   setIsTimerEnabled: (value: boolean) => void;
   isPopupEnabled: boolean;
@@ -53,6 +55,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [balance, setBalance] = useState(1000);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [isTimerEnabled, setIsTimerEnabled] = useState(true);
   const [isPopupEnabled, setIsPopupEnabled] = useState(true);
   const [isTournamentMode, setIsTournamentMode] = useState(false);
@@ -104,8 +107,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           const data = await res.json();
           if (data && !data.error) {
             setBalance(Number(data.balance) || 1000);
-            setIsSoundEnabled(data.is_sound_enabled ?? true);
-            setIsTimerEnabled(data.is_timer_enabled ?? true);
+            setIsSoundEnabled(data.is_sound_enabled ?? true);              setIsMusicEnabled(data.is_music_enabled ?? true);            setIsTimerEnabled(data.is_timer_enabled ?? true);
             setIsPopupEnabled(data.is_popup_enabled ?? true);
             setStartingBalance(data.starting_balance ?? 1000);
             setUserProfile({
@@ -130,8 +132,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         try {
           const parsed = JSON.parse(saved);
           setBalance(parsed.balance ?? 1000);
-          setIsSoundEnabled(parsed.isSoundEnabled ?? true);
-          setIsTimerEnabled(parsed.isTimerEnabled ?? true);
+          setIsSoundEnabled(parsed.isSoundEnabled ?? true);            setIsMusicEnabled(parsed.isMusicEnabled ?? true);          setIsTimerEnabled(parsed.isTimerEnabled ?? true);
           setIsPopupEnabled(parsed.isPopupEnabled ?? true);
           setStartingBalance(parsed.startingBalance ?? 1000);
           setUserProfile(parsed.userProfile ?? { name: 'Player', avatar: '/avatars/default.png' });
@@ -148,6 +149,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const settings = {
       balance,
       isSoundEnabled,
+      isMusicEnabled,
       isTimerEnabled: isTournamentMode ? true : isTimerEnabled,
       isPopupEnabled,
       startingBalance,
@@ -169,6 +171,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
               name: userProfile.name,
               avatar_url: userProfile.avatar,
               is_sound_enabled: isSoundEnabled,
+              is_music_enabled: isMusicEnabled,
               is_timer_enabled: isTimerEnabled,
               is_popup_enabled: isPopupEnabled,
               starting_balance: startingBalance,
@@ -193,10 +196,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     }
 
     import('@/lib/audioEngine').then(({ soundEngine }) => {
-      if (soundEngine) soundEngine.setEnabled(isSoundEnabled);
-    });
-  }, [balance, isSoundEnabled, isTimerEnabled, userProfile, isTournamentMode, user, isPopupEnabled, startingBalance]);
-
+        if (soundEngine) {
+          soundEngine.setEnabled(isSoundEnabled);
+          soundEngine.setMusicEnabled(isMusicEnabled);
+        }
+      });
+    }, [balance, isSoundEnabled, isMusicEnabled, isTimerEnabled, userProfile, isTournamentMode, user, isPopupEnabled, startingBalance]);
   return (
     <GameContext.Provider
       value={{
@@ -204,6 +209,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setBalance,
         isSoundEnabled,
         setIsSoundEnabled,
+        isMusicEnabled,
+        setIsMusicEnabled,
         isTimerEnabled: isTournamentMode ? true : isTimerEnabled,
         setIsTimerEnabled,
         isPopupEnabled,
