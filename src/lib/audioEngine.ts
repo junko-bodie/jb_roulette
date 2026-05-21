@@ -174,7 +174,9 @@ class AudioEngine {
       if (this.sounds.waitingBackground) {
         this.sounds.waitingBackground.stop();
       }
-    } else {
+    } else if (this.activeBackground !== null) {
+      // Only resume if a background track was already active (i.e. we're in-game).
+      // Never auto-start music on pages that never called play*BackgroundMusic().
       if (this.activeBackground === 'waiting') {
         this.playWaitingBackgroundMusic();
       } else {
