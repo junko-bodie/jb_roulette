@@ -171,6 +171,25 @@ export default function GamePage() {
     }
   }, [authLoading, user, router]);
 
+  // Handle background music
+  useEffect(() => {
+    if (isSoundEnabled) {
+      import('@/lib/audioEngine').then(({ soundEngine }) => {
+        soundEngine?.playBackgroundMusic();
+      });
+    } else {
+      import('@/lib/audioEngine').then(({ soundEngine }) => {
+        soundEngine?.stopBackgroundMusic();
+      });
+    }
+
+    return () => {
+      import('@/lib/audioEngine').then(({ soundEngine }) => {
+        soundEngine?.stopBackgroundMusic();
+      });
+    };
+  }, [isSoundEnabled]);
+
   const handleSpin = useCallback(async () => {
     const result = await game.executeSpin();
     if (!result) return;

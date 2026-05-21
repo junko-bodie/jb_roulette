@@ -98,6 +98,12 @@ class AudioEngine {
           volume: 0.8,
           preload: true,
         }),
+        background: new Howl({
+          src: ['/sounds/background.mp3'],
+          volume: 0.2, // background volume
+          loop: true,
+          preload: true,
+        }),
       };
 
       // ── Visibility Guard ──
@@ -281,6 +287,19 @@ class AudioEngine {
   }
 
   // ── Global controls ───────────────────────────────────────────────────────
+
+  playBackgroundMusic() {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    if (this.enabled && this.sounds.background && !this.sounds.background.playing()) {
+      this.sounds.background.play();
+    }
+  }
+
+  stopBackgroundMusic() {
+    if (this.sounds.background) {
+      this.sounds.background.stop();
+    }
+  }
 
   stopAll() {
     Object.values(this.sounds).forEach(s => s.stop());
