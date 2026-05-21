@@ -11,9 +11,10 @@ import dynamic from 'next/dynamic';
 import Avatar from '@/components/ui/Avatar';
 const WelcomeVideoModal = dynamic(() => import('@/components/ui/WelcomeVideoModal'), { ssr: false, loading: () => null });
 import { User, Settings, BarChart2, LogOut, Play, Trophy, ChevronLeft } from 'lucide-react';
+import { soundEngine } from '@/lib/audioEngine';
 
 export default function Home() {
-  const { user, isLoading, userProfile, balance } = useGame();
+  const { user, isLoading, userProfile, balance, isSoundEnabled, isMusicEnabled } = useGame();
   const router = useRouter();
   const supabase = createClient();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -153,7 +154,15 @@ export default function Home() {
             {/* Solo Mode */}
             <motion.div
               className={styles.playCard}
-              onClick={() => router.push('/game')}
+              onClick={() => {
+                if (isSoundEnabled) {
+                  soundEngine?.playClick();
+                }
+                if (isMusicEnabled) {
+                  soundEngine?.playBackgroundMusic();
+                }
+                router.push('/game');
+              }}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
