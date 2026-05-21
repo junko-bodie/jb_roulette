@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '@/context/GameContext';
 import { createClient } from '@/lib/supabase/client';
+import { soundEngine } from '@/lib/audioEngine';
 import styles from './tournament.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 
 export default function TournamentLobby() {
-  const { user, userProfile, isLoading: isGameLoading } = useGame();
+  const { user, userProfile, isLoading: isGameLoading, isSoundEnabled, isMusicEnabled } = useGame();
   const router = useRouter();
   const supabase = createClient();
   const [isCreating, setIsCreating] = useState(false);
@@ -22,6 +23,12 @@ export default function TournamentLobby() {
 
   const handleStartTournament = async () => {
     setIsCreating(true);
+    if (isSoundEnabled) {
+      soundEngine?.playClick();
+    }
+    if (isMusicEnabled) {
+      soundEngine?.playWaitingBackgroundMusic();
+    }
     try {
       const response = await fetch('/api/tournament/create', {
         method: 'POST',

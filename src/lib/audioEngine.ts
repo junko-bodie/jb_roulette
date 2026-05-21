@@ -76,7 +76,7 @@ class AudioEngine {
           preload: true,
         }),
         lock: new Howl({
-          src: ['/sounds/lock.mp3'], 
+          src: ['/sounds/lock.mp3'],
           volume: 0.6,
           preload: true,
         }),
@@ -90,7 +90,7 @@ class AudioEngine {
           },
         }),
         denied: new Howl({
-          src: ['/sounds/denied.mp3'], 
+          src: ['/sounds/denied.mp3'],
           volume: 0.5,
           preload: true,
           onloaderror: (id, err) => console.warn('AudioEngine: Denied sound load error'),
@@ -102,13 +102,13 @@ class AudioEngine {
         }),
         background: new Howl({
           src: ['/sounds/background.mp3'],
-          volume: 0.2, // background volume
+          volume: 0.25, // background volume
           loop: true,
           preload: true,
         }),
         waitingBackground: new Howl({
           src: ['/sounds/waiting_background.mp3'],
-          volume: 0.2, // waiting background volume
+          volume: 0.45, // waiting background volume
           loop: true,
           preload: true,
         }),
@@ -150,7 +150,7 @@ class AudioEngine {
   }
 
   // ── Advanced Betting Sounds ────────────────────────────────────────────────
-  
+
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
     if (!enabled) {
@@ -247,12 +247,12 @@ class AudioEngine {
 
   startSpinSound() {
     if (typeof document !== 'undefined' && document.hidden) return;
-    
+
     // Attempt to pause background music if it was playing, so we can resume later
     if (this.musicEnabled && this.sounds.background && this.sounds.background.playing()) {
       this.sounds.background.pause();
     }
-    
+
     if (this.enabled) {
       if (this.sounds.spin) {
         this.sounds.spin.stop();
@@ -291,7 +291,7 @@ class AudioEngine {
 
     // Interrupt previous announcement if same type or high priority
     if (window.speechSynthesis.speaking) {
-       window.speechSynthesis.cancel();
+      window.speechSynthesis.cancel();
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -299,27 +299,27 @@ class AudioEngine {
     utterance.rate = 1.0; // Standard speed for clarity
     utterance.pitch = 1.05; // Slightly higher for premium feelminine voice (American or British)
     const voices = window.speechSynthesis.getVoices();
-    
+
     // Priority list of feminine-sounding English voices
     const feminineVoices = voices.filter(v => {
       const name = v.name.toLowerCase();
       const lang = v.lang.toLowerCase();
       const isEnglish = lang.startsWith('en');
-      const isFeminine = name.includes('female') || 
-                        name.includes('samantha') || 
-                        name.includes('victoria') || 
-                        name.includes('hazel') || 
-                        name.includes('zira') || 
-                        name.includes('serena') || 
-                        name.includes('susan') ||
-                        name.includes('moira');
+      const isFeminine = name.includes('female') ||
+        name.includes('samantha') ||
+        name.includes('victoria') ||
+        name.includes('hazel') ||
+        name.includes('zira') ||
+        name.includes('serena') ||
+        name.includes('susan') ||
+        name.includes('moira');
       return isEnglish && isFeminine;
     });
 
     // Select British (GB) first for elegance, then American (US), then any English Google voice
-    const selectedVoice = feminineVoices.find(v => v.lang.includes('gb')) || 
-                         feminineVoices.find(v => v.lang.includes('us')) ||
-                         voices.find(v => v.name.includes('Google US English') || (v.name.includes('Google') && v.lang.startsWith('en')));
+    const selectedVoice = feminineVoices.find(v => v.lang.includes('gb')) ||
+      feminineVoices.find(v => v.lang.includes('us')) ||
+      voices.find(v => v.name.includes('Google US English') || (v.name.includes('Google') && v.lang.startsWith('en')));
 
     if (selectedVoice) {
       utterance.voice = selectedVoice;
