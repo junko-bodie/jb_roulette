@@ -615,6 +615,29 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     };
   }, [id, loadTournament]);
 
+  // ── Mute all audio when connection is lost ──
+  useEffect(() => {
+    if (connectionStatus === 'offline' || connectionStatus === 'reconnecting') {
+      // Globally mute all Howler sounds (preserves playback state for resume)
+      try {
+        const { Howler } = require('howler');
+        Howler.mute(true);
+      } catch {}
+      // Cancel any in-progress speech synthesis
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      // Stop the sound engine's active sounds
+      soundEngine?.stopAll();
+    } else if (connectionStatus === 'connected') {
+      // Unmute when connection is restored
+      try {
+        const { Howler } = require('howler');
+        Howler.mute(false);
+      } catch {}
+    }
+  }, [connectionStatus]);
+
   // ── Smooth lobby timer ──
   useEffect(() => {
     if (tournament?.status !== 'waiting' || !tournament?.created_at) return;
