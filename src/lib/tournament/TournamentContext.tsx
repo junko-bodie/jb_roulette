@@ -28,6 +28,8 @@ export interface BettingEvent {
   betZone?: string;
 }
 
+export type ConnectionStatus = 'connected' | 'reconnecting' | 'offline';
+
 interface TournamentContextType {
   tournament: Tournament | null;
   currentRound: number;
@@ -75,6 +77,7 @@ interface TournamentContextType {
   updateWheelType: (type: 'american' | 'european') => Promise<void>;
   lastSpinBets: Map<string, PlacedBet>;
   setLastSpinBets: React.Dispatch<React.SetStateAction<Map<string, PlacedBet>>>;
+  connectionStatus: ConnectionStatus;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(undefined);
@@ -135,6 +138,12 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const announcedElimId = useRef<string | null>(null);
   const announcedLeaderId = useRef<string | null>(null);
   const announcedBettingSpinArr = useRef<string[]>([]);
+
+  // ── Connection resilience state ──
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connected');
+  const consecutiveErrorsRef = useRef<number>(0);
+  const connectionStatusRef = useRef<ConnectionStatus>('connected');
+  connectionStatusRef.current = connectionStatus;
 
   // Refs for stable closures
   const phaseRef = useRef<TournamentPhase>('waiting');
@@ -264,6 +273,13 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     if (!id || isFetchingRef.current) return;
     isFetchingRef.current = true;
 
+    // Track whether we were offline before this fetch
+    const wasOffline = connectionStatusRef.current === 'offline' || connectionStatusRef.current === 'reconnecting';
+    if (wasOffline) {
+      setConnectionStatus('reconnecting');
+      connectionStatusRef.current = 'reconnecting';
+    }
+
     try {
       const now = Date.now();
       const res = await fetch(`/api/tournament/${id}`);
@@ -323,6 +339,38 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       
       setError(null);
 
+      // ── Connection restored — handle reconnection ──
+      if (wasOffline) {
+        console.log('[Tournament] Connection restored — force-syncing state');
+        const serverPhaseOnReconnect = data.calculated_phase as TournamentPhase;
+
+        // Force adopt server state — skip all phase guards
+        setPhase(serverPhaseOnReconnect);
+        setCurrentRound(data.current_round || 1);
+
+        // Reset stale refs to prevent guards from blocking new state
+        spinSubmittedRef.current = '';
+        lastResetKeyRef.current = '';
+        generatedRef.current = '';
+        hasRestoredBetsRef.current = false;
+
+        // Clear stale local data
+        setPendingSpinData(null);
+        setBets(new Map());
+        setAllSpinBets([]);
+        setLastPlayerPayout(null);
+        setShowResult(false);
+        setDismissedSpinId(null);
+        setBotBets([]);
+      }
+
+      // Reset error counter on success
+      consecutiveErrorsRef.current = 0;
+      if (connectionStatusRef.current !== 'connected') {
+        setConnectionStatus('connected');
+        connectionStatusRef.current = 'connected';
+      }
+
       // Sync server time offset once per poll
       if (data.server_time) {
         setServerTimeOffset(data.server_time - now);
@@ -374,6 +422,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       }
 
       // ── Server-authoritative phase sync ──
+      // Skip phase guards if we just reconnected (already force-synced above)
+      if (!wasOffline) {
       const currentPriority = PHASE_PRIORITY[phaseRef.current] ?? 0;
       const serverPriority = PHASE_PRIORITY[serverPhase] ?? 0;
 
@@ -425,6 +475,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
           }
         }
       }
+      } // end if (!wasOffline)
 
       // ── Manage result popup visibility ──
       if (serverPhase === 'spinning') {
@@ -486,6 +537,16 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
 
     } catch (err: any) {
       setError(err.message);
+
+      // ── Connection failure tracking ──
+      consecutiveErrorsRef.current += 1;
+      console.warn(`[Tournament] Poll error #${consecutiveErrorsRef.current}:`, err.message);
+
+      if (consecutiveErrorsRef.current >= 2 && connectionStatusRef.current === 'connected') {
+        console.log('[Tournament] Connection lost — entering offline state');
+        setConnectionStatus('offline');
+        connectionStatusRef.current = 'offline';
+      }
     } finally {
       setIsLoading(false);
       isFetchingRef.current = false;
@@ -497,21 +558,62 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     loadTournament();
   }, [loadTournament]);
 
-  // ── Poll for tournament updates ──
+  // ── Poll for tournament updates (adaptive interval) ──
   useEffect(() => {
     if (!id || (tournament && tournament.status === 'completed')) return;
 
     let timeoutId: any;
     const poll = async () => {
       await loadTournament();
-      // Throttle background polling to 15s to prevent catch-up bursts on focus
       const isHidden = typeof document !== 'undefined' && document.hidden;
-      timeoutId = setTimeout(poll, isHidden ? 15000 : 1000);
+      // Adaptive polling: 3s when offline (battery friendly), 15s when hidden, 1s normal
+      const interval = connectionStatusRef.current === 'offline'
+        ? 3000
+        : isHidden ? 15000 : 1000;
+      timeoutId = setTimeout(poll, interval);
     };
 
     poll();
     return () => clearTimeout(timeoutId);
   }, [id, loadTournament, tournament?.status]);
+
+  // ── Online/offline/visibility event listeners for instant reconnect ──
+  useEffect(() => {
+    if (!id) return;
+
+    const handleOnline = () => {
+      console.log('[Tournament] Browser online event — triggering immediate poll');
+      // Don't set reconnecting here; loadTournament will handle it
+      loadTournament();
+    };
+
+    const handleOffline = () => {
+      console.log('[Tournament] Browser offline event');
+      setConnectionStatus('offline');
+      connectionStatusRef.current = 'offline';
+      consecutiveErrorsRef.current = 2; // Ensure threshold is met
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && connectionStatusRef.current !== 'connected') {
+        console.log('[Tournament] Tab visible + not connected — triggering immediate poll');
+        loadTournament();
+      } else if (!document.hidden) {
+        // Tab became visible while connected — still do a quick sync
+        loadTournament();
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [id, loadTournament]);
 
   // ── Smooth lobby timer ──
   useEffect(() => {
@@ -987,6 +1089,7 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     updateWheelType,
     lastSpinBets,
     setLastSpinBets,
+    connectionStatus,
   }), [
     tournament,
     currentRound,
@@ -1021,7 +1124,8 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     wheelType,
     updateWheelType,
     lastSpinBets,
-    setLastSpinBets
+    setLastSpinBets,
+    connectionStatus,
   ]);
 
   return (

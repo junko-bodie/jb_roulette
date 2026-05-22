@@ -132,6 +132,193 @@ function PortraitLockOverlay() {
 }
 
 /* ─────────────────────────────────────────────
+   Connection Overlay
+   Shown when tournament connection is lost/reconnecting
+───────────────────────────────────────────── */
+function ConnectionOverlay({ status }: { status: 'offline' | 'reconnecting' }) {
+  const isReconnecting = status === 'reconnecting';
+
+  return (
+    <motion.div
+      key="connection-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9998,
+        background: 'rgba(5, 13, 10, 0.92)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '24px',
+      }}
+    >
+      {/* Subtle background glow */}
+      <div style={{
+        position: 'absolute',
+        top: '30%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '300px',
+        height: '300px',
+        background: isReconnecting
+          ? 'radial-gradient(circle, rgba(201,164,76,0.12) 0%, transparent 70%)'
+          : 'radial-gradient(circle, rgba(239,68,68,0.08) 0%, transparent 70%)',
+        borderRadius: '50%',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Wifi icon */}
+      <motion.div
+        animate={isReconnecting
+          ? { scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }
+          : { opacity: [0.5, 1, 0.5] }
+        }
+        transition={{ duration: isReconnecting ? 1.2 : 2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ position: 'relative' }}
+      >
+        <svg
+          width="56"
+          height="56"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Wifi arcs */}
+          <path
+            d="M1.42 9.09a16 16 0 0 1 21.16 0"
+            stroke={isReconnecting ? '#c9a44c' : '#ef4444'}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={isReconnecting ? 0.4 : 0.3}
+          />
+          <path
+            d="M5.07 12.73a10 10 0 0 1 13.86 0"
+            stroke={isReconnecting ? '#c9a44c' : '#ef4444'}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={isReconnecting ? 0.6 : 0.4}
+          />
+          <path
+            d="M8.69 16.34a5 5 0 0 1 6.62 0"
+            stroke={isReconnecting ? '#c9a44c' : '#ef4444'}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={isReconnecting ? 0.8 : 0.6}
+          />
+          {/* Dot */}
+          <circle
+            cx="12"
+            cy="20"
+            r="1"
+            fill={isReconnecting ? '#c9a44c' : '#ef4444'}
+          />
+          {/* Slash line for offline */}
+          {!isReconnecting && (
+            <line
+              x1="3"
+              y1="3"
+              x2="21"
+              y2="21"
+              stroke="#ef4444"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          )}
+        </svg>
+
+        {/* Spinner ring for reconnecting */}
+        {isReconnecting && (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+            style={{
+              position: 'absolute',
+              inset: '-8px',
+              border: '2px solid transparent',
+              borderTopColor: '#c9a44c',
+              borderRightColor: 'rgba(201,164,76,0.3)',
+              borderRadius: '50%',
+            }}
+          />
+        )}
+      </motion.div>
+
+      {/* Label */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <div style={{
+          color: isReconnecting ? '#c9a44c' : '#ef4444',
+          fontWeight: 900,
+          fontSize: '10px',
+          letterSpacing: '0.4em',
+          textTransform: 'uppercase',
+        }}>
+          {isReconnecting ? 'Reconnecting' : 'Connection Lost'}
+        </div>
+        <h2 style={{
+          color: '#fff',
+          fontWeight: 900,
+          fontSize: '20px',
+          letterSpacing: '-0.01em',
+          lineHeight: 1.2,
+          margin: 0,
+          textAlign: 'center',
+        }}>
+          {isReconnecting ? 'Reconnecting to Tournament...' : 'Connection Lost'}
+        </h2>
+        <p style={{
+          color: 'rgba(255,255,255,0.4)',
+          fontSize: '13px',
+          fontWeight: 500,
+          lineHeight: 1.5,
+          margin: 0,
+          textAlign: 'center',
+          maxWidth: '320px',
+        }}>
+          {isReconnecting
+            ? 'Syncing with the tournament server...'
+            : 'Check your internet connection. The game will resume automatically when you reconnect.'
+          }
+        </p>
+      </div>
+
+      {/* Progress dots for reconnecting */}
+      {isReconnecting && (
+        <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.1, 0.8] }}
+              transition={{
+                duration: 1.2,
+                repeat: Infinity,
+                delay: i * 0.2,
+                ease: 'easeInOut',
+              }}
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: '#c9a44c',
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────────────────────────
    Hook: detects portrait on a touch device
 ───────────────────────────────────────────── */
 function useIsPortraitMobile() {
@@ -186,7 +373,8 @@ export default function TournamentPage() {
     updateWheelType,
     lastSpinBets,
     setLastSpinBets,
-    showResult
+    showResult,
+    connectionStatus
   } = useTournament();
   const { userProfile, isMusicEnabled } = useGame();
 
@@ -1030,6 +1218,13 @@ export default function TournamentPage() {
         flexDirection: 'column',
       }}
     >
+
+      {/* ═══ CONNECTION OVERLAY ═══ */}
+      <AnimatePresence>
+        {connectionStatus !== 'connected' && (
+          <ConnectionOverlay status={connectionStatus} />
+        )}
+      </AnimatePresence>
 
       {/* ═══ TOP HEADER ═══ */}
       <header
