@@ -1295,40 +1295,6 @@ export default function TournamentPage() {
             </span>
           </div>
 
-          {/* Timer */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{
-              width: isMobile ? '32px' : '40px',
-              height: isMobile ? '32px' : '40px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: `2px solid ${isUrgent ? '#ef4444' : '#c9a44c'}`,
-              background: isUrgent ? 'rgba(239,68,68,0.15)' : 'rgba(0,0,0,0.3)',
-              boxShadow: isUrgent ? '0 0 20px rgba(239,68,68,0.4)' : '0 4px 12px rgba(0,0,0,0.5)',
-              transition: 'all 0.3s ease',
-              flexShrink: 0,
-            }}>
-              <span style={{
-                fontSize: isMobile ? '13px' : '18px',
-                fontWeight: 900,
-                color: isUrgent ? '#ef4444' : '#c9a44c',
-                fontVariantNumeric: 'tabular-nums',
-              }}>
-                {phase === 'betting' ? displayTime : '--'}
-              </span>
-            </div>
-            {!isMobile && (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: 1 }}>
-                  {phase === 'betting' ? 'OPEN' : phase.substring(0, 4).toUpperCase()}
-                </span>
-                {isUrgent && <span style={{ fontSize: '8px', fontWeight: 900, color: '#ef4444', textTransform: 'uppercase', marginTop: '2px' }}>Soon!</span>}
-              </div>
-            )}
-          </div>
-
         </div>
       </header>
 
@@ -1358,7 +1324,8 @@ export default function TournamentPage() {
           justifyContent: 'center',
           alignItems: 'center',
           overflow: 'hidden',
-          ...(isMobile && { maxWidth: 'calc(100vw - 114px)', position: 'relative', padding: '0 2px' }),
+          position: 'relative',
+          ...(isMobile && { maxWidth: 'calc(100vw - 114px)', padding: '0 2px' }),
         }}>
           <RouletteTable
             wheelType={wheelType}
@@ -1394,6 +1361,120 @@ export default function TournamentPage() {
             onTimeout={() => { }}
             tournamentMode={true}
           />
+
+          {/* ═══ TIMER — overlaid at bottom of table ═══ */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: isMobile ? '6px' : '30px',
+              left: isMobile ? '24%' : '37%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: isMobile ? '8px' : '12px',
+              zIndex: 20,
+              pointerEvents: 'none',
+            }}
+          >
+            {/* Phase label — left */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+            }}>
+              <span style={{
+                fontSize: isMobile ? '7px' : '10px',
+                fontWeight: 900,
+                color: phase === 'betting' ? '#c9a44c' : 'rgba(255,255,255,0.4)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.2em',
+                lineHeight: 1,
+                textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+              }}>
+                {phase === 'betting' ? 'PLACE BETS' : phase === 'spinning' ? 'SPINNING' : phase === 'result' ? 'RESULT' : phase.toUpperCase()}
+              </span>
+              {isUrgent && (
+                <motion.span
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                  style={{ fontSize: isMobile ? '6px' : '8px', fontWeight: 900, color: '#ef4444', textTransform: 'uppercase', marginTop: '1px', letterSpacing: '0.15em', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}
+                >
+                  Closing Soon!
+                </motion.span>
+              )}
+            </div>
+
+            {/* Timer circle */}
+            <motion.div
+              animate={isUrgent ? {
+                scale: [1, 1.05, 1],
+                boxShadow: [
+                  '0 0 14px rgba(239,68,68,0.3), 0 0 28px rgba(239,68,68,0.1)',
+                  '0 0 22px rgba(239,68,68,0.5), 0 0 44px rgba(239,68,68,0.2)',
+                  '0 0 14px rgba(239,68,68,0.3), 0 0 28px rgba(239,68,68,0.1)',
+                ],
+              } : {}}
+              transition={isUrgent ? { duration: 0.6, repeat: Infinity, ease: 'easeInOut' } : {}}
+              style={{
+                width: isMobile ? '44px' : '62px',
+                height: isMobile ? '44px' : '62px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                background: isUrgent
+                  ? 'radial-gradient(circle, rgba(239,68,68,0.25) 0%, rgba(30,10,10,0.85) 70%)'
+                  : 'radial-gradient(circle, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 70%)',
+                border: `2.5px solid ${isUrgent ? '#ef4444' : '#c9a44c'}`,
+                boxShadow: isUrgent
+                  ? '0 0 14px rgba(239,68,68,0.3), 0 0 28px rgba(239,68,68,0.1)'
+                  : '0 0 14px rgba(201,164,76,0.15), 0 3px 12px rgba(0,0,0,0.7)',
+                flexShrink: 0,
+              }}
+            >
+              {/* SVG progress ring */}
+              {phase === 'betting' && (
+                <svg
+                  style={{
+                    position: 'absolute',
+                    inset: '-3px',
+                    width: 'calc(100% + 6px)',
+                    height: 'calc(100% + 6px)',
+                    transform: 'rotate(-90deg)',
+                    pointerEvents: 'none',
+                  }}
+                  viewBox="0 0 100 100"
+                >
+                  <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
+                  <circle
+                    cx="50" cy="50" r="46"
+                    fill="none"
+                    stroke={isUrgent ? '#ef4444' : '#c9a44c'}
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 46}`}
+                    strokeDashoffset={`${2 * Math.PI * 46 * (1 - displayTime / 45)}`}
+                    style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.3s ease' }}
+                    opacity={0.7}
+                  />
+                </svg>
+              )}
+              <span style={{
+                fontSize: isMobile ? '18px' : '28px',
+                fontWeight: 900,
+                color: isUrgent ? '#ef4444' : '#c9a44c',
+                fontVariantNumeric: 'tabular-nums',
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+                textShadow: isUrgent ? '0 0 10px rgba(239,68,68,0.5)' : '0 0 6px rgba(201,164,76,0.3)',
+              }}>
+                {phase === 'betting' ? displayTime : '--'}
+              </span>
+            </motion.div>
+
+          </div>
         </div>
 
         {/* ─── Landscape Mobile Right Sidebar ─── */}
