@@ -377,6 +377,29 @@
   font-weight: 700;
 }
 
+.supportLink {
+  display: inline-block;
+  font-size: 10px;
+  color: #8b6b22;
+  border: 1px solid rgba(139, 107, 34, 0.35);
+  padding: 6px 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  background: rgba(139, 107, 34, 0.02);
+}
+
+.supportLink:hover {
+  background: rgba(139, 107, 34, 0.08);
+  border-color: rgba(139, 107, 34, 0.7);
+  box-shadow: 0 0 10px rgba(139, 107, 34, 0.15);
+  color: #5b4614;
+}
+
+
 /* ──────────────────────────────────────────
    TABLET — ≤900px
    ────────────────────────────────────────── */

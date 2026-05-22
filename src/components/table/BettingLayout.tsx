@@ -492,7 +492,7 @@ const OutsideBetCell = memo(function OutsideBetCell({
   isRed?: boolean;
   phase: string;
   numbers?: number[];
-  onHover?: (nums: number[]) => void;
+  onHover?: (nums: number[], betId?: string) => void;
   onHoverEnd?: () => void;
   betId?: string;
   deleteMode?: boolean;
@@ -577,7 +577,7 @@ const OutsideBetCell = memo(function OutsideBetCell({
       onPointerUp={deleteMode ? handlePointerUp : undefined}
       onPointerLeave={deleteMode ? handlePointerLeave : undefined}
       onContextMenu={handleContextMenu}
-      onMouseEnter={() => !disabled && onHover?.(numbers)}
+      onMouseEnter={() => !disabled && onHover?.(numbers, betId)}
       onMouseLeave={() => !disabled && onHoverEnd?.()}
       className={`relative flex items-center justify-center cursor-pointer select-none text-[10px] sm:text-[9px] md:text-xs min-h-[48px] sm:min-h-[36px] md:min-h-[42px] group ${className}`}
       initial={{ borderColor: '#5ea896' }}

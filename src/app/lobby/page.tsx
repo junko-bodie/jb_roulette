@@ -22,6 +22,18 @@ export default function Home() {
   const [isWelcomeVideoOpen, setIsWelcomeVideoOpen] = useState(false);
   const [videoDestination, setVideoDestination] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleContactSupport = (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      navigator.clipboard.writeText('support@junkobodiegaming.com');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn('Failed to copy support email:', err);
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -182,13 +194,10 @@ export default function Home() {
             {<motion.div
               className={styles.playCard}
               onClick={() => {
-                const hidden = localStorage.getItem('hideWelcomeVideo');
-                if (hidden) {
-                  router.push('/tournament');
-                } else {
-                  setVideoDestination('/tournament');
-                  setIsWelcomeVideoOpen(true);
+                if (isSoundEnabled) {
+                  soundEngine?.playClick();
                 }
+                router.push('/tournament');
               }}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -227,7 +236,13 @@ export default function Home() {
 
         {/* Footer */}
         <div className={styles.footer}>
-          &nbsp;
+          <a
+            href="mailto:support@junkobodiegaming.com"
+            className={styles.supportLink}
+            onClick={handleContactSupport}
+          >
+            {copied ? 'Email Copied!' : 'Contact Support'}
+          </a>
         </div>
       </div>
 

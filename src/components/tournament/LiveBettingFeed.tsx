@@ -1,14 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTournamentContext } from '@/lib/tournament/TournamentContext';
 import { FONTS } from '@/styles/theme';
 
+const EVENT_LIFESPAN_MS = 8000; // Each event stays visible for 8 seconds
+
 export default function LiveBettingFeed() {
   const { events, phase } = useTournamentContext();
 
-  if (phase !== 'betting' && events.length === 0) return null;
+  // Filter to only show events that are still within their lifespan
+  const visibleEvents = useMemo(() => {
+    const now = Date.now();
+    return events
+      .filter(e => now - e.timestamp < EVENT_LIFESPAN_MS)
+      .slice(0, 8);
+  }, [events]);
+
+  if (phase !== 'betting' && visibleEvents.length === 0) return null;
 
   return (
     <div
@@ -38,13 +48,13 @@ export default function LiveBettingFeed() {
       {/* Events List — compact rows */}
       <div className="flex-1 flex flex-col divide-y divide-white/[0.04] overflow-y-auto no-scrollbar pb-2">
         <AnimatePresence initial={false}>
-          {events.slice(0, 6).map((event) => (
+          {visibleEvents.map((event) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, height: 0, paddingTop: 0, paddingBottom: 0, marginTop: 0, marginBottom: 0, overflow: 'hidden' }}
+              transition={{ duration: 0.35 }}
               className="relative flex items-center gap-3 pl-4 pr-3 py-3 min-h-[48px]"
             >
               {/* Player color dot */}

@@ -146,6 +146,33 @@ export async function POST(
         }
       }
 
+      // ── Enforce Chip Balance Constraints ──
+      const totalBetAmount = bets.reduce((sum: number, b: any) => sum + (b.amount || 0), 0);
+      
+      if (player.current_chips <= 0) {
+        // Cannot bet with zero or negative balance
+        bets = [];
+      } else if (totalBetAmount > player.current_chips) {
+        // If a player or bot attempts to bet more than they have, clamp their bets
+        let remainingChips = player.current_chips;
+        const validBets = [];
+        for (const b of bets) {
+          if (remainingChips <= 0) break;
+          if (b.amount <= remainingChips) {
+            validBets.push(b);
+            remainingChips -= b.amount;
+          } else {
+            validBets.push({
+              ...b,
+              amount: remainingChips,
+              chips: [remainingChips]
+            });
+            remainingChips = 0;
+          }
+        }
+        bets = validBets;
+      }
+
       const payout = calculatePayouts(bets, result as any);
       const newChips = player.current_chips + payout.netResult;
       

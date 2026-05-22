@@ -214,11 +214,11 @@ export default function TournamentPage() {
     if (tournament?.status === 'active' && !hasStartedRef.current) {
       const isVeryStart = currentRound === 1 && currentSpin === 1;
       if (isVeryStart) {
+        hasStartedRef.current = true; // Guard immediately to prevent re-entry on next poll
         setIsStarting(true);
         soundEngine?.announceMatchFound?.();
         const timer = setTimeout(() => {
           setIsStarting(false);
-          hasStartedRef.current = true;
         }, 2500);
         return () => clearTimeout(timer);
       } else {
@@ -227,6 +227,22 @@ export default function TournamentPage() {
       }
     }
   }, [tournament?.status, currentRound, currentSpin]);
+
+  const [isRoundStarting, setIsRoundStarting] = useState(false);
+  const lastRoundRef = useRef<number>(1);
+
+  useEffect(() => {
+    if (tournament?.status === 'active' && phase === 'betting' && currentRound > 1 && currentSpin === 1) {
+      if (lastRoundRef.current !== currentRound) {
+        setIsRoundStarting(true);
+        lastRoundRef.current = currentRound;
+        const timer = setTimeout(() => {
+          setIsRoundStarting(false);
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [tournament?.status, phase, currentRound, currentSpin]);
 
   // Handle background music based on tournament state
   useEffect(() => {
@@ -238,15 +254,18 @@ export default function TournamentPage() {
       } else {
         soundEngine?.stopWaitingBackgroundMusic();
         soundEngine?.stopBackgroundMusic();
+        soundEngine?.playTourneyBackgroundMusic();
       }
     } else {
       soundEngine?.stopWaitingBackgroundMusic();
       soundEngine?.stopBackgroundMusic();
+      soundEngine?.stopTourneyBackgroundMusic();
     }
 
     return () => {
       soundEngine?.stopWaitingBackgroundMusic();
       soundEngine?.stopBackgroundMusic();
+      soundEngine?.stopTourneyBackgroundMusic();
     };
   }, [tournament?.status, isMusicEnabled]);
 
@@ -570,7 +589,7 @@ export default function TournamentPage() {
     ]));
     setBets(clonedBets);
     soundEngine?.playRebetSound();
-    
+
     // Push events to live feed for each rebet zone
     clonedBets.forEach((bet, id) => {
       addEvent({
@@ -708,8 +727,9 @@ export default function TournamentPage() {
             zIndex: 10,
             width: '100%',
             maxWidth: isMobile ? '100%' : '1000px',
+            maxHeight: isMobile ? '95vh' : '90vh',
             background: '#f5edd5',
-            padding: isMobile ? '12px 16px' : 'clamp(32px, 6vh, 60px) clamp(24px, 4vw, 56px)',
+            padding: isMobile ? '12px 16px' : 'clamp(20px, 4vh, 40px) clamp(24px, 4vw, 56px)',
             textAlign: 'center' as const,
             position: 'relative' as const,
             overflow: 'visible' // Allow notches to overlap
@@ -724,27 +744,27 @@ export default function TournamentPage() {
 
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,164,76,0.3), transparent)' }} />
 
-          <div style={{ color: '#8b6914', fontWeight: 900, letterSpacing: '0.4em', fontSize: isMobile ? '11px' : '14px', textTransform: 'uppercase', marginBottom: isMobile ? '12px' : '20px', fontFamily: "'Arial Narrow', Arial, sans-serif" }}>
+          <div style={{ color: '#8b6914', fontWeight: 900, letterSpacing: '0.4em', fontSize: isMobile ? '11px' : '14px', textTransform: 'uppercase', marginBottom: isMobile ? '10px' : '16px', fontFamily: "'Arial Narrow', Arial, sans-serif" }}>
             Tournament Matchmaking
           </div>
           <h2 className={styles.title} style={{
-            fontSize: isMobile ? '24px' : 'clamp(36px, 5vw, 52px)',
-            marginBottom: isMobile ? '8px' : '16px',
+            fontSize: isMobile ? '24px' : 'clamp(32px, 4.5vw, 46px)',
+            marginBottom: isMobile ? '8px' : '12px',
             color: '#051410',
             fontWeight: 900,
             textShadow: '0 1px 2px rgba(0,0,0,0.1)'
           }}>
             Searching for Players...
           </h2>
-          <p style={{ color: '#3a3028', fontSize: isMobile ? '14px' : '18px', marginBottom: isMobile ? '12px' : 'clamp(32px, 6vh, 52px)', fontWeight: 500, fontFamily: 'Georgia, serif', opacity: 0.9 }}>
+          <p style={{ color: '#3a3028', fontSize: isMobile ? '14px' : '17px', marginBottom: isMobile ? '12px' : 'clamp(18px, 4vh, 28px)', fontWeight: 500, fontFamily: 'Georgia, serif', opacity: 0.9 }}>
             Match begins automatically in <span style={{ color: '#c9a44c', fontWeight: 800 }}>{lobbyTimeRemaining}s</span>
           </p>
 
           <div style={{
             display: 'grid',
             gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
-            gap: isMobile ? '10px' : 'clamp(12px, 2vh, 24px)',
-            marginBottom: isMobile ? '16px' : 'clamp(24px, 5vh, 48px)'
+            gap: isMobile ? '10px' : 'clamp(10px, 1.8vh, 20px)',
+            marginBottom: isMobile ? '16px' : 'clamp(16px, 4vh, 32px)'
           }}>
             {Array.from({ length: 6 }).map((_, i) => {
               const p = tournament.players[i];
@@ -753,12 +773,12 @@ export default function TournamentPage() {
                   background: p ? '#ffffff' : 'rgba(0,0,0,0.03)',
                   border: `1px solid ${p ? 'rgba(201,164,76,0.4)' : 'rgba(201,164,76,0.1)'}`,
                   borderRadius: isMobile ? '10px' : '16px',
-                  padding: isMobile ? '12px 6px' : 'clamp(20px, 4vh, 36px) clamp(10px, 2vw, 16px)',
+                  padding: isMobile ? '12px 6px' : 'clamp(14px, 3vh, 24px) clamp(10px, 2vw, 16px)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: isMobile ? '6px' : '12px',
+                  gap: isMobile ? '6px' : '10px',
                   transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                   boxShadow: p ? '0 12px 24px rgba(0,0,0,0.06)' : 'none',
                   position: 'relative'
@@ -769,7 +789,7 @@ export default function TournamentPage() {
                   </div>
                   <span style={{
                     color: p ? '#0f2318' : 'rgba(15,35,24,0.30)',
-                    fontSize: isMobile ? '9px' : 'clamp(11px, 2vw, 14px)',
+                    fontSize: isMobile ? '9px' : 'clamp(11px, 2vw, 13px)',
                     fontWeight: 800,
                     maxWidth: '100%',
                     overflow: 'hidden',
@@ -792,7 +812,7 @@ export default function TournamentPage() {
             justifyContent: 'center',
             gap: isMobile ? '8px' : '12px',
             background: 'rgba(201, 164, 76, 0.08)',
-            padding: isMobile ? '8px 20px' : '14px 32px',
+            padding: isMobile ? '8px 20px' : '12px 28px',
             borderRadius: '100px',
             width: 'fit-content',
             margin: '0 auto',
@@ -810,7 +830,7 @@ export default function TournamentPage() {
                 borderRadius: '50%'
               }}
             />
-            <span style={{ color: '#3a3028', fontWeight: 800, fontSize: isMobile ? '10px' : '13px', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Arial Narrow', Arial, sans-serif" }}>
+            <span style={{ color: '#3a3028', fontWeight: 800, fontSize: isMobile ? '10px' : '12px', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'Arial Narrow', Arial, sans-serif" }}>
               Matched <span style={{ color: '#8b6914' }}>{tournament.players.length}/6</span> Players
             </span>
           </div>
@@ -915,6 +935,81 @@ export default function TournamentPage() {
               </motion.div>
             </motion.div>
           </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ════════════ ROUND START OVERLAY ════════════
+  if (isRoundStarting && tournament) {
+    return (
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
+        style={{ background: 'radial-gradient(circle at center, rgba(13, 42, 32, 0.96) 0%, rgba(5, 13, 10, 0.98) 100%)' }}>
+
+        <motion.div
+          animate={{ rotate: -360 }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-[-100%] opacity-20"
+          style={{
+            background: 'conic-gradient(from 0deg, transparent 0deg, #c9a44c 30deg, transparent 60deg, #c9a44c 90deg, transparent 120deg)',
+            filter: 'blur(80px)'
+          }}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.1 }}
+          transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+          className="relative z-10 flex flex-col items-center text-center px-4"
+        >
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            className="text-[#c9a44c] font-black text-sm uppercase tracking-[0.5em] mb-4"
+          >
+            Tournament Progress
+          </motion.div>
+
+          <motion.h1
+            initial={{ scale: 0.8, filter: 'blur(10px)' }}
+            animate={{ scale: 1, filter: 'blur(0px)' }}
+            transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+            style={{
+              color: '#fff',
+              fontWeight: 900,
+              fontSize: 'clamp(40px, 12vw, 84px)',
+              fontStyle: 'italic',
+              textTransform: 'uppercase',
+              letterSpacing: '-0.02em',
+              marginBottom: '8px',
+              textShadow: '0 0 50px rgba(201,164,76,0.6), 0 10px 20px rgba(0,0,0,0.5)'
+            }}
+          >
+            Round {currentRound}
+          </motion.h1>
+
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: 280 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="h-1 bg-gradient-to-r from-transparent via-[#c9a44c] to-transparent mb-8"
+          />
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+            className="flex flex-col items-center gap-2"
+          >
+            <span className="text-[#4ade80] font-black text-xs uppercase tracking-[0.3em]">
+              Active & Prepared
+            </span>
+            <span className="text-white/70 font-bold text-sm tracking-wide">
+              {(tournament.players || []).filter((p: any) => p.status === 'active').length} Players Remaining
+            </span>
+          </motion.div>
         </motion.div>
       </div>
     );
@@ -1387,7 +1482,7 @@ export default function TournamentPage() {
             <div className="flex items-center gap-1 order-3 justify-self-end tournament-controls-mobile" style={{ marginRight: '60px' }}>
               {!isMobile && lastPlayerPayout && (
                 <div className="mr-4 flex items-center gap-2">
-                   <div style={{
+                  <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -1414,10 +1509,10 @@ export default function TournamentPage() {
                     <span style={{ fontSize: '8px', letterSpacing: '0.1em', textTransform: 'uppercase', color: lastPlayerPayout.netResult > 0 ? '#4ade80' : lastPlayerPayout.netResult < 0 ? '#ef4444' : 'rgba(255,255,255,0.5)', fontWeight: 800 }}>
                       {lastPlayerPayout.netResult >= 0 ? 'Last Win' : 'Last Loss'}
                     </span>
-                    <span style={{ 
-                      fontSize: '16px', 
-                      fontWeight: 900, 
-                      color: lastPlayerPayout.netResult > 0 ? '#4ade80' : lastPlayerPayout.netResult < 0 ? '#ef4444' : '#fff' 
+                    <span style={{
+                      fontSize: '16px',
+                      fontWeight: 900,
+                      color: lastPlayerPayout.netResult > 0 ? '#4ade80' : lastPlayerPayout.netResult < 0 ? '#ef4444' : '#fff'
                     }}>
                       {lastPlayerPayout.netResult < 0 ? '-' : ''}${Math.abs(lastPlayerPayout.netResult).toLocaleString()}
                     </span>
@@ -1601,8 +1696,8 @@ export default function TournamentPage() {
           }}
         >
           <div className="relative">
-            <Avatar 
-              type={userProfile?.avatar || 'default'} 
+            <Avatar
+              type={userProfile?.avatar || 'default'}
               className="w-12 h-12 border-2 border-[#c9a44c]/80 shadow-2xl group-hover:border-[#c9a44c] transition-all group-hover:scale-110"
             />
             <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-[#160e07] rounded-full shadow-lg" />

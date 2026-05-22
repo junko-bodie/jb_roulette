@@ -300,6 +300,30 @@
   color: #c9a44c;
 }
 
+.supportLink {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 10px;
+  color: #c9a44c;
+  border: 1px solid rgba(201, 164, 76, 0.35);
+  padding: 6px 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  background: rgba(201, 164, 76, 0.02);
+}
+
+.supportLink:hover {
+  background: rgba(201, 164, 76, 0.08);
+  border-color: rgba(201, 164, 76, 0.7);
+  box-shadow: 0 0 10px rgba(201, 164, 76, 0.15);
+  color: #f5edd5;
+}
+
+
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .page {

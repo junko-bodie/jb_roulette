@@ -9,8 +9,20 @@ import styles from './login/login.module.css';
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
   const supabase = createClient();
+
+  const handleContactSupport = (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      navigator.clipboard.writeText('support@junkobodiegaming.com');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn('Failed to copy support email:', err);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -176,6 +188,13 @@ export default function LoginPage() {
             <span className={styles.footerLink}>Terms of Protocol</span> &amp;{' '}
             <span className={styles.footerLink}>Privacy Charter</span>
           </p>
+          <a
+            href="mailto:support@junkobodiegaming.com"
+            className={styles.supportLink}
+            onClick={handleContactSupport}
+          >
+            {copied ? 'Email Copied!' : 'Contact Support'}
+          </a>
         </div>
       </motion.div>
     </div>

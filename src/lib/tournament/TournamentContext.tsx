@@ -155,19 +155,40 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
   const totalSpins = 5;
   
   // Clear betting events and play announcement when a new betting phase starts
+  const eventsClearedForSpinRef = useRef<string>('');
   useEffect(() => {
     if (phase === 'betting') {
-      setEvents([]);
-      
       const spinKey = `${currentRound}-${currentSpin}`;
+      
+      // Only clear events ONCE when transitioning to a new spin's betting phase
+      // (not on every re-render caused by tournament polling)
+      if (eventsClearedForSpinRef.current !== spinKey) {
+        eventsClearedForSpinRef.current = spinKey;
+        setEvents([]);
+      }
+      
       if (!announcedBettingSpinArr.current.includes(spinKey)) {
-        // High-roller timing: delay for Match Found screen (2.5s) on initial spin
         const isVeryStart = currentRound === 1 && currentSpin === 1;
-        const delay = isVeryStart ? 2800 : 500;
+        const isNewRound = currentRound > 1 && currentSpin === 1;
+        
+        let delay = 500;
+        if (isVeryStart) {
+          delay = 2800; // Delay for Match Found screen
+        } else if (isNewRound) {
+          delay = 2500; // Delay to sync with the 3s "Round Starting" visual overlay
+        }
         
         setTimeout(() => {
           if (phaseRef.current === 'betting') {
-            soundEngine?.playPlaceBetsSound?.();
+            const me = tournament?.players?.find(p => 
+              (userProfile?.id && p.player_id.toString() === userProfile.id) ||
+              (p.username === userProfile?.name && !p.is_bot)
+            );
+            // Only play if the player is still active (not eliminated/completed)
+            // And ONLY if it's not the very start, because announceMatchFound handles the first "Place your bets"
+            if ((!me || me.status === 'active') && !isVeryStart) {
+              soundEngine?.playPlaceBetsSound?.();
+            }
           }
         }, delay);
 
@@ -390,7 +411,12 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         const spinId = data.latest_spin?.id || `${data.latest_spin?.round_id}-${data.latest_spin?.spin_number}`;
         if (serverPhase === 'result' && dismissedSpinId === spinId) {
           // Stay in betting phase if user already dismissed this result
-          setPhase('betting');
+          // Exception: If it's the last spin, don't jump to next round's betting yet
+          if (data.latest_spin?.spin_number === 5) {
+            setPhase('result');
+          } else {
+            setPhase('betting');
+          }
         } else {
           setPhase(serverPhase);
           // If server is in result and we just transitioned to it (not spinning), set pending data
@@ -451,9 +477,11 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
       }
 
       // ── Eliminated player for animation ──
-      if (serverPhase === 'elimination') {
-        const elim = (data.players || []).find((p: any) => p.status === 'eliminated' && p.eliminated_round === (data.current_round - 1));
-        if (elim) setEliminatedPlayer(elim);
+      const elims = (data.players || []).filter((p: any) => p.status === 'eliminated');
+      if (elims.length > 0) {
+        // Find the most recently eliminated player by sorting descending
+        elims.sort((a: any, b: any) => (b.eliminated_round || 0) - (a.eliminated_round || 0));
+        setEliminatedPlayer(elims[0]);
       }
 
     } catch (err: any) {
@@ -640,12 +668,17 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
     
     // Explicitly transition to betting if server is ready
     if (phaseRef.current === 'result') {
-      setPhase('betting');
+      if (currentSpin === totalSpins) {
+        // At the end of the round, instantly transition to elimination locally!
+        setPhase('elimination');
+      } else {
+        setPhase('betting');
+      }
     }
     
     // Sync history when result is acknowledged/dismissed
     setDisplayHistory(rawHistory);
-  }, [lastSpinResult, rawHistory]);
+  }, [lastSpinResult, rawHistory, currentSpin, totalSpins]);
 
   // ── completeSpin: called when wheel animation ends ──
   const completeSpin = useCallback(() => {
@@ -853,31 +886,66 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
 
   // ── Announce Leader Changes & Eliminations ──
   useEffect(() => {
-    if (phase === 'betting' || phase === 'result' || phase === 'elimination') {
+    const isEndOfRound = currentSpin === 5;
+
+    if (phase === 'betting' || (phase === 'result' && !isEndOfRound)) {
       const leader = scores.find(s => s.rank === 1 && s.status === 'active');
       if (leader && leader.player_id.toString() !== announcedLeaderId.current) {
         // Only announce if it's not the very first load
-        if (announcedLeaderId.current && (phase === 'result' || phase === 'betting')) {
-          soundEngine?.announceNewLeader?.(leader.username);
+        if (announcedLeaderId.current) {
+          if (phase === 'betting') {
+            // During betting: delay so it doesn't collide with "place your bets" sound
+            setTimeout(() => {
+              if (phaseRef.current === 'betting') {
+                soundEngine?.announceNewLeader?.(leader.username);
+              }
+            }, 1800);
+          } else {
+            // During result: announce immediately (no competing sounds)
+            soundEngine?.announceNewLeader?.(leader.username);
+          }
         }
         announcedLeaderId.current = leader.player_id.toString();
         setPrevLeaderId(leader.player_id.toString());
       }
     }
-  }, [scores, phase]);
+    // NOTE: For the final spin (spin 5) result phase, the elimination effect
+    // handles leader detection separately as part of the round-end commentary.
+  }, [scores, phase, currentSpin]);
 
   useEffect(() => {
     if (eliminatedPlayer && phase === 'elimination') {
       const elimId = eliminatedPlayer.player_id.toString();
       if (announcedElimId.current !== elimId) {
-        soundEngine?.announceElimination?.(eliminatedPlayer.username);
+        const roundNumber = eliminatedPlayer.eliminated_round || (currentRound - 1);
+        const isMe = (userProfile?.id && eliminatedPlayer.player_id.toString() === userProfile.id) ||
+                     (eliminatedPlayer.username === userProfile?.name && !eliminatedPlayer.is_bot);
+        
+        // Detect if there was a new leader established during this elimination
+        const leader = scores.find(s => s.rank === 1 && s.status === 'active');
+        let newLeaderName: string | null = null;
+        if (leader && leader.player_id.toString() !== announcedLeaderId.current) {
+          if (announcedLeaderId.current) {
+            newLeaderName = leader.username;
+          }
+          announcedLeaderId.current = leader.player_id.toString();
+          setPrevLeaderId(leader.player_id.toString());
+        }
+
+        soundEngine?.announceRoundEnd?.(
+          eliminatedPlayer.username,
+          roundNumber,
+          isMe,
+          currentRound,
+          newLeaderName
+        );
         announcedElimId.current = elimId;
       }
     } else if (phase === 'betting') {
        // Reset for next round
        announcedElimId.current = null;
     }
-  }, [eliminatedPlayer, phase]);
+  }, [eliminatedPlayer, phase, currentRound, userProfile, scores]);
 
   const totalBet = useMemo(() =>
     Array.from(bets.values()).reduce((sum, bet) => sum + bet.amount, 0),

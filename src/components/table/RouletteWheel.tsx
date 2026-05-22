@@ -448,7 +448,9 @@ const RouletteWheel = memo(function RouletteWheel({
           s.spinning = false; s.ballSettled = true;
           s.wheelAngle = s.targetAngle; s.ballAngle = s.targetBallAngle; s.ballRadius = BALL_ORBIT_END; s.ballZ = 0;
           soundEngine?.stopSpinSound();
-          if (!tournamentMode) {
+          if (tournamentMode) {
+            soundEngine?.resumeTourneyBackgroundMusic();
+          } else {
             soundEngine?.playBackgroundMusic();
           }
           if (onSpinComplete) onSpinComplete();

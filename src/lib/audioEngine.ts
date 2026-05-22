@@ -16,7 +16,13 @@ class AudioEngine {
   private enabled: boolean = true;
   private musicEnabled: boolean = true;
   private spinId: number | null = null;
-  private activeBackground: 'standard' | 'waiting' | null = null;
+  private activeBackground: 'standard' | 'waiting' | 'tourney' | null = null;
+  private speechQueue: Array<{ type: 'speak' | 'sound'; value: string }> = [];
+  private isProcessingQueue: boolean = false;
+  private activeUtterance: SpeechSynthesisUtterance | null = null;
+  private activeTimeout: ReturnType<typeof setTimeout> | null = null;
+  private isDucked: boolean = false;
+  private duckTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -112,6 +118,12 @@ class AudioEngine {
           loop: true,
           preload: true,
         }),
+        tourneyBackground: new Howl({
+          src: ['/sounds/tourney_background.mp3'],
+          volume: 0.65,
+          loop: true,
+          preload: true,
+        }),
       };
 
       // ── Visibility Guard ──
@@ -126,6 +138,8 @@ class AudioEngine {
           // Resume appropriate background music when tab becomes visible again
           if (this.activeBackground === 'waiting') {
             this.playWaitingBackgroundMusic();
+          } else if (this.activeBackground === 'tourney') {
+            this.playTourneyBackgroundMusic();
           } else if (this.activeBackground === 'standard') {
             this.playBackgroundMusic();
           }
@@ -174,11 +188,16 @@ class AudioEngine {
       if (this.sounds.waitingBackground) {
         this.sounds.waitingBackground.stop();
       }
+      if (this.sounds.tourneyBackground) {
+        this.sounds.tourneyBackground.stop();
+      }
     } else if (this.activeBackground !== null) {
       // Only resume if a background track was already active (i.e. we're in-game).
       // Never auto-start music on pages that never called play*BackgroundMusic().
       if (this.activeBackground === 'waiting') {
         this.playWaitingBackgroundMusic();
+      } else if (this.activeBackground === 'tourney') {
+        this.playTourneyBackgroundMusic();
       } else {
         this.playBackgroundMusic();
       }
@@ -222,7 +241,17 @@ class AudioEngine {
 
   playPlaceBetsSound() {
     if (typeof document !== 'undefined' && document.hidden) return;
-    if (this.enabled && this.sounds.placeBets) this.sounds.placeBets.play();
+    if (this.enabled && this.sounds.placeBets) {
+      this.duckBackgroundMusic();
+      this.sounds.placeBets.stop(); // Prevent overlap if called twice
+      this.sounds.placeBets.play();
+      // Unduck after the "place your bets" clip finishes (~1.2s)
+      if (this.duckTimeout) clearTimeout(this.duckTimeout);
+      this.duckTimeout = setTimeout(() => {
+        this.duckTimeout = null;
+        this.unduckBackgroundMusic();
+      }, 1400);
+    }
   }
 
   // ── Win / Loss ─────────────────────────────────────────────────────────────
@@ -248,10 +277,29 @@ class AudioEngine {
   startSpinSound() {
     if (typeof document !== 'undefined' && document.hidden) return;
 
-    // Attempt to pause background music if it was playing, so we can resume later
+    // Cancel any in-progress speech so it doesn't overlap with the spin
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    this.speechQueue = [];
+    this.isProcessingQueue = false;
+    if (this.activeTimeout) {
+      clearTimeout(this.activeTimeout);
+      this.activeTimeout = null;
+    }
+    if (this.duckTimeout) {
+      clearTimeout(this.duckTimeout);
+      this.duckTimeout = null;
+    }
+
+    // Pause background music so we can resume after spin
     if (this.musicEnabled && this.sounds.background && this.sounds.background.playing()) {
       this.sounds.background.pause();
     }
+    if (this.musicEnabled && this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
+      this.sounds.tourneyBackground.pause();
+    }
+    this.isDucked = false; // Reset duck state since we're pausing entirely
 
     if (this.enabled) {
       if (this.sounds.spin) {
@@ -281,6 +329,18 @@ class AudioEngine {
     }
   }
 
+  /**
+   * Resume tourney background music after a spin completes.
+   * Uses play() from paused state so it continues where it left off.
+   */
+  resumeTourneyBackgroundMusic() {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    if (this.activeBackground !== 'tourney') return;
+    if (this.musicEnabled && this.sounds.tourneyBackground && !this.sounds.tourneyBackground.playing()) {
+      this.sounds.tourneyBackground.play();
+    }
+  }
+
   // ── Verbal Announcements (Speech Synthesis) ───────────────────────────────
 
   announce(text: string) {
@@ -294,10 +354,10 @@ class AudioEngine {
       window.speechSynthesis.cancel();
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.volume = 0.95;
-    utterance.rate = 1.0; // Standard speed for clarity
-    utterance.pitch = 1.05; // Slightly higher for premium feelminine voice (American or British)
+    this.activeUtterance = new SpeechSynthesisUtterance(text);
+    this.activeUtterance.volume = 0.95;
+    this.activeUtterance.rate = 1.0; // Standard speed for clarity
+    this.activeUtterance.pitch = 1.05; // Slightly higher for premium feelminine voice (American or British)
     const voices = window.speechSynthesis.getVoices();
 
     // Priority list of feminine-sounding English voices
@@ -322,15 +382,19 @@ class AudioEngine {
       voices.find(v => v.name.includes('Google US English') || (v.name.includes('Google') && v.lang.startsWith('en')));
 
     if (selectedVoice) {
-      utterance.voice = selectedVoice;
+      this.activeUtterance.voice = selectedVoice;
     }
 
-    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(this.activeUtterance);
   }
 
   announceNewLeader(name: string) {
-    this.announce(`New leader: ${name}!`);
-    this.play2XClick(); // Subtle chime
+    // Route through the queue system to avoid cancelling any in-progress commentary
+    const sequence: Array<{ type: 'speak' | 'sound'; value: string }> = [
+      { type: 'sound', value: 'chime' },
+      { type: 'speak', value: `New leader, ${name}!` },
+    ];
+    this.playTournamentCommentary(sequence);
   }
 
   announceElimination(name: string) {
@@ -338,8 +402,163 @@ class AudioEngine {
     this.playLossSound();
   }
 
+  processSpeechQueue() {
+    if (this.isProcessingQueue || this.speechQueue.length === 0) {
+      // ── Queue finished — unduck background music ──
+      if (this.speechQueue.length === 0 && !this.isProcessingQueue) {
+        this.unduckBackgroundMusic();
+      }
+      return;
+    }
+    this.isProcessingQueue = true;
+
+    const item = this.speechQueue.shift();
+    if (!item) {
+      this.isProcessingQueue = false;
+      this.unduckBackgroundMusic();
+      return;
+    }
+
+    if (item.type === 'sound') {
+      let delay = 700;
+      if (item.value === 'loss') {
+        this.playLossSound();
+      } else if (item.value === 'swoosh') {
+        this.playSwoosh();
+      } else if (item.value === 'chime') {
+        this.play2XClick();
+        delay = 350; // Chime is very brief, so reduce the wait time
+      } else if (item.value === 'placeBets') {
+        // Play directly without the duck wrapper since we're already ducked
+        if (this.enabled && this.sounds.placeBets) this.sounds.placeBets.play();
+        delay = 1200; // Wait for "Place your bets" sound to finish before doing anything else
+      }
+
+      if (this.activeTimeout) clearTimeout(this.activeTimeout);
+      this.activeTimeout = setTimeout(() => {
+        this.activeTimeout = null;
+        this.isProcessingQueue = false;
+        this.processSpeechQueue();
+      }, delay);
+    } else {
+      if (!this.enabled || typeof window === 'undefined' || !window.speechSynthesis || document.hidden) {
+        this.isProcessingQueue = false;
+        this.processSpeechQueue();
+        return;
+      }
+
+      this.activeUtterance = new SpeechSynthesisUtterance(item.value);
+      this.activeUtterance.volume = 0.95;
+      this.activeUtterance.rate = 1.0;
+      this.activeUtterance.pitch = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const feminineVoices = voices.filter(v => {
+        const name = v.name.toLowerCase();
+        const lang = v.lang.toLowerCase();
+        const isEnglish = lang.startsWith('en');
+        const isFeminine = name.includes('female') ||
+          name.includes('samantha') ||
+          name.includes('victoria') ||
+          name.includes('hazel') ||
+          name.includes('zira') ||
+          name.includes('serena') ||
+          name.includes('susan') ||
+          name.includes('moira');
+        return isEnglish && isFeminine;
+      });
+
+      const selectedVoice = feminineVoices.find(v => v.lang.includes('gb')) ||
+        feminineVoices.find(v => v.lang.includes('us')) ||
+        voices.find(v => v.name.includes('Google US English') || (v.name.includes('Google') && v.lang.startsWith('en')));
+
+      if (selectedVoice) {
+        this.activeUtterance.voice = selectedVoice;
+      }
+
+      this.activeUtterance.onend = () => {
+        this.activeUtterance = null;
+        if (this.activeTimeout) clearTimeout(this.activeTimeout);
+        this.activeTimeout = setTimeout(() => {
+          this.activeTimeout = null;
+          this.isProcessingQueue = false;
+          this.processSpeechQueue();
+        }, 100); // 100ms breathing room (snappier transition)
+      };
+
+      this.activeUtterance.onerror = (e) => {
+        console.warn('SpeechSynthesis queue error:', e);
+        this.activeUtterance = null;
+        this.isProcessingQueue = false;
+        this.processSpeechQueue();
+      };
+
+      window.speechSynthesis.speak(this.activeUtterance);
+    }
+  }
+
+  playTournamentCommentary(sequence: Array<{ type: 'speak' | 'sound'; value: string }>) {
+    // Cancel any in-progress speech/queue first
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    if (this.activeTimeout) {
+      clearTimeout(this.activeTimeout);
+      this.activeTimeout = null;
+    }
+    if (this.duckTimeout) {
+      clearTimeout(this.duckTimeout);
+      this.duckTimeout = null;
+    }
+
+    // Duck background music for the entire commentary sequence
+    this.duckBackgroundMusic();
+
+    this.speechQueue = [...sequence];
+    this.isProcessingQueue = false;
+    this.processSpeechQueue();
+  }
+
+  announceRoundEnd(
+    eliminatedName: string,
+    roundNumber: number,
+    isMe: boolean,
+    nextRoundNumber: number,
+    newLeaderName: string | null = null
+  ) {
+    // Play the transition/loss sound concurrently so it's immediate
+    if (isMe) {
+      this.playLossSound();
+    } else {
+      this.playSwoosh();
+    }
+
+    const sequence: Array<{ type: 'speak' | 'sound'; value: string }> = [];
+
+    // 1. Speak "End of Round X. Y has been eliminated." as a continuous phrase
+    const elimText = isMe ? 'You have been eliminated.' : `${eliminatedName} has been eliminated.`;
+    sequence.push({ type: 'speak', value: `End of Round ${roundNumber}. ${elimText}` });
+
+    // 2. Speak new leader if applicable
+    if (newLeaderName) {
+      sequence.push({ type: 'sound', value: 'chime' });
+      sequence.push({ type: 'speak', value: `New leader, ${newLeaderName}!` });
+    }
+
+    // 3. Speak next round start if player is still in the game
+    if (!isMe) {
+      sequence.push({ type: 'speak', value: `Starting Round ${nextRoundNumber}.` });
+    }
+
+    this.playTournamentCommentary(sequence);
+  }
+
   announceMatchFound() {
-    this.announce("Match found!");
+    const sequence: Array<{ type: 'speak' | 'sound'; value: string }> = [
+      { type: 'speak', value: 'Match found!' },
+      { type: 'sound', value: 'placeBets' }
+    ];
+    this.playTournamentCommentary(sequence);
   }
 
 
@@ -351,13 +570,18 @@ class AudioEngine {
     if (this.sounds.waitingBackground && this.sounds.waitingBackground.playing()) {
       this.sounds.waitingBackground.stop();
     }
+    if (this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
+      this.sounds.tourneyBackground.stop();
+    }
     if (this.musicEnabled && this.sounds.background && !this.sounds.background.playing()) {
       this.sounds.background.play();
     }
   }
 
   stopBackgroundMusic() {
-    this.activeBackground = null;
+    if (this.activeBackground === 'standard') {
+      this.activeBackground = null;
+    }
     if (this.sounds.background) {
       this.sounds.background.stop();
     }
@@ -369,15 +593,74 @@ class AudioEngine {
     if (this.sounds.background && this.sounds.background.playing()) {
       this.sounds.background.stop();
     }
+    if (this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
+      this.sounds.tourneyBackground.stop();
+    }
     if (this.musicEnabled && this.sounds.waitingBackground && !this.sounds.waitingBackground.playing()) {
       this.sounds.waitingBackground.play();
     }
   }
 
   stopWaitingBackgroundMusic() {
-    this.activeBackground = null;
+    if (this.activeBackground === 'waiting') {
+      this.activeBackground = null;
+    }
     if (this.sounds.waitingBackground) {
       this.sounds.waitingBackground.stop();
+    }
+  }
+
+  playTourneyBackgroundMusic() {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    this.activeBackground = 'tourney';
+    if (this.sounds.background && this.sounds.background.playing()) {
+      this.sounds.background.stop();
+    }
+    if (this.sounds.waitingBackground && this.sounds.waitingBackground.playing()) {
+      this.sounds.waitingBackground.stop();
+    }
+    if (this.musicEnabled && this.sounds.tourneyBackground && !this.sounds.tourneyBackground.playing()) {
+      this.sounds.tourneyBackground.play();
+    }
+  }
+
+  stopTourneyBackgroundMusic() {
+    if (this.activeBackground === 'tourney') {
+      this.activeBackground = null;
+    }
+    if (this.sounds.tourneyBackground) {
+      this.sounds.tourneyBackground.stop();
+    }
+  }
+
+  // ── Background Music Ducking ──────────────────────────────────────────────
+
+  /**
+   * Lower background music volume so announcements/sounds are clearly heard.
+   */
+  duckBackgroundMusic() {
+    if (this.isDucked) return;
+    this.isDucked = true;
+    if (this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
+      this.sounds.tourneyBackground.volume(this.sounds.tourneyBackground.volume() * 0.15);
+    }
+    if (this.sounds.background && this.sounds.background.playing()) {
+      this.sounds.background.volume(this.sounds.background.volume() * 0.15);
+    }
+  }
+
+  /**
+   * Restore background music volume after announcements finish.
+   */
+  unduckBackgroundMusic() {
+    if (!this.isDucked) return;
+    this.isDucked = false;
+    // Restore to configured volumes
+    if (this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
+      this.sounds.tourneyBackground.volume(0.6);
+    }
+    if (this.sounds.background && this.sounds.background.playing()) {
+      this.sounds.background.volume(0.25);
     }
   }
 
@@ -387,6 +670,11 @@ class AudioEngine {
       window.speechSynthesis.cancel();
     }
     this.spinId = null;
+    this.isDucked = false;
+    if (this.duckTimeout) {
+      clearTimeout(this.duckTimeout);
+      this.duckTimeout = null;
+    }
   }
 
   toggleSound() {
