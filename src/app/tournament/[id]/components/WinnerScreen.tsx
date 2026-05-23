@@ -107,7 +107,7 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
 
   return (
     <div
-      className="fixed inset-0 z-[250] overflow-y-auto flex flex-col items-center bg-[#f5eedc]"
+      className="fixed inset-0 z-[250] overflow-y-auto flex flex-col bg-[#f5eedc]"
       style={{
         fontFamily: FONTS.primary,
       }}
@@ -122,13 +122,55 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
         zIndex: 0
       }} />
 
-      {/* Return to Lobby — top right */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3 }}
-        className="fixed top-6 right-6 z-[260]"
+      {/* ── GREEN HEADER BAR ── */}
+      <header
+        className="relative z-[260] flex items-center justify-between flex-shrink-0"
+        style={{
+          backgroundColor: '#0f2318',
+          height: '60px',
+          padding: '0 28px',
+        }}
       >
+        <div className="flex items-center gap-3">
+          <Link
+            href="/lobby"
+            className="flex items-center justify-center transition-all hover:opacity-80"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'rgba(201,164,76,0.1)',
+              border: '1px solid rgba(201,164,76,0.3)',
+              color: '#c9a44c',
+            }}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div className="flex items-center gap-2.5">
+            <span style={{
+              color: '#f2e8d0',
+              fontFamily: "'Arial Narrow', Arial, sans-serif",
+              fontSize: '15px',
+              fontWeight: 800,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+            }}>
+              Junko Bodie Roulette
+            </span>
+            <span style={{ color: '#c9a44c', fontSize: '13px', opacity: 0.5 }}>|</span>
+            <span style={{
+              color: '#c9a44c',
+              fontFamily: "'Arial Narrow', Arial, sans-serif",
+              fontSize: '12px',
+              fontWeight: 600,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              opacity: 0.85,
+            }}>
+              Pro Tournament Series
+            </span>
+          </div>
+        </div>
         <Link
           href="/lobby"
           className="group flex items-center gap-2 transition-all active:scale-[0.97]"
@@ -154,41 +196,59 @@ export default function WinnerScreen({ tournament, player, isCompleted = true }:
             Exit Tournament
           </span>
         </Link>
-      </motion.div>
+      </header>
 
       {/* Main Container */}
-      <div className="relative w-full flex flex-col items-center py-4 px-6" style={{ zIndex: 1 }}>
-        <div className="w-full max-w-5xl flex flex-col items-center gap-5">
+      <div className="relative w-full flex flex-col items-center py-2 px-6 flex-1 overflow-y-auto" style={{ zIndex: 1 }}>
+        <div className="w-full max-w-5xl flex flex-col items-center gap-3">
 
           {/* ── HEADER SECTION ── */}
-          {/* Main Heading */}
-          <motion.h1
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 100 }}
-            style={{
-              fontFamily: "'Georgia', serif",
-              fontSize: 'clamp(32px, 5vw, 48px)',
-              fontWeight: 700,
-              fontStyle: 'italic',
-              letterSpacing: '-0.02em',
-              lineHeight: 1,
-              marginBottom: '4px',
-              color: '#0d2a20',
-              textShadow: '0 1px 0 rgba(201,168,76,0.1)',
-              textAlign: 'center'
-            }}
-          >
-            {isWinner ? 'Champion!' : isCompleted ? 'Tournament Results' : 'Personal Summary'}
-          </motion.h1>
+          {/* Main Heading + Status Badge */}
+          <div className="relative flex justify-center items-center w-full">
+            <motion.h1
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 100 }}
+              style={{
+                position: 'relative',
+                fontFamily: "'Georgia', serif",
+                fontSize: 'clamp(32px, 5vw, 48px)',
+                fontWeight: 700,
+                fontStyle: 'italic',
+                letterSpacing: '-0.02em',
+                lineHeight: 1,
+                color: '#0d2a20',
+                textShadow: '0 1px 0 rgba(201,168,76,0.1)',
+                margin: 0,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              {isWinner ? 'Champion!' : isCompleted ? 'Tournament Results' : 'Personal Summary'}
 
+              {/* Desktop badge - positioned to the right */}
+              {!isCompleted && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute left-[100%] top-1/2 -translate-y-1/2 ml-8 px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 hidden md:flex items-center justify-center"
+                  style={{ fontStyle: 'normal' }}
+                >
+                  <span className="text-[10px] leading-normal font-black uppercase tracking-[0.3em] text-amber-700 whitespace-nowrap pt-[2px]">
+                    Tournament Still In Progress
+                  </span>
+                </motion.div>
+              )}
+            </motion.h1>
+          </div>
+
+          {/* Mobile badge - positioned below heading */}
           {!isCompleted && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 mb-2"
+              className="px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 md:hidden mt-1 flex items-center justify-center"
             >
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-700">
+              <span className="text-[20px] leading-normal font-black uppercase tracking-[0.3em] text-amber-700 whitespace-nowrap pt-[2px]">
                 Tournament Still In Progress
               </span>
             </motion.div>

@@ -122,8 +122,8 @@ export default function Home() {
             onClick={() => router.push('/profile')}
             style={{ cursor: 'pointer' }}
           >
-            <Avatar 
-              type={userProfile?.avatar || 'default'} 
+            <Avatar
+              type={userProfile?.avatar || 'default'}
               className="w-[52px] h-[52px] border border-[#c9a44c]/40 shadow-lg"
             />
             <div className={styles.profileInfo}>
@@ -170,10 +170,10 @@ export default function Home() {
                 if (isSoundEnabled) {
                   soundEngine?.playClick();
                 }
-                if (isMusicEnabled) {
-                  soundEngine?.playBackgroundMusic();
-                }
-                router.push('/game');
+                // if (isMusicEnabled) {
+                //   soundEngine?.playBackgroundMusic();
+                // }
+                // router.push('/game');
               }}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -212,7 +212,7 @@ export default function Home() {
                   Test Yourself Against Other Top Players In A Live Tournament Experience.
                 </div>
               </div>
-            </motion.div> }
+            </motion.div>}
           </div>
 
           <motion.div
