@@ -499,11 +499,12 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
         if (ls.round_id?.toString() === data.active_round?._id?.toString()) {
           // If we don't have a result yet, or the server has a NEWER spin than our local last result
           const currentRes = lastSpinResult as any;
-          if (!currentRes || ls.spin_number > currentRes.spin_number) {
+          const newSpinId = ls._id || `${ls.round_id}-${ls.spin_number}`;
+          if (!currentRes || currentRes.id !== newSpinId) {
              setLastSpinResult({
                ...ls.result,
                spin_number: ls.spin_number,
-               id: ls._id || `${ls.round_id}-${ls.spin_number}`,
+               id: newSpinId,
              } as any);
              
              const combinedBets: any[] = [];
@@ -732,7 +733,12 @@ export function TournamentProvider({ children }: { children: React.ReactNode }) 
 
     console.log('[Tournament] Scheduling bot reveals for', key);
     setBotBets([]);
-    const spinBotBets = (currentRoundData.bot_bets || []).filter((b: any) => b.spin_number === currentSpin);
+    // Prevent zero-balance bots from making ghost bets on the UI
+    const spinBotBets = (currentRoundData.bot_bets || []).filter((b: any) => {
+      if (b.spin_number !== currentSpin) return false;
+      const botPlayer = tournament?.players?.find(p => p.player_id.toString() === b.player_id.toString());
+      return botPlayer && botPlayer.current_chips > 0;
+    });
     
     // We calculate how much time has already passed in this 30s betting window
     // to ensure bots reveal at the correct absolute time even after a refresh.

@@ -16,7 +16,7 @@ class AudioEngine {
   private enabled: boolean = true;
   private musicEnabled: boolean = true;
   private spinId: number | null = null;
-  private activeBackground: 'standard' | 'waiting' | 'tourney' | null = null;
+  private activeBackground: 'standard' | 'waiting' | 'tourney' | 'entry' | null = null;
   private speechQueue: Array<{ type: 'speak' | 'sound'; value: string }> = [];
   private isProcessingQueue: boolean = false;
   private activeUtterance: SpeechSynthesisUtterance | null = null;
@@ -108,19 +108,25 @@ class AudioEngine {
         }),
         background: new Howl({
           src: ['/sounds/background.mp3'],
-          volume: 0.25, // background volume
+          volume: 0.5, // increased background volume
           loop: true,
           preload: true,
         }),
         waitingBackground: new Howl({
           src: ['/sounds/waiting_background.mp3'],
-          volume: 0.45, // waiting background volume
+          volume: 0.6, // waiting background volume
           loop: true,
           preload: true,
         }),
         tourneyBackground: new Howl({
           src: ['/sounds/tourney_background.mp3'],
           volume: 0.65,
+          loop: true,
+          preload: true,
+        }),
+        entryBackground: new Howl({
+          src: ['/sounds/background_entery.mp3'],
+          volume: 0.3,
           loop: true,
           preload: true,
         }),
@@ -140,6 +146,8 @@ class AudioEngine {
             this.playWaitingBackgroundMusic();
           } else if (this.activeBackground === 'tourney') {
             this.playTourneyBackgroundMusic();
+          } else if (this.activeBackground === 'entry') {
+            this.playEntryBackgroundMusic();
           } else if (this.activeBackground === 'standard') {
             this.playBackgroundMusic();
           }
@@ -191,6 +199,9 @@ class AudioEngine {
       if (this.sounds.tourneyBackground) {
         this.sounds.tourneyBackground.stop();
       }
+      if (this.sounds.entryBackground) {
+        this.sounds.entryBackground.stop();
+      }
     } else if (this.activeBackground !== null) {
       // Only resume if a background track was already active (i.e. we're in-game).
       // Never auto-start music on pages that never called play*BackgroundMusic().
@@ -198,6 +209,8 @@ class AudioEngine {
         this.playWaitingBackgroundMusic();
       } else if (this.activeBackground === 'tourney') {
         this.playTourneyBackgroundMusic();
+      } else if (this.activeBackground === 'entry') {
+        this.playEntryBackgroundMusic();
       } else {
         this.playBackgroundMusic();
       }
@@ -292,14 +305,8 @@ class AudioEngine {
       this.duckTimeout = null;
     }
 
-    // Pause background music so we can resume after spin
-    if (this.musicEnabled && this.sounds.background && this.sounds.background.playing()) {
-      this.sounds.background.pause();
-    }
-    if (this.musicEnabled && this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
-      this.sounds.tourneyBackground.pause();
-    }
-    this.isDucked = false; // Reset duck state since we're pausing entirely
+    // Duck background music so we can hear the spin clearly but keep the music flowing
+    this.duckBackgroundMusic();
 
     if (this.enabled) {
       if (this.sounds.spin) {
@@ -327,18 +334,15 @@ class AudioEngine {
       this.sounds.spin.stop();
       this.spinId = null;
     }
+    this.unduckBackgroundMusic();
   }
 
   /**
-   * Resume tourney background music after a spin completes.
-   * Uses play() from paused state so it continues where it left off.
+   * Unduck tourney background music after a spin completes.
    */
   resumeTourneyBackgroundMusic() {
     if (typeof document !== 'undefined' && document.hidden) return;
-    if (this.activeBackground !== 'tourney') return;
-    if (this.musicEnabled && this.sounds.tourneyBackground && !this.sounds.tourneyBackground.playing()) {
-      this.sounds.tourneyBackground.play();
-    }
+    this.unduckBackgroundMusic();
   }
 
   // ── Verbal Announcements (Speech Synthesis) ───────────────────────────────
@@ -573,6 +577,9 @@ class AudioEngine {
     if (this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
       this.sounds.tourneyBackground.stop();
     }
+    if (this.sounds.entryBackground && this.sounds.entryBackground.playing()) {
+      this.sounds.entryBackground.stop();
+    }
     if (this.musicEnabled && this.sounds.background && !this.sounds.background.playing()) {
       this.sounds.background.play();
     }
@@ -587,6 +594,32 @@ class AudioEngine {
     }
   }
 
+  playEntryBackgroundMusic() {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    this.activeBackground = 'entry';
+    if (this.sounds.background && this.sounds.background.playing()) {
+      this.sounds.background.stop();
+    }
+    if (this.sounds.waitingBackground && this.sounds.waitingBackground.playing()) {
+      this.sounds.waitingBackground.stop();
+    }
+    if (this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
+      this.sounds.tourneyBackground.stop();
+    }
+    if (this.musicEnabled && this.sounds.entryBackground && !this.sounds.entryBackground.playing()) {
+      this.sounds.entryBackground.play();
+    }
+  }
+
+  stopEntryBackgroundMusic() {
+    if (this.activeBackground === 'entry') {
+      this.activeBackground = null;
+    }
+    if (this.sounds.entryBackground) {
+      this.sounds.entryBackground.stop();
+    }
+  }
+
   playWaitingBackgroundMusic() {
     if (typeof document !== 'undefined' && document.hidden) return;
     this.activeBackground = 'waiting';
@@ -595,6 +628,9 @@ class AudioEngine {
     }
     if (this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
       this.sounds.tourneyBackground.stop();
+    }
+    if (this.sounds.entryBackground && this.sounds.entryBackground.playing()) {
+      this.sounds.entryBackground.stop();
     }
     if (this.musicEnabled && this.sounds.waitingBackground && !this.sounds.waitingBackground.playing()) {
       this.sounds.waitingBackground.play();
@@ -618,6 +654,9 @@ class AudioEngine {
     }
     if (this.sounds.waitingBackground && this.sounds.waitingBackground.playing()) {
       this.sounds.waitingBackground.stop();
+    }
+    if (this.sounds.entryBackground && this.sounds.entryBackground.playing()) {
+      this.sounds.entryBackground.stop();
     }
     if (this.musicEnabled && this.sounds.tourneyBackground && !this.sounds.tourneyBackground.playing()) {
       this.sounds.tourneyBackground.play();
@@ -647,6 +686,9 @@ class AudioEngine {
     if (this.sounds.background && this.sounds.background.playing()) {
       this.sounds.background.volume(this.sounds.background.volume() * 0.15);
     }
+    if (this.sounds.entryBackground && this.sounds.entryBackground.playing()) {
+      this.sounds.entryBackground.volume(this.sounds.entryBackground.volume() * 0.15);
+    }
   }
 
   /**
@@ -657,10 +699,13 @@ class AudioEngine {
     this.isDucked = false;
     // Restore to configured volumes
     if (this.sounds.tourneyBackground && this.sounds.tourneyBackground.playing()) {
-      this.sounds.tourneyBackground.volume(0.6);
+      this.sounds.tourneyBackground.volume(0.65);
     }
     if (this.sounds.background && this.sounds.background.playing()) {
-      this.sounds.background.volume(0.25);
+      this.sounds.background.volume(0.5);
+    }
+    if (this.sounds.entryBackground && this.sounds.entryBackground.playing()) {
+      this.sounds.entryBackground.volume(0.3);
     }
   }
 

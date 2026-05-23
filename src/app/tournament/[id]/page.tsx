@@ -1363,7 +1363,8 @@ export default function TournamentPage() {
           />
 
           {/* ═══ TIMER — overlaid at bottom of table ═══ */}
-          <div
+          {phase === 'betting' && (
+            <div
             style={{
               position: 'absolute',
               bottom: isMobile ? '6px' : '30px',
@@ -1386,13 +1387,13 @@ export default function TournamentPage() {
               <span style={{
                 fontSize: isMobile ? '7px' : '10px',
                 fontWeight: 900,
-                color: phase === 'betting' ? '#c9a44c' : 'rgba(255,255,255,0.4)',
+                color: '#c9a44c',
                 textTransform: 'uppercase',
                 letterSpacing: '0.2em',
                 lineHeight: 1,
                 textShadow: '0 1px 4px rgba(0,0,0,0.8)',
               }}>
-                {phase === 'betting' ? 'PLACE BETS' : phase === 'spinning' ? 'SPINNING' : phase === 'result' ? 'RESULT' : phase.toUpperCase()}
+                PLACE BETS
               </span>
               {isUrgent && (
                 <motion.span
@@ -1427,7 +1428,7 @@ export default function TournamentPage() {
                 background: isUrgent
                   ? 'radial-gradient(circle, rgba(239,68,68,0.25) 0%, rgba(30,10,10,0.85) 70%)'
                   : 'radial-gradient(circle, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 70%)',
-                border: `2.5px solid ${isUrgent ? '#ef4444' : '#c9a44c'}`,
+                border: `2.5px solid ${isUrgent ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.1)'}`,
                 boxShadow: isUrgent
                   ? '0 0 14px rgba(239,68,68,0.3), 0 0 28px rgba(239,68,68,0.1)'
                   : '0 0 14px rgba(201,164,76,0.15), 0 3px 12px rgba(0,0,0,0.7)',
@@ -1435,8 +1436,7 @@ export default function TournamentPage() {
               }}
             >
               {/* SVG progress ring */}
-              {phase === 'betting' && (
-                <svg
+              <svg
                   style={{
                     position: 'absolute',
                     inset: '-3px',
@@ -1457,10 +1457,8 @@ export default function TournamentPage() {
                     strokeDasharray={`${2 * Math.PI * 46}`}
                     strokeDashoffset={`${2 * Math.PI * 46 * (1 - displayTime / 45)}`}
                     style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.3s ease' }}
-                    opacity={0.7}
                   />
                 </svg>
-              )}
               <span style={{
                 fontSize: isMobile ? '18px' : '28px',
                 fontWeight: 900,
@@ -1470,11 +1468,12 @@ export default function TournamentPage() {
                 lineHeight: 1,
                 textShadow: isUrgent ? '0 0 10px rgba(239,68,68,0.5)' : '0 0 6px rgba(201,164,76,0.3)',
               }}>
-                {phase === 'betting' ? displayTime : '--'}
+                {displayTime}
               </span>
             </motion.div>
 
           </div>
+          )}
         </div>
 
         {/* ─── Landscape Mobile Right Sidebar ─── */}

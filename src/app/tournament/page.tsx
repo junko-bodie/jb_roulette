@@ -35,6 +35,19 @@ export default function TournamentLobby() {
     }
   }, [isGameLoading, user, isSoundEnabled]);
 
+  useEffect(() => {
+    if (viewMode === 'lobby' && isMusicEnabled) {
+      soundEngine?.playEntryBackgroundMusic();
+    }
+    
+    return () => {
+      // Ensure we clean up if we leave this page without clicking enter
+      if (viewMode === 'lobby') {
+        soundEngine?.stopEntryBackgroundMusic();
+      }
+    };
+  }, [viewMode, isMusicEnabled]);
+
   const handleSkipIntro = () => {
     if (dontShowAgain) {
       localStorage.setItem('hideTournamentVideo', 'true');
